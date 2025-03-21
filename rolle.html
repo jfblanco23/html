@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teorema de Rolle y Ejercicios</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            max-width: 1024px;
+            /* Pantalla más grande */
+            width: 95%;
+            min-height: 600px;
+            /* Altura mínima */
+            transition: all 0.5s ease;
+            text-align: left;
+            /* Alineación a la izquierda */
+            cursor: pointer;
+            /* Cambiar el cursor a una mano */
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 0;
+            /* Eliminar margen superior */
+            margin-bottom: 20px;
+            /* Añadir espacio debajo del título */
+        }
+
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            /* Añadir espacio antes del subtítulo */
+            margin-bottom: 15px;
+        }
+
+        p {
+            color: black;
+            transition: color 0.5s ease;
+            margin-bottom: 10px;
+            /* Espacio entre párrafos */
+            line-height: 1.6;
+            /* Espaciado entre líneas */
+        }
+
+        .blue {
+            color: blue;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+            /* Espacio antes de la imagen */
+        }
+
+        ul,
+        ol {
+            margin-left: 30px;
+            /* Indentación de listas */
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="content">
+        <h1>Teorema de Rolle</h1>
+    </div>
+    <script>
+        const contentDiv = document.getElementById('content');
+        const content = [
+            { type: 'text', value: 'Sea \\(f: [a,b] \\to \\mathbb{R}\\) tal que:' },
+            { type: 'text', value: '\\(f\\) es continua en \\([a,b]\\),' },
+            { type: 'text', value: 'derivable en \\((a,b)\\),' },
+            { type: 'text', value: 'y \\(f(a) = f(b)\\).' },
+            { type: 'text', value: 'Entonces existe al menos un \\(c \\in (a,b)\\) donde \\(f\'(c) = 0\\).' },
+            { type: 'image', value: 'rolle.png' },
+            { type: 'clear', value: 'Ejercicio 1' },
+            { type: 'title', value: 'Demostrar que la ecuación \\(2x^3 - 6x + 1 = 0\\) tiene una única solución en el intervalo \\((0,1)\\)' },
+            { type: 'text', value: 'Consideremos la función:' },
+            { type: 'text', value: '\\(f(x) = 2x^3 - 6x + 1\\)' },
+            { type: 'text', value: '1. Existencia (Teorema de Bolzano)' },
+            { type: 'text', value: 'Continuidad: \\(f\\) es continua en \\([0,1]\\) por ser una función polinómica.' },
+            { type: 'text', value: 'Evaluación en extremos:' },
+            { type: 'text', value: '\\(f(0) = 2(0)^3 - 6(0) + 1 = 1 > 0\\)' },
+            { type: 'text', value: '\\(f(1) = 2(1)^3 - 6(1) + 1 = -3 < 0\\)' },
+            { type: 'text', value: 'Conclusión: Por el Teorema de Bolzano, existe al menos un \\(c \\in (0,1)\\) tal que \\(f(c) = 0\\).' },
+            { type: 'text', value: '2. Unicidad (Reducción al absurdo con Teorema de Rolle)' },
+            { type: 'text', value: 'Supongamos por contradicción que existen dos soluciones \\(a,b \\in (0,1)\\) con \\(a < b\\) tales que:' },
+            { type: 'text', value: '\\(f(a) = f(b) = 0\\)' },
+            { type: 'text', value: 'Aplicando el Teorema de Rolle:' },
+            { type: 'text', value: '\\(f\\) es continua en \\([a,b] \\subset (0,1)\\)' },
+            { type: 'text', value: '\\(f\\) es derivable en \\((a,b)\\)' },
+            { type: 'text', value: 'Existe \\(c \\in (a,b)\\) tal que: \\(f\'(c) = 0\\)' },
+            { type: 'text', value: 'Calculamos la derivada:' },
+            { type: 'text', value: '\\(f\'(x) = 6x^2 - 6\\)' },
+            { type: 'text', value: 'Igualando a cero:' },
+            { type: 'text', value: '\\(6c^2 - 6 = 0\\)' },
+            { type: 'text', value: '\\(c^2 = 1\\)' },
+            { type: 'text', value: '\\(c = \\pm 1\\)' },
+            { type: 'text', value: 'Contradicción' },
+            { type: 'text', value: 'Las soluciones \\(c = 1\\) y \\(c = -1\\) están fuera de nuestro intervalo \\((0,1)\\)' },
+            { type: 'text', value: 'No existe ningún \\(c \\in (0,1)\\) que cumpla \\(f\'(c) = 0\\)' },
+            { type: 'text', value: 'Conclusión Final' },
+            { type: 'text', value: 'La suposición de existencia de dos raíces lleva a una contradicción con el Teorema de Rolle. Por tanto, la solución en \\((0,1)\\) debe ser única.' },
+            { type: 'clear', value: 'Ejercicio 2' },
+            { type: 'title', value: 'Demostrar que \\(f(x) = 2 - \\cos x - 3x\\) solo corta el eje horizontal en un único punto.' },
+            { type: 'text', value: '1. Existencia de al menos una raíz (Teorema de Bolzano)' },
+            { type: 'text', value: 'Consideremos la función continua:' },
+            { type: 'text', value: '\\(f(x) = 2 - \\cos x - 3x\\)' },
+            { type: 'text', value: 'Evaluación en puntos estratégicos:' },
+            { type: 'text', value: '\\(f(0) = 2 - \\cos 0 - 0 = 2 - 1 = 1 > 0\\)' },
+            { type: 'text', value: '\\(f(1) = 2 - \\cos 1 - 3 \\approx 2 - 0.5403 - 3 = -1.5403 < 0\\)' },
+            { type: 'text', value: 'Conclusión: Por el Teorema de Bolzano, \\(\\exists c \\in (0,1)\\) tal que \\(f(c) = 0\\).' },
+            { type: 'text', value: '2. Unicidad de la raíz (Reducción al absurdo con Teorema de Rolle)' },
+            { type: 'text', value: 'Supongamos que existen dos raíces \\(a, b \\in \\mathbb{R}\\) con \\(a < b\\) tales que:' },
+            { type: 'text', value: '\\(f(a) = f(b) = 0\\)' },
+            { type: 'text', value: 'Aplicando el Teorema de Rolle:' },
+            { type: 'text', value: '\\(f\\) es continua en \\([a,b]\\) y derivable en \\((a,b)\\)' },
+            { type: 'text', value: 'Debe existir \\(c \\in (a,b)\\) donde: \\(f\'(c) = 0\\)' },
+            { type: 'text', value: 'Calculamos la derivada:' },
+            { type: 'text', value: '\\(f\'(x) = \\sin x - 3\\)' },
+            { type: 'text', value: 'Igualando a cero:' },
+            { type: 'text', value: '\\(\\sin c - 3 = 0 \\Rightarrow \\sin c = 3\\)' },
+            { type: 'text', value: 'Contradicción' },
+            { type: 'text', value: 'La ecuación \\(\\sin c = 3\\) es imposible porque:' },
+            { type: 'text', value: '\\(\\forall c \\in \\mathbb{R}, -1 \\leq \\sin c \\leq 1\\)' },
+            { type: 'text', value: 'No existe ningún \\(c \\in \\mathbb{R}\\) que satisfaga la ecuación' },
+            { type: 'text', value: 'Conclusión Final' },
+            { type: 'text', value: 'La suposición de dos raíces conduce a una contradicción' },
+            { type: 'text', value: 'La función es estrictamente decreciente (\\(f\'(x) < 0\\) siempre)' },
+            { type: 'text', value: 'Por tanto, existe exactamente un único \\(x \\in \\mathbb{R}\\) donde \\(f(x) = 0\\)' },
+            { type: 'clear', value: 'Ejercicio 3' },
+            { type: 'title', value: 'Demostración que \\(f(x) = e^{x} + x^{3} - 2\\) sólo tiene una raíz' },
+            { type: 'text', value: '1. Existencia de al menos una raíz (Teorema de Bolzano)' },
+            { type: 'text', value: 'La función:' },
+            { type: 'text', value: '\\(f(x) = e^{x} + x^{3} - 2\\)' },
+            { type: 'text', value: 'es continua en \\(\\mathbb{R}\\) por ser composición de funciones continuas.' },
+            { type: 'text', value: 'Evaluamos en puntos estratégicos:' },
+            { type: 'text', value: '\\(f(0) = e^{0} + 0^{3} - 2 = 1 - 2 = -1 < 0\\)' },
+            { type: 'text', value: '\\(f(1) = e^{1} + 1^{3} - 2 \\approx 2.718 + 1 - 2 = 1.718 > 0\\)' },
+            { type: 'text', value: 'Conclusión: Por el Teorema de Bolzano, \\(\\exists c \\in (0,1)\\) tal que \\(f(c) = 0\\).' },
+            { type: 'text', value: '2. Unicidad de la raíz (Teorema de Rolle)' },
+            { type: 'text', value: 'Supongamos por reducción al absurdo que existen dos raíces \\(a < b\\) con \\(f(a) = f(b) = 0\\).' },
+            { type: 'text', value: 'La función es derivable en \\(\\mathbb{R}\\) con:' },
+            { type: 'text', value: '\\(f\'(x) = e^{x} + 3x^{2}\\)' },
+            { type: 'text', value: 'Por el Teorema de Rolle, existiría \\(c \\in (a,b)\\) tal que: \\(f\'(c) = 0\\)' },
+            { type: 'text', value: 'Analizamos la derivada:' },
+            { type: 'text', value: '\\(e^{c} + 3c^{2} = 0\\)' },
+            { type: 'text', value: '\\(e^{c} = -3c^{2}\\)' },
+            { type: 'text', value: 'Contradicción' },
+            { type: 'text', value: '\\(e^{c} > 0\\) para todo \\(c \\in \\mathbb{R}\\)' },
+            { type: 'text', value: '\\(-3c^{2} \\leq 0\\) para todo \\(c \\in \\mathbb{R}\\)' },
+            { type: 'text', value: 'La igualdad \\(e^{c} = -3c^{2}\\) es imposible' },
+            { type: 'text', value: 'Conclusión Final' },
+            { type: 'text', value: 'La suposición de dos raíces conduce a una contradicción' },
+            { type: 'text', value: '\\(f\'(x) > 0\\) para todo \\(x \\in \\mathbb{R}\\) (función estrictamente creciente)' },
+            { type: 'text', value: 'Por tanto, existe exactamente un único \\(x \\in \\mathbb{R}\\) donde \\(f(x) = 0\\)' },
+            { type: 'clear', value: 'Ejercicio 4' },
+            { type: 'title', value: 'Demostrar que \\(f(x) = 2x + \\sin x\\) se anula únicamente en \\(x=0\\)' },
+            { type: 'text', value: '1. Verificación de que \\(f(0) = 0\\)' },
+            { type: 'text', value: 'Evaluamos \\(f(x)\\) en \\(x = 0\\):' },
+            { type: 'text', value: '\\(f(0) = 2(0) + \\sin(0) = 0\\)' },
+            { type: 'text', value: 'Por lo tanto, \\(f(x)\\) se anula en \\(x = 0\\).' },
+            { type: 'text', value: '2. Unicidad de la raíz (Reducción al absurdo)' },
+            { type: 'text', value: 'Supongamos por contradicción que existen dos valores distintos \\(a, b \\in \\mathbb{R}\\), con \\(a < b\\), tales que:' },
+            { type: 'text', value: '\\(f(a) = f(b) = 0\\)' },
+            { type: 'text', value: 'Esto implica que:' },
+            { type: 'text', value: '\\(2a + \\sin a = 0 \\quad \\text{y} \\quad 2b + \\sin b = 0\\)' },
+            { type: 'text', value: 'Por el Teorema de Rolle, como \\(f(a) = f(b) = 0\\), existe un punto \\(c \\in (a, b)\\) tal que:' },
+            { type: 'text', value: '\\(f\'(c) = 0\\)' },
+            { type: 'text', value: 'Calculamos la derivada de \\(f(x)\\):' },
+            { type: 'text', value: '\\(f\'(x) = 2 + \\cos x\\)' },
+            { type: 'text', value: 'Entonces, en el punto \\(c\\), tenemos:' },
+            { type: 'text', value: '\\(f\'(c) = 2 + \\cos c = 0\\)' },
+            { type: 'text', value: 'De aquí obtenemos:' },
+            { type: 'text', value: '\\(\\cos c = -2\\)' },
+            { type: 'text', value: 'Contradicción' },
+            { type: 'text', value: 'Sabemos que para todo \\(c \\in \\mathbb{R}\\), el valor de \\(\\cos c\\) está restringido al intervalo:' },
+            { type: 'text', value: '\\(-1 \\leq \\cos c \\leq 1\\)' },
+            { type: 'text', value: 'La igualdad \\(\\cos c = -2\\) es imposible porque está fuera del rango permitido para la función coseno.' },
+            { type: 'text', value: 'Por lo tanto, nuestra suposición inicial de que existen dos raíces distintas es incorrecta.' },
+            { type: 'text', value: '3. Conclusión Final' },
+            { type: 'text', value: 'La función \\(f(x) = 2x + \\sin x\\):' },
+            { type: 'text', value: 'Se anula en \\(x = 0\\).' },
+            { type: 'text', value: 'Es estrictamente creciente porque:' },
+            { type: 'text', value: '\\(f\'(x) = 2 + \\cos x > 1, \\quad \\forall x \\in \\mathbb{R}\\).' },
+            { type: 'text', value: 'Esto implica que no puede tener más de una raíz.' },
+            { type: 'text', value: 'Por lo tanto, la única solución a \\(f(x) = 0\\) es: \\(x = 0\\).' },
+            { type: 'clear', value: 'Ejercicio 5' },
+            { type: 'title', value: 'Demostrar que la ecuación \\(x^2e^x - 1 = 0\\) solo tiene una solución en \\([0,1]\\)' },
+            { type: 'text', value: 'Consideremos la función:' },
+            { type: 'text', value: '\\(f(x) = x^2e^x - 1\\)' },
+            { type: 'text', value: '1. Existencia (Teorema de Bolzano)' },
+            { type: 'text', value: 'Continuidad: \\(f\\) es continua en \\([0,1]\\) por ser composición de funciones continuas.' },
+            { type: 'text', value: 'Evaluación en extremos:' },
+            { type: 'text', value: '\\(f(0) = 0^2e^0 - 1 = -1 < 0\\)' },
+            { type: 'text', value: '\\(f(1) = 1^2e^1 - 1 = e - 1 \\approx 1.718 > 0\\)' },
+            { type: 'text', value: 'Conclusión: Por el Teorema de Bolzano, existe al menos un \\(c \\in (0,1)\\) tal que \\(f(c) = 0\\).' },
+            { type: 'text', value: '2. Unicidad (Demostración de monotonía)' },
+            { type: 'text', value: 'Para demostrar la unicidad, probaremos que cualquier solución de \\(f\'(x) = 0\\) está fuera del intervalo \\((0,1)\\).' },
+            { type: 'text', value: 'Derivada:' },
+            { type: 'text', value: '\\(f\'(x) = 2xe^x + x^2e^x = e^x(2x + x^2)\\)' },
+            { type: 'text', value: 'Igualamos a cero:' },
+            { type: 'text', value: '\\(f\'(x) = 0 \\implies e^x(2x + x^2) = 0\\)' },
+            { type: 'text', value: 'Como \\(e^x > 0\\) para todo \\(x \\in \\mathbb{R}\\), entonces:' },
+            { type: 'text', value: '\\(2x + x^2 = 0\\)' },
+            { type: 'text', value: 'Factorizamos:' },
+            { type: 'text', value: '\\(x(2 + x) = 0\\)' },
+            { type: 'text', value: 'Esto da dos soluciones:' },
+            { type: 'text', value: '\\(x = 0 \\quad \\text{y} \\quad x = -2\\)' },
+            { type: 'text', value: 'Análisis de las soluciones:' },
+            { type: 'text', value: 'La solución \\(x = 0\\) está en el límite del intervalo.' },
+            { type: 'text', value: 'La solución \\(x = -2\\) está fuera del intervalo \\((0,1)\\).' },
+            { type: 'text', value: 'Por lo tanto, no hay valores de \\(x\\) en el intervalo abierto \\((0,1)\\) tales que \\(f\'(x) = 0\\).' },
+            { type: 'text', value: 'Conclusión Final' },
+            { type: 'text', value: '\\(f(x)\\) cambia de signo en el intervalo cerrado \\([0,1]\\), garantizando la existencia de al menos una raíz.' },
+            { type: 'text', value: 'No hay valores de \\(x\\) en el intervalo abierto \\((0,1)\\) donde \\(f\'(x) = 0\\), lo que implica que \\(f(x)\\) no tiene puntos críticos en este intervalo.' },
+            { type: 'text', value: 'Por tanto, \\(f(x)\\) es estrictamente monótona en el intervalo y tiene exactamente una única solución \\(c \\in (0,1)\\) tal que \\(f(c) = 0\\).' },
+            { type: 'clear', value: 'Ejercicio 6' },
+            { type: 'title', value: 'Demostrar que \\(x^5 + x - 1 = 0\\) tiene solo una solución' },
+            { type: 'text', value: 'Consideremos la función:' },
+            { type: 'text', value: '\\(f(x) = x^5 + x - 1\\)' },
+            { type: 'text', value: 'Queremos demostrar que \\(f(x) = 0\\) tiene una única solución real positiva.' },
+            { type: 'text', value: '1. Existencia de una solución (Teorema de Bolzano)' },
+            { type: 'text', value: 'La función \\(f(x)\\) es un polinomio, por lo que es continua en todo \\(\\mathbb{R}\\). Evaluamos \\(f(x)\\) en dos puntos positivos:' },
+            { type: 'text', value: '\\(f(0) = (0)^5 + 0 - 1 = -1 < 0\\),' },
+            { type: 'text', value: '\\(f(1) = (1)^5 + 1 - 1 = 1 > 0\\).' },
+            { type: 'text', value: 'Por el Teorema de Bolzano, como \\(f(x)\\) es continua y cambia de signo entre \\(x = 0\\) y \\(x = 1\\), existe al menos un \\(c \\in (0,1)\\) tal que:' },
+            { type: 'text', value: '\\(f(c) = 0\\)' },
+            { type: 'text', value: '2. Unicidad de la solución (Análisis de la derivada)' },
+            { type: 'text', value: 'Para demostrar la unicidad, analizamos la derivada de \\(f(x)\\):' },
+            { type: 'text', value: '\\(f\'(x) = 5x^4 + 1\\)' },
+            { type: 'text', value: 'Observamos que:' },
+            { type: 'text', value: '\\(f\'(x) > 0\\) para todo \\(x > 0\\), ya que \\(5x^4 > 0\\) y el término constante es positivo (\\(+1\\)).' },
+            { type: 'text', value: 'Esto implica que \\(f(x)\\) es estrictamente creciente en el intervalo \\((0, \\infty)\\).' },
+            { type: 'text', value: 'Si \\(f(x)\\) es estrictamente creciente, no puede tener más de una raíz en el intervalo positivo. Por lo tanto, la solución en \\((0,1)\\), garantizada por el Teorema de Bolzano, es única.' },
+            { type: 'text', value: 'Conclusión Final' },
+            { type: 'text', value: 'La función \\(f(x) = x^5 + x - 1\\):' },
+            { type: 'text', value: 'Tiene al menos una solución en el intervalo \\((0,1)\\), según el Teorema de Bolzano.' },
+            { type: 'text', value: 'Es estrictamente creciente en \\((0, \\infty)\\), lo que garantiza que no puede tener más de una raíz positiva.' },
+            { type: 'text', value: 'Por lo tanto, la ecuación tiene una única solución real positiva.' }
+        ];
+
+        let i = 0;
+        contentDiv.addEventListener('click', displayNext);
+
+        function displayNext() {
+            if (i < content.length) {
+                const item = content[i];
+
+                if (item.type === 'text') {
+                    const p = document.createElement('p');
+                    p.innerHTML = item.value;
+                    MathJax.typesetPromise([p]).then(() => {
+                        contentDiv.appendChild(p);
+                    });
+                } else if (item.type === 'image') {
+                    const img = document.createElement('img');
+                    img.src = item.value;
+                    contentDiv.appendChild(img);
+                } else if (item.type === 'title') {
+                    const h2 = document.createElement('h2');
+                    h2.innerHTML = item.value;
+                    MathJax.typesetPromise([h2]).then(() => {
+                        contentDiv.appendChild(h2);
+                    });
+                } else if (item.type === 'clear') {
+                    contentDiv.innerHTML = `<h2>${item.value}</h2>`;
+                }
+
+                i++;
+            }
+        }
+    </script>
+</body>
+
+</html>
