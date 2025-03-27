@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Teorema de Probabilidad Total</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        .contenedor-principal {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .urna {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            width: 90%;
+            margin: auto;
+        }
+
+        .urna:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.2);
+        }
+
+        .urna.seleccionada {
+            border-color: #e74c3c;
+            background: #fff5f5;
+        }
+
+        .contenido-urna {
+            min-height: 80px;
+            margin: 10px 0;
+        }
+
+        .sobre {
+            display: inline-block;
+            width: 60px;
+            height: 80px;
+            background: #f1c40f;
+            margin: 3px;
+            padding: 8px;
+            text-align: center;
+            border-radius: 5px;
+            font-size: 1.5em;
+        }
+
+        .probabilidad {
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+
+        #pregunta-probabilidad {
+            margin: 120px auto;
+            font-size: 1.2em;
+            color: #2c3e50;
+            cursor: pointer;
+            text-decoration: underline;
+            text-align: center;
+            max-width: 800px;
+        }
+
+        #conexiones-svg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .linea-conexion {
+            stroke: #3498db;
+            stroke-width: 3px;
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            transition: stroke-dashoffset 1s ease-in-out;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        .etiqueta-probabilidad {
+            font-size: 1.2em;
+            fill: #e74c3c;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            text-shadow: 1px 1px 2px white;
+        }
+
+        #pasos-calculo {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 5px;
+        }
+
+        #boton-solucion {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Teorema de Probabilidad Total</h1>
+    <p style="font-size: 1.5em;">El concursante debe elegir una urna al azar y en la urna elegida extraer un sobre.</p>
+    
+    <div class="contenedor-principal">
+        <!-- Urna 1 -->
+        <div class="urna" onclick="seleccionarUrna(1)">
+            <h2>Urna 1 (U₁)</h2>
+            <div class="contenido-urna">
+                <div class="sobre">🚗</div>
+                <div class="sobre">100€</div>
+                <div class="sobre">10€</div>
+                <div class="sobre">🚗</div>
+            </div>
+            <p class="probabilidad" style="display: none;">Probabilidad de coche: <span>\(\frac{2}{4}\)</span></p>
+        </div>
+
+        <!-- Urna 2 -->
+        <div class="urna" onclick="seleccionarUrna(2)">
+            <h2>Urna 2 (U₂)</h2>
+            <div class="contenido-urna">
+                <div class="sobre">100€</div>
+                <div class="sobre">100€</div>
+            </div>
+            <p class="probabilidad" style="display: none;">Probabilidad de coche: <span>\(\frac{0}{2}\)</span></p>
+        </div>
+
+        <!-- Urna 3 -->
+        <div class="urna" onclick="seleccionarUrna(3)">
+            <h2>Urna 3 (U₃)</h2>
+            <div class="contenido-urna">
+                <div class="sobre">🚗</div>
+                <div class="sobre">100€</div>
+                <div class="sobre">10€</div>
+            </div>
+            <p class="probabilidad" style="display: none;">Probabilidad de coche: <span>\(\frac{1}{3}\)</span></p>
+        </div>
+    </div>
+
+    <div id="pregunta-probabilidad" onclick="mostrarConexiones()">
+        ¿Cuál es la probabilidad de llevarse un coche en este concurso? (Probabilidad total)
+    </div>
+
+    <svg id="conexiones-svg"></svg>
+
+    <button id="boton-solucion" onclick="mostrarSolucion()">Solución</button>
+
+    <div id="pasos-calculo" style="display: none;">
+        <h3>Desglose del cálculo:</h3>
+        <p id="paso-1"></p>
+        <p id="paso-2"></p>
+        <p id="paso-3"></p>
+        <p id="resultado"></p>
+        <p id="calculo-numerico"></p>
+    </div>
+
+    <script>
+        let lineasDibujadas = false;
+
+        function seleccionarUrna(numero) {
+            const urna = document.querySelector(`.urna:nth-child(${numero})`);
+            const probElement = urna.querySelector('.probabilidad');
+            probElement.style.display = 'block';
+        }
+
+        function mostrarConexiones() {
+            if (!lineasDibujadas) {
+                const svg = document.getElementById('conexiones-svg');
+                svg.innerHTML = '';
+
+                const urnas = document.querySelectorAll('.urna');
+                const pregunta = document.getElementById('pregunta-probabilidad');
+                const rectPregunta = pregunta.getBoundingClientRect();
+
+                urnas.forEach((urna, index) => {
+                    const rectUrna = urna.getBoundingClientRect();
+
+                    const linea = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    linea.setAttribute('class', 'linea-conexion');
+
+                    const x1 = rectPregunta.left + rectPregunta.width / 2;
+                    const y1 = rectPregunta.top;
+                    const x2 = rectUrna.left + rectUrna.width / 2;
+                    const y2 = rectUrna.bottom;
+
+                    linea.setAttribute('x1', x1);
+                    linea.setAttribute('y1', y1);
+                    linea.setAttribute('x2', x2);
+                    linea.setAttribute('y2', y2);
+
+                    svg.appendChild(linea);
+
+                    const etiqueta = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    etiqueta.setAttribute('class', 'etiqueta-probabilidad');
+                    etiqueta.setAttribute('x', (x1 + x2) / 2);
+                    etiqueta.setAttribute('y', (y1 + y2) / 2 - 10);
+                    etiqueta.setAttribute('text-anchor', 'middle');
+
+                    // Utiliza textContent y crea el subíndice como un elemento separado
+                    etiqueta.textContent = `P(U`;
+                    const sub = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+                    sub.setAttribute('baseline-shift', 'sub');
+                    sub.textContent = index + 1;
+                    etiqueta.appendChild(sub);
+                    etiqueta.textContent += `) = 1/3`;
+
+
+                    etiqueta.style.opacity = 0;
+                    svg.appendChild(etiqueta);
+
+                    linea.addEventListener('click', () => {
+                        etiqueta.style.opacity = 1;
+                    });
+
+                    setTimeout(() => {
+                        linea.style.strokeDashoffset = '0';
+                    }, 100);
+                });
+
+                lineasDibujadas = true;
+            }
+        }
+
+        function mostrarSolucion() {
+            const pasosCalculo = document.getElementById('pasos-calculo');
+            pasosCalculo.style.display = 'block';
+            const paso1 = document.getElementById('paso-1');
+            const paso2 = document.getElementById('paso-2');
+            const paso3 = document.getElementById('paso-3');
+            const resultadoFinal = document.getElementById('resultado');
+            const calculoNumerico = document.getElementById('calculo-numerico');
+
+            const ecuacion1 = '\\( P(Coche) = P(U_1) \\cdot P(C|U_1) + P(U_2) \\cdot P(C|U_2) + P(U_3) \\cdot P(C|U_3) \\)';
+            const ecuacion2 = '\\( = \\frac{1}{3} \\cdot \\frac{2}{4} + \\frac{1}{3} \\cdot 0 + \\frac{1}{3} \\cdot \\frac{1}{3} \\)';
+            const ecuacion3 = '\\( = \\frac{1}{6} + 0 + \\frac{1}{9} \\)';
+            const resultado = '\\( = \\frac{5}{18} \\approx 0.278 \\)';
+            const calculo = 'P(Coche) = (1/3)*(2/4) + (1/3)*0 + (1/3)*(1/3) = 0.166 + 0 + 0.033 = 0.199';
+
+            paso1.innerHTML = ecuacion1;
+            paso2.innerHTML = ecuacion2;
+            paso3.innerHTML = ecuacion3;
+            resultadoFinal.innerHTML = resultado;
+            calculoNumerico.textContent = calculo;
+
+            MathJax.typesetPromise([paso1, paso2, paso3, resultadoFinal, calculoNumerico]).then(() => {
+                console.log('MathJax renderizado con éxito.');
+            });
+        }
+
+        window.onload = function() {
+            MathJax.typesetPromise([
+                document.getElementById('pregunta-probabilidad')
+            ]).then(() => {});
+        };
+    </script>
+</body>
+</html>
