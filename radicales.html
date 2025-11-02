@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simplificar radicales</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f9f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 0.8rem;
+    }
+
+    .contenedor {
+      background: white;
+      padding: 1.8rem;
+      border-radius: 1.2rem;
+      box-shadow: 0 6px 25px rgba(0, 80, 60, 0.12);
+      width: 98%;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .pestanas {
+      display: flex;
+      gap: 0.7rem;
+      margin-bottom: 1.6rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .pestana-btn {
+      padding: 0.65rem 1.3rem;
+      font-size: 1.12rem;
+      background: #e8f5ed;
+      border: 2px solid #2e7d32;
+      border-radius: 0.8rem;
+      cursor: pointer;
+      color: #1b5e20;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .pestana-btn.activa,
+    .pestana-btn:hover {
+      background: #2e7d32;
+      color: white;
+    }
+
+    .contenido {
+      display: flex;
+      gap: 2rem;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .zona {
+      flex: 1;
+      min-width: 300px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .zona-clic {
+      cursor: pointer;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .zona h2 {
+      text-align: center;
+      margin-bottom: 1rem;
+      color: #1b5e20;
+      font-size: 1.65rem;
+      flex-shrink: 0;
+    }
+
+    .math-display {
+      flex: 1;
+      font-size: 2.1rem;
+      min-height: 120px;
+      text-align: center;
+      padding: 1.1rem;
+      border: 2px solid #2e7d32;
+      border-radius: 0.9rem;
+      background-color: #f1f8e9;
+      overflow: auto;
+      line-height: 1.6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ejercicio-4 .math-display {
+      font-size: 1.55rem;
+    }
+
+    .katex-display {
+      margin: 0 !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="contenedor">
+    <div class="pestanas">
+      <button class="pestana-btn activa" data-ejercicio="1">√125</button>
+      <button class="pestana-btn" data-ejercicio="2">√18</button>
+      <button class="pestana-btn" data-ejercicio="3">√40</button>
+      <button class="pestana-btn" data-ejercicio="4">√(5·7²·2³·11⁴)</button>
+      <button class="pestana-btn" data-ejercicio="5">√675</button>
+      <button class="pestana-btn" data-ejercicio="6">√72</button>
+      <button class="pestana-btn" data-ejercicio="7">√200</button>
+      <button class="pestana-btn" data-ejercicio="8">√625</button>
+      <button class="pestana-btn" data-ejercicio="9">√250</button>
+      <button class="pestana-btn" data-ejercicio="10">√50</button>
+    </div>
+
+    <div class="contenido">
+      <div class="zona zona-clic" id="zona-izquierda">
+        <h2>Simplificar radicales</h2>
+        <div id="expresion-math" class="math-display"></div>
+      </div>
+      <div class="zona zona-clic" id="zona-derecha">
+        <h2>División</h2>
+        <div id="division-larga" class="math-display"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const expresionMath = document.getElementById("expresion-math");
+      const divisionLarga = document.getElementById("division-larga");
+      const pestanas = document.querySelectorAll(".pestana-btn");
+      const contenedor = document.querySelector(".contenedor");
+
+      let ejercicioActual = "1";
+      let pasoActual = 0;
+
+      function divisionLargaTemplate(dividendo, cociente, resto) {
+        return `
+          \\begin{array}{r}
+            ${dividendo} \\\\
+            \\underline{${2 * cociente}} \\\\
+            \\color{#d32f2f}{${resto}}
+          \\end{array}
+          \\begin{array}{l}
+            \\big|\\!\\underline{\\,2\\,} \\\\
+            \\color{#1976d2}{${cociente}} \\\\
+            \\phantom{0}
+          \\end{array}
+        `;
+      }
+
+      const ejercicios = {
+        1: [
+          { math: "\\sqrt{125}", division: "" },
+          { math: "\\sqrt{5^{3}}", division: "" },
+          { math: "\\sqrt{5^{3}} = 5^{\\color{#1976d2}{1}} \\sqrt{5^{\\color{#d32f2f}{1}}}", division: divisionLargaTemplate("3", "1", "1") },
+          { math: "5\\sqrt{5}", division: divisionLargaTemplate("3", "1", "1") }
+        ],
+        2: [
+          { math: "\\sqrt{18}", division: "" },
+          { math: "\\sqrt{2 \\cdot 3^{2}}", division: "" },
+          { math: "3^{\\color{#1976d2}{1}} \\sqrt{2}", division: divisionLargaTemplate("2", "1", "0") },
+          { math: "3\\sqrt{2}", division: divisionLargaTemplate("2", "1", "0") }
+        ],
+        3: [
+          { math: "\\sqrt{40}", division: "" },
+          { math: "\\sqrt{2^{3} \\cdot 5}", division: "" },
+          { math: "2^{\\color{#1976d2}{1}} \\sqrt{2 \\cdot 5}", division: divisionLargaTemplate("3", "1", "1") },
+          { math: "2\\sqrt{10}", division: divisionLargaTemplate("3", "1", "1") }
+        ],
+        4: [
+          { math: "\\sqrt{5 \\cdot 7^{2} \\cdot 2^{3} \\cdot 11^{4}}", division: "" },
+          { math: "\\sqrt{5 \\cdot 7^{2} \\cdot 2^{3} \\cdot 11^{4}}", division: "" },
+          { 
+            math: "7^{\\color{#1976d2}{1}} \\cdot 11^{\\color{#1976d2}{2}} \\cdot 2^{\\color{#1976d2}{1}} \\cdot \\sqrt{5 \\cdot 2^{\\color{#d32f2f}{1}}}", 
+            division: `
+              \\begin{array}{c}
+                \\text{Para } 2^{3}: \\\\
+                ${divisionLargaTemplate("3", "1", "1")}
+              \\end{array}
+              \\quad
+              \\begin{array}{c}
+                \\text{Para } 11^{4}: \\\\
+                ${divisionLargaTemplate("4", "2", "0")}
+              \\end{array}
+            `
+          },
+          { 
+            math: "1694\\sqrt{10}", 
+            division: `
+              \\begin{array}{c}
+                \\text{Para } 2^{3}: \\\\
+                ${divisionLargaTemplate("3", "1", "1")}
+              \\end{array}
+              \\quad
+              \\begin{array}{c}
+                \\text{Para } 11^{4}: \\\\
+                ${divisionLargaTemplate("4", "2", "0")}
+              \\end{array}
+            `
+          }
+        ],
+        5: [
+          { math: "\\sqrt{675}", division: "" },
+          { math: "\\sqrt{3^{3} \\cdot 5^{2}}", division: "" },
+          { math: "3^{\\color{#1976d2}{1}} \\cdot 5^{\\color{#1976d2}{1}} \\cdot \\sqrt{3^{\\color{#d32f2f}{1}}}", division: divisionLargaTemplate("3", "1", "1") },
+          { math: "15\\sqrt{3}", division: divisionLargaTemplate("3", "1", "1") }
+        ],
+        6: [
+          { math: "\\sqrt{72}", division: "" },
+          { math: "\\sqrt{2^{3} \\cdot 3^{2}}", division: "" },
+          { math: "2^{\\color{#1976d2}{1}} \\cdot 3^{\\color{#1976d2}{1}} \\cdot \\sqrt{2^{\\color{#d32f2f}{1}}}", division: divisionLargaTemplate("3", "1", "1") },
+          { math: "6\\sqrt{2}", division: divisionLargaTemplate("3", "1", "1") }
+        ],
+        7: [
+          { math: "\\sqrt{200}", division: "" },
+          { math: "\\sqrt{2^{3} \\cdot 5^{2}}", division: "" },
+          { math: "2^{\\color{#1976d2}{1}} \\cdot 5^{\\color{#1976d2}{1}} \\cdot \\sqrt{2^{\\color{#d32f2f}{1}}}", division: divisionLargaTemplate("3", "1", "1") },
+          { math: "10\\sqrt{2}", division: divisionLargaTemplate("3", "1", "1") }
+        ],
+        8: [
+          { math: "\\sqrt{625}", division: "" },
+          { math: "\\sqrt{5^{4}}", division: "" },
+          { math: "5^{\\color{#1976d2}{2}}", division: divisionLargaTemplate("4", "2", "0") },
+          { math: "25", division: divisionLargaTemplate("4", "2", "0") }
+        ],
+        9: [
+          { math: "\\sqrt{250}", division: "" },
+          { math: "\\sqrt{2 \\cdot 5^{3}}", division: "" },
+          { math: "5^{\\color{#1976d2}{1}} \\cdot \\sqrt{2 \\cdot 5^{\\color{#d32f2f}{1}}}", division: divisionLargaTemplate("3", "1", "1") },
+          { math: "5\\sqrt{10}", division: divisionLargaTemplate("3", "1", "1") }
+        ],
+        10: [
+          { math: "\\sqrt{50}", division: "" },
+          { math: "\\sqrt{2 \\cdot 5^{2}}", division: "" },
+          { math: "5^{\\color{#1976d2}{1}} \\sqrt{2}", division: divisionLargaTemplate("2", "1", "0") },
+          { math: "5\\sqrt{2}", division: divisionLargaTemplate("2", "1", "0") }
+        ]
+      };
+
+      function renderPaso() {
+        const pasos = ejercicios[ejercicioActual];
+        if (!pasos || pasoActual >= pasos.length) return;
+
+        let expresionAcumulada = "";
+        for (let i = 0; i <= pasoActual; i++) {
+          if (i > 0) expresionAcumulada += " \\\\ \\\\ ";
+          expresionAcumulada += pasos[i].math;
+        }
+
+        contenedor.classList.toggle("ejercicio-4", ejercicioActual === "4");
+
+        expresionMath.innerHTML = "";
+        katex.render(expresionAcumulada, expresionMath, {
+          throwOnError: false,
+          displayMode: true
+        });
+
+        divisionLarga.innerHTML = "";
+        const paso = pasos[pasoActual];
+        if (paso.division.trim() === "") {
+          divisionLarga.innerHTML = "<div style='color:#999;font-size:1.4rem;'>—</div>";
+        } else {
+          katex.render(paso.division, divisionLarga, {
+            throwOnError: false,
+            displayMode: true
+          });
+        }
+      }
+
+      function cambiarEjercicio(id) {
+        ejercicioActual = id;
+        pasoActual = 0;
+        renderPaso();
+      }
+
+      pestanas.forEach(btn => {
+        btn.addEventListener("click", () => {
+          pestanas.forEach(b => b.classList.remove("activa"));
+          btn.classList.add("activa");
+          cambiarEjercicio(btn.dataset.ejercicio);
+        });
+      });
+
+      document.getElementById("zona-izquierda").addEventListener("click", avanzar);
+      document.getElementById("zona-derecha").addEventListener("click", avanzar);
+
+      function avanzar() {
+        const pasos = ejercicios[ejercicioActual];
+        if (pasoActual < pasos.length - 1) {
+          pasoActual++;
+          renderPaso();
+        }
+      }
+
+      renderPaso();
+    });
+  </script>
+</body>
+</html>
