@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raíces cúbicas</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f9f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 0.8rem;
+    }
+
+    .contenedor {
+      background: white;
+      padding: 1.8rem;
+      border-radius: 1.2rem;
+      box-shadow: 0 6px 25px rgba(0, 80, 60, 0.12);
+      width: 98%;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .pestanas {
+      display: flex;
+      gap: 0.7rem;
+      margin-bottom: 1.6rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .pestana-btn {
+      padding: 0.65rem 1.3rem;
+      font-size: 1.12rem;
+      background: #e8f5ed;
+      border: 2px solid #2e7d32;
+      border-radius: 0.8rem;
+      cursor: pointer;
+      color: #1b5e20;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .pestana-btn.activa,
+    .pestana-btn:hover {
+      background: #2e7d32;
+      color: white;
+    }
+
+    .contenido {
+      display: flex;
+      gap: 2rem;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .zona {
+      flex: 1;
+      min-width: 300px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .zona-clic {
+      cursor: pointer;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .zona h2 {
+      text-align: center;
+      margin-bottom: 1rem;
+      color: #1b5e20;
+      font-size: 1.65rem;
+      flex-shrink: 0;
+    }
+
+    .math-display {
+      flex: 1;
+      font-size: 2.1rem;
+      min-height: 120px;
+      text-align: center;
+      padding: 1.1rem;
+      border: 2px solid #2e7d32;
+      border-radius: 0.9rem;
+      background-color: #f1f8e9;
+      overflow: auto;
+      line-height: 1.6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ejercicio-largo .math-display {
+      font-size: 1.55rem;
+    }
+
+    .katex-display {
+      margin: 0 !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="contenedor">
+    <div class="pestanas">
+      <button class="pestana-btn activa" data-ejercicio="1">∛8</button>
+      <button class="pestana-btn" data-ejercicio="2">∛16</button>
+      <button class="pestana-btn" data-ejercicio="3">∛81</button>
+      <button class="pestana-btn" data-ejercicio="4">∛250</button>
+      <button class="pestana-btn" data-ejercicio="5">∛144</button>
+      <button class="pestana-btn" data-ejercicio="6">∛(5³·2⁴)</button>
+      <button class="pestana-btn" data-ejercicio="7">∛(5²·7⁵)</button>
+      <button class="pestana-btn" data-ejercicio="8">∛(3⁴·2²)</button>
+      <button class="pestana-btn" data-ejercicio="9">∛(3⁷·2⁵)</button>
+    </div>
+
+    <div class="contenido">
+      <div class="zona zona-clic" id="zona-izquierda">
+        <h2>Raíces cúbicas</h2>
+        <div id="expresion-math" class="math-display"></div>
+      </div>
+      <div class="zona zona-clic" id="zona-derecha">
+        <h2>División</h2>
+        <div id="division-larga" class="math-display"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const expresionMath = document.getElementById("expresion-math");
+      const divisionLarga = document.getElementById("division-larga");
+      const pestanas = document.querySelectorAll(".pestana-btn");
+      const contenedor = document.querySelector(".contenedor");
+
+      let ejercicioActual = "1";
+      let pasoActual = 0;
+
+      // Plantilla para división larga: dividendo ÷ 3
+      function divisionCubicaTemplate(dividendo, cociente, resto) {
+        return `
+          \\begin{array}{r}
+            ${dividendo} \\\\
+            \\underline{${3 * cociente}} \\\\
+            \\color{#d32f2f}{${resto}}
+          \\end{array}
+          \\begin{array}{l}
+            \\big|\\!\\underline{\\,3\\,} \\\\
+            \\color{#1976d2}{${cociente}} \\\\
+            \\phantom{0}
+          \\end{array}
+        `;
+      }
+
+      const ejercicios = {
+        1: [ // ∛8 = ∛(2³) = 2
+          { math: "\\sqrt[3]{8}", division: "" },
+          { math: "\\sqrt[3]{2^{3}}", division: "" },
+          { math: "2^{\\color{#1976d2}{1}}", division: divisionCubicaTemplate("3", "1", "0") },
+          { math: "2", division: divisionCubicaTemplate("3", "1", "0") }
+        ],
+        2: [ // ∛16 = ∛(2⁴) = 2∛2
+          { math: "\\sqrt[3]{16}", division: "" },
+          { math: "\\sqrt[3]{2^{4}}", division: "" },
+          { math: "2^{\\color{#1976d2}{1}} \\sqrt[3]{2^{\\color{#d32f2f}{1}}}", division: divisionCubicaTemplate("4", "1", "1") },
+          { math: "2\\sqrt[3]{2}", division: divisionCubicaTemplate("4", "1", "1") }
+        ],
+        3: [ // ∛81 = ∛(3⁴) = 3∛3
+          { math: "\\sqrt[3]{81}", division: "" },
+          { math: "\\sqrt[3]{3^{4}}", division: "" },
+          { math: "3^{\\color{#1976d2}{1}} \\sqrt[3]{3^{\\color{#d32f2f}{1}}}", division: divisionCubicaTemplate("4", "1", "1") },
+          { math: "3\\sqrt[3]{3}", division: divisionCubicaTemplate("4", "1", "1") }
+        ],
+        4: [ // ∛250 = ∛(2·5³) = 5∛2
+          { math: "\\sqrt[3]{250}", division: "" },
+          { math: "\\sqrt[3]{2 \\cdot 5^{3}}", division: "" },
+          { math: "5^{\\color{#1976d2}{1}} \\sqrt[3]{2}", division: divisionCubicaTemplate("3", "1", "0") },
+          { math: "5\\sqrt[3]{2}", division: divisionCubicaTemplate("3", "1", "0") }
+        ],
+        5: [ // ∛144 = ∛(2⁴·3²) → no sale entero
+          { math: "\\sqrt[3]{144}", division: "" },
+          { math: "\\sqrt[3]{2^{4} \\cdot 3^{2}}", division: "" },
+          { 
+            math: "2^{\\color{#1976d2}{1}} \\sqrt[3]{2^{\\color{#d32f2f}{1}} \\cdot 3^{2}}", 
+            division: divisionCubicaTemplate("4", "1", "1") 
+          },
+          { math: "2\\sqrt[3]{18}", division: divisionCubicaTemplate("4", "1", "1") }
+        ],
+        6: [ // ∛(5³·2⁴) = 5·2·∛2 = 10∛2
+          { math: "\\sqrt[3]{5^{3} \\cdot 2^{4}}", division: "" },
+          { math: "\\sqrt[3]{5^{3} \\cdot 2^{4}}", division: "" },
+          { 
+            math: "5^{\\color{#1976d2}{1}} \\cdot 2^{\\color{#1976d2}{1}} \\cdot \\sqrt[3]{2^{\\color{#d32f2f}{1}}}", 
+            division: divisionCubicaTemplate("4", "1", "1") 
+          },
+          { math: "10\\sqrt[3]{2}", division: divisionCubicaTemplate("4", "1", "1") }
+        ],
+        7: [ // ∛(5²·7⁵) = 7·∛(5²·7²) = 7∛(1225)
+          { math: "\\sqrt[3]{5^{2} \\cdot 7^{5}}", division: "" },
+          { math: "\\sqrt[3]{5^{2} \\cdot 7^{5}}", division: "" },
+          { 
+            math: "7^{\\color{#1976d2}{1}} \\cdot \\sqrt[3]{5^{2} \\cdot 7^{\\color{#d32f2f}{2}}}", 
+            division: divisionCubicaTemplate("5", "1", "2") 
+          },
+          { math: "7\\sqrt[3]{1225}", division: divisionCubicaTemplate("5", "1", "2") }
+        ],
+        8: [ // ∛(3⁴·2²) = 3·∛(3·2²) = 3∛12
+          { math: "\\sqrt[3]{3^{4} \\cdot 2^{2}}", division: "" },
+          { math: "\\sqrt[3]{3^{4} \\cdot 2^{2}}", division: "" },
+          { 
+            math: "3^{\\color{#1976d2}{1}} \\cdot \\sqrt[3]{3^{\\color{#d32f2f}{1}} \\cdot 2^{2}}", 
+            division: divisionCubicaTemplate("4", "1", "1") 
+          },
+          { math: "3\\sqrt[3]{12}", division: divisionCubicaTemplate("4", "1", "1") }
+        ],
+        9: [ // ∛(3⁷·2⁵) = 3²·2·∛(3·2²) = 18∛12
+          { math: "\\sqrt[3]{3^{7} \\cdot 2^{5}}", division: "" },
+          { math: "\\sqrt[3]{3^{7} \\cdot 2^{5}}", division: "" },
+          { 
+            math: "3^{\\color{#1976d2}{2}} \\cdot 2^{\\color{#1976d2}{1}} \\cdot \\sqrt[3]{3^{\\color{#d32f2f}{1}} \\cdot 2^{\\color{#d32f2f}{2}}}", 
+            division: `
+              \\begin{array}{c}
+                \\text{Para } 3^{7}: \\\\
+                ${divisionCubicaTemplate("7", "2", "1")}
+              \\end{array}
+              \\quad
+              \\begin{array}{c}
+                \\text{Para } 2^{5}: \\\\
+                ${divisionCubicaTemplate("5", "1", "2")}
+              \\end{array}
+            `
+          },
+          { 
+            math: "18\\sqrt[3]{12}", 
+            division: `
+              \\begin{array}{c}
+                \\text{Para } 3^{7}: \\\\
+                ${divisionCubicaTemplate("7", "2", "1")}
+              \\end{array}
+              \\quad
+              \\begin{array}{c}
+                \\text{Para } 2^{5}: \\\\
+                ${divisionCubicaTemplate("5", "1", "2")}
+              \\end{array}
+            `
+          }
+        ]
+      };
+
+      function renderPaso() {
+        const pasos = ejercicios[ejercicioActual];
+        if (!pasos || pasoActual >= pasos.length) return;
+
+        let expresionAcumulada = "";
+        for (let i = 0; i <= pasoActual; i++) {
+          if (i > 0) expresionAcumulada += " \\\\ \\\\ ";
+          expresionAcumulada += pasos[i].math;
+        }
+
+        // Clase para ejercicios con expresiones largas
+        contenedor.classList.toggle("ejercicio-largo", ["5", "7", "8", "9"].includes(ejercicioActual));
+
+        expresionMath.innerHTML = "";
+        katex.render(expresionAcumulada, expresionMath, {
+          throwOnError: false,
+          displayMode: true
+        });
+
+        divisionLarga.innerHTML = "";
+        const paso = pasos[pasoActual];
+        if (paso.division.trim() === "") {
+          divisionLarga.innerHTML = "<div style='color:#999;font-size:1.4rem;'>—</div>";
+        } else {
+          katex.render(paso.division, divisionLarga, {
+            throwOnError: false,
+            displayMode: true
+          });
+        }
+      }
+
+      function cambiarEjercicio(id) {
+        ejercicioActual = id;
+        pasoActual = 0;
+        renderPaso();
+      }
+
+      pestanas.forEach(btn => {
+        btn.addEventListener("click", () => {
+          pestanas.forEach(b => b.classList.remove("activa"));
+          btn.classList.add("activa");
+          cambiarEjercicio(btn.dataset.ejercicio);
+        });
+      });
+
+      document.getElementById("zona-izquierda").addEventListener("click", avanzar);
+      document.getElementById("zona-derecha").addEventListener("click", avanzar);
+
+      function avanzar() {
+        const pasos = ejercicios[ejercicioActual];
+        if (pasoActual < pasos.length - 1) {
+          pasoActual++;
+          renderPaso();
+        }
+      }
+
+      renderPaso();
+    });
+  </script>
+</body>
+</html>
