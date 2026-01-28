@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Límites en el infinito</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary: #2d5596;
+            --secondary: #4682b4;
+            --secondary-light: #e6f0f7;
+            --background: #f8f9fa;
+            --text: #333;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--background);
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(120deg, var(--primary), #1a3a6c);
+            color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-top: 10px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .tabs {
+            margin: 25px 0;
+            box-shadow: var(--box-shadow);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            background: white;
+        }
+        
+        .tab-header {
+            display: flex;
+            background: linear-gradient(to right, var(--primary), #3a6bc7);
+            padding: 0;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 16px 20px;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .tab-button.active {
+            background: white;
+            color: var(--primary);
+        }
+        
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--secondary);
+        }
+        
+        .tab-content {
+            padding: 25px;
+        }
+        
+        .tab-pane {
+            display: none;
+        }
+        
+        .tab-pane.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .section-title {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin: 25px 0 20px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--secondary-light);
+            font-weight: 700;
+        }
+        
+        .exercise {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: var(--transition);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .exercise:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            transform: translateX(5px);
+        }
+        
+        .exercise-number {
+            color: var(--primary);
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        
+        .exercise-statement {
+            font-weight: 600;
+            font-size: 1.15rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .solution {
+            display: none;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f0f7ff;
+            border-radius: var(--border-radius);
+            border-left: 3px solid var(--secondary);
+        }
+        
+        .solution-title {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .result {
+            display: none;
+            background: var(--secondary-light);
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            margin-top: 10px;
+            font-weight: 700;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .result-title {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+        
+        .click-animation {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(70, 130, 180, 0.7);
+            pointer-events: none;
+            transform: scale(0);
+            animation: clickEffect 0.6s ease-out;
+            z-index: 1000;
+        }
+        
+        @keyframes clickEffect {
+            0% { transform: scale(0); opacity: 0.7; }
+            50% { transform: scale(1.5); opacity: 0.3; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: var(--primary);
+            font-weight: 500;
+            border-top: 1px solid var(--secondary-light);
+        }
+        
+        @media (max-width: 768px) {
+            .tab-header {
+                flex-direction: column;
+            }
+            
+            .tab-button {
+                padding: 12px;
+                font-size: 1rem;
+            }
+            
+            body {
+                padding: 10px;
+            }
+            
+            .tab-content {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Límites en el infinito</h1>
+        <div class="subtitle">Ejercicios interactivos de cálculo</div>
+    </header>
+    
+    <div class="tabs">
+        <div class="tab-header">
+            <button class="tab-button active" data-tab="polynomials">Polinomios</button>
+            <button class="tab-button" data-tab="roots">Con raíces</button>
+            <button class="tab-button" data-tab="sum-roots">Sumando raíces</button>
+        </div>
+        <div class="tab-content">
+            <!-- Polinomios Tab -->
+            <div id="polynomials" class="tab-pane active">
+                <h2 class="section-title">Polinomios</h2>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 1</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{3x^3-2x^2+5x-1}{x^3+4x^2-3}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{3x^3-2x^2+5x-1}{x^3+4x^2-3}=\lim\limits_{x\to\infty}\dfrac{3x^3}{x^3}=\lim\limits_{x\to\infty}3=3\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(3\)</div>
+                </div>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 2</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{2x^4+x^3-5x+7}{3x^4-2x^2+x+1}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{2x^4+x^3-5x+7}{3x^4-2x^2+x+1}=\lim\limits_{x\to\infty}\dfrac{2x^4}{3x^4}=\lim\limits_{x\to\infty}\dfrac{2}{3}=\dfrac{2}{3}\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(\dfrac{2}{3}\)</div>
+                </div>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 3</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{x^3+2x^2-1}{4x^3-3x+2}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{x^3+2x^2-1}{4x^3-3x+2}=\lim\limits_{x\to\infty}\dfrac{x^3}{4x^3}=\lim\limits_{x\to\infty}\dfrac{1}{4}=\dfrac{1}{4}\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(\dfrac{1}{4}\)</div>
+                </div>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 4</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{5x^2-3x+1}{x^2+2x-4}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{5x^2-3x+1}{x^2+2x-4}=\lim\limits_{x\to\infty}\dfrac{5x^2}{x^2}=\lim\limits_{x\to\infty}5=5\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(5\)</div>
+                </div>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 5</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{4x^3-2x^2+x}{2x^3+x^2-3x+5}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{4x^3-2x^2+x}{2x^3+x^2-3x+5}=\lim\limits_{x\to\infty}\dfrac{4x^3}{2x^3}=\lim\limits_{x\to\infty}2=2\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(2\)</div>
+                </div>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 6</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{x^4-3x^3+2x-1}{x^2+5x+3}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{x^4-3x^3+2x-1}{x^2+5x+3}=\lim\limits_{x\to\infty}\dfrac{x^4}{x^2}=\lim\limits_{x\to\infty}x^2=\infty\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(\infty\)</div>
+                </div>
+            </div>
+            
+            <!-- Raíces Tab -->
+            <div id="roots" class="tab-pane">
+                <h2 class="section-title">Con raíces</h2>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 1</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{\sqrt{x^3+2x^2-1}}{x^2+3x-2}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{\sqrt{x^3+2x^2-1}}{x^2+3x-2}=\lim\limits_{x\to\infty}\dfrac{\sqrt{x^3}}{x^2}=\lim\limits_{x\to\infty}\dfrac{x^{3/2}}{x^2}=\lim\limits_{x\to\infty}x^{-1/2}=0\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(0\)</div>
+                </div>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 2</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{\sqrt[3]{2x^3-x+4}}{x^2-5x+1}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{\sqrt[3]{2x^3-x+4}}{x^2-5x+1}=\lim\limits_{x\to\infty}\dfrac{\sqrt[3]{x^3}}{x^2}=\lim\limits_{x\to\infty}\dfrac{x}{x^2}=\lim\limits_{x\to\infty}\dfrac{1}{x}=0\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(0\)</div>
+                </div>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 3</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{x^3+4x^2}{\sqrt{x^3+3x^2+x}}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{x^3+4x^2}{\sqrt{x^3+3x^2+x}}=\lim\limits_{x\to\infty}\dfrac{x^3}{\sqrt{x^3}}=\lim\limits_{x\to\infty}\dfrac{x^3}{x^{3/2}}=\lim\limits_{x\to\infty}x^{3/2}=\infty\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(\infty\)</div>
+                </div>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 4</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{\sqrt{x^2+5x-3}}{2x+1}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{\sqrt{x^2+5x-3}}{2x+1}=\lim\limits_{x\to\infty}\dfrac{\sqrt{x^2}}{x}=\lim\limits_{x\to\infty}\dfrac{x}{x}=\lim\limits_{x\to\infty}1=1\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(1\)</div>
+                </div>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 5</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \sqrt[3]{\dfrac{3x^3-2x^2+1}{x^3+x^2-4}}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\sqrt[3]{\dfrac{3x^3-2x^2+1}{x^3+x^2-4}}=\lim\limits_{x\to\infty}\sqrt[3]{\dfrac{3x^3}{x^3}}=\lim\limits_{x\to\infty}\sqrt[3]{3}=\sqrt[3]{3}\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(\sqrt[3]{3}\)</div>
+                </div>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 6</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{x^2+2x}{\sqrt{x^3-4x+5}}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{x^2+2x}{\sqrt{x^3-4x+5}}=\lim\limits_{x\to\infty}\dfrac{x^2}{\sqrt{x^3}}=\lim\limits_{x\to\infty}\dfrac{x^2}{x^{3/2}}=\lim\limits_{x\to\infty}x^{1/2}=0\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(0\)</div>
+                </div>
+            </div>
+            
+            <!-- Sumando raíces Tab -->
+            <div id="sum-roots" class="tab-pane">
+                <h2 class="section-title">Sumando raíces</h2>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 1</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{\sqrt{x^2+x}+x}{3x+1}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{\sqrt{x^2+x}+x}{3x+1}=\lim\limits_{x\to\infty}\dfrac{\sqrt{x^2}+x}{x}=\lim\limits_{x\to\infty}(1+1)=\lim\limits_{x\to\infty}2=2\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(2\)</div>
+                </div>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 2</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{\sqrt{x^2+2x-1}+2x}{x^2+4}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{\sqrt{x^2+2x-1}+2x}{x^2+4}=\lim\limits_{x\to\infty}\dfrac{\sqrt{x^2}+2x}{x^2}=\lim\limits_{x\to\infty}(x^{-1}+2x^{-1})=\lim\limits_{x\to\infty}3x^{-1}=0\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(0\)</div>
+                </div>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 3</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{\sqrt[3]{x^3+x^2}+x}{\sqrt{x^2+3x}+1}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{\sqrt[3]{x^3+x^2}+x}{\sqrt{x^2+3x}+1}=\lim\limits_{x\to\infty}\dfrac{\sqrt[3]{x^3}+x}{\sqrt{x^2}}=\lim\limits_{x\to\infty}\dfrac{x+x}{x}=\lim\limits_{x\to\infty}2=2\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(2\)</div>
+                </div>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 4</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{x+\sqrt{x^2-3x+2}}{2x-5}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{x+\sqrt{x^2-3x+2}}{2x-5}=\lim\limits_{x\to\infty}\dfrac{x+\sqrt{x^2}}{x}=\lim\limits_{x\to\infty}\dfrac{x+x}{x}=\lim\limits_{x\to\infty}2=2\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(2\)</div>
+                </div>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 5</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{\sqrt{x^2+4x}+\sqrt{4x^2-x}}{x+3}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{\sqrt{x^2+4x}+\sqrt{4x^2-x}}{x+3}=\lim\limits_{x\to\infty}\dfrac{\sqrt{x^2}+\sqrt{x^2}}{x}=\lim\limits_{x\to\infty}\dfrac{x+2x}{x}=\lim\limits_{x\to\infty}3=3\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(3\)</div>
+                </div>
+                
+                <div class="exercise">
+                    <div class="exercise-number">Ejercicio 6</div>
+                    <div class="exercise-statement">Calcular \(\lim\limits_{x\to\infty} \dfrac{2\sqrt{x^2+x+1}+x}{x^2-x+3}\).</div>
+                    <div class="solution">
+                        <span class="solution-title">Solución:</span> 
+                        \(\lim\limits_{x\to\infty}\dfrac{2\sqrt{x^2+x+1}+x}{x^2-x+3}=\lim\limits_{x\to\infty}\dfrac{2\sqrt{x^2}+x}{x^2}=\lim\limits_{x\to\infty}\dfrac{2x+x}{x^2}=\lim\limits_{x\to\infty}3x^{-1}=0\)
+                    </div>
+                    <div class="result"><span class="result-title">Resultado:</span> \(0\)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Material educativo interactivo - Límites en el infinito</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching functionality
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons and panes
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabPanes.forEach(pane => pane.classList.remove('active'));
+                    
+                    // Add active class to clicked button and corresponding pane
+                    button.classList.add('active');
+                    const tabId = button.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // Click to reveal solutions
+            const revealedCount = {
+                polynomials: 0,
+                roots: 0,
+                'sum-roots': 0
+            };
+            
+            document.addEventListener('click', function(event) {
+                // Ignore clicks on tab buttons
+                if (event.target.classList.contains('tab-button')) {
+                    return;
+                }
+                
+                // Create click animation
+                createClickAnimation(event.clientX, event.clientY);
+                
+                // Get active tab pane
+                const activePane = document.querySelector('.tab-pane.active');
+                if (!activePane) return;
+                
+                // Get tab ID from active pane ID
+                const tabId = activePane.id;
+                
+                // Get all exercises in active tab
+                const exercises = activePane.querySelectorAll('.exercise');
+                
+                // Reveal next solution if available
+                if (revealedCount[tabId] < exercises.length) {
+                    const exercise = exercises[revealedCount[tabId]];
+                    const solution = exercise.querySelector('.solution');
+                    const result = exercise.querySelector('.result');
+                    
+                    if (solution) solution.style.display = 'block';
+                    if (result) result.style.display = 'block';
+                    
+                    // Increment revealed count for this tab
+                    revealedCount[tabId]++;
+                    
+                    // Scroll to the revealed solution if it's not in view
+                    setTimeout(() => {
+                        const rect = exercise.getBoundingClientRect();
+                        if (rect.bottom > window.innerHeight || rect.top < 0) {
+                            exercise.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, 100);
+                }
+            });
+            
+            // Create animation for clicks
+            function createClickAnimation(x, y) {
+                const ripple = document.createElement('div');
+                ripple.className = 'click-animation';
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                document.body.appendChild(ripple);
+                
+                // Remove the ripple after animation completes
+                setTimeout(() => {
+                    document.body.removeChild(ripple);
+                }, 600);
+            }
+            
+            // Initialize MathJax rendering
+            if (typeof MathJax !== 'undefined') {
+                MathJax.typesetPromise();
+            }
+        });
+    </script>
+</body>
+</html>
+
