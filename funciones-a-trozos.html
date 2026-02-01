@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funciones a trozos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container { max-width: 950px; margin: 0 auto; }
+
+        h1 {
+            text-align: center;
+            font-family: 'Comic Neue', 'Comic Sans MS', cursive;
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            color: white;
+            font-size: clamp(2rem, 5vw, 3rem);
+            padding: 30px 40px;
+            margin-bottom: 30px;
+            border-radius: 25px;
+            box-shadow: 0 20px 60px rgba(16, 185, 129, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(16, 185, 129, 0.5) transparent;
+        }
+
+        .tabs::-webkit-scrollbar { height: 6px; }
+        .tabs::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.5);
+            border-radius: 10px;
+        }
+        .tabs::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            border-radius: 10px;
+        }
+
+        .tab {
+            flex-shrink: 0;
+            padding: 14px 28px;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(16, 185, 129, 0.2);
+            border-radius: 50px;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 0.95rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .tab:hover::before { left: 100%; }
+
+        .tab:hover {
+            border-color: #10b981;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            color: white;
+            border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+            transform: scale(1.05);
+        }
+
+        .content-area {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 45px;
+            min-height: 500px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .problem-section {
+            cursor: pointer;
+            padding: 35px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 20px;
+            border: 3px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+            transition: all 0.4s;
+        }
+
+        .problem-section::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .problem-section:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .problem-section:hover::before { opacity: 1; }
+
+        .problem-section.solved {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-left: 6px solid #10b981;
+        }
+
+        .problem-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #334155);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 18px;
+        }
+
+        .problem-text {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: #475569;
+        }
+
+        .solution-area { margin-top: 35px; display: none; }
+
+        .solution-area.visible {
+            display: block;
+            animation: slideUp 0.6s;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step {
+            margin: 18px 0;
+            padding: 28px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 16px;
+            cursor: pointer;
+            position: relative;
+            min-height: 90px;
+            transition: all 0.5s;
+            border: 2px solid transparent;
+            overflow: hidden;
+        }
+
+        .step::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            z-index: 1;
+            opacity: 1;
+            transition: all 0.5s ease;
+        }
+
+        .step.revealed {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-color: #10b981;
+            cursor: default;
+            transform: scale(1.02);
+        }
+
+        .step.revealed::before { opacity: 0; }
+
+        .step-content {
+            position: relative;
+            z-index: 2;
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: transparent;
+            user-select: none;
+            transition: color 0.3s ease;
+        }
+
+        .step.revealed .step-content {
+            color: #1e293b;
+            user-select: text;
+        }
+
+        .completion-message {
+            text-align: center;
+            padding: 28px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-top: 25px;
+            display: none;
+        }
+
+        .completion-message.visible {
+            display: block;
+            animation: popIn 0.6s;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Funciones a trozos</h1>
+        <div class="tabs" id="tabsContainer"></div>
+        <div class="content-area" id="contentArea"></div>
+    </div>
+
+    <script>
+        const exercises = [
+            {
+                id: 1,
+                title: "IPC durante un año",
+                problem:
+                    "La tasa de variación del IPC durante un año viene dada por la función:<br><br>" +
+                    "$$f(x)=\\begin{cases}" +
+                    "-0.16x^2+1.6x+3.64 & \\text{si } 1\\le x<7 \\\\" +
+                    "\\dfrac{3x+49}{x+3} & \\text{si } 7\\le x\\le 12" +
+                    "\\end{cases}$$<br><br>" +
+                    "donde $x$ indica el tiempo en meses. Calcula el valor del IPC en enero, mayo y septiembre.",
+                steps: [
+                    "Enero ($x=1$): $1\\in[1,7)$, usamos el primer tramo:",
+                    "$$f(1)=-0.16\\cdot 1^2+1.6\\cdot 1+3.64=-0.16+1.6+3.64=5.08$$",
+                    "Mayo ($x=5$): $5\\in[1,7)$, usamos el primer tramo:",
+                    "$$f(5)=-0.16\\cdot 5^2+1.6\\cdot 5+3.64=-4+8+3.64=7.64$$",
+                    "Septiembre ($x=9$): $9\\in[7,12]$, usamos el segundo tramo:",
+                    "$$f(9)=\\dfrac{3\\cdot 9+49}{9+3}=\\dfrac{76}{12}=\\dfrac{19}{3}\\approx 6.33$$",
+                    "<strong>Resultado:</strong> Enero: 5.08; Mayo: 7.64; Septiembre: $\\dfrac{19}{3}\\approx 6.33$"
+                ]
+            },
+            {
+                id: 3,
+                title: "Función a trozos con exponencial",
+                problem:
+                    "Dada la función:<br><br>" +
+                    "$$f(x)=\\begin{cases}" +
+                    "e^{-x}-1 & \\text{si } x\\le 0 \\\\" +
+                    "x^2+x & \\text{si } x>0" +
+                    "\\end{cases}$$<br><br>" +
+                    "calcula los valores $f(-1)$, $f(0)$ y $f(3)$.",
+                steps: [
+                    "$f(-1)$: $-1\\le 0$, usamos el primer tramo:",
+                    "$$f(-1)=e^{-(-1)}-1=e^1-1=e-1$$",
+                    "$f(0)$: $0\\le 0$, usamos el primer tramo:",
+                    "$$f(0)=e^{0}-1=1-1=0$$",
+                    "$f(3)$: $3>0$, usamos el segundo tramo:",
+                    "$$f(3)=3^2+3=9+3=12$$",
+                    "<strong>Resultado:</strong> $f(-1)=e-1$, $f(0)=0$, $f(3)=12$"
+                ]
+            },
+            {
+                id: 4,
+                title: "Velocidad de un servidor",
+                problem:
+                    "La velocidad de respuesta (en Gbps) de un servidor web viene dada por:<br><br>" +
+                    "$$f(x)=8.5+\\dfrac{3x}{1+x^2},\\quad x\\ge 0$$<br><br>" +
+                    "donde $x$ es la memoria requerida en terabytes. ¿Cuál es el límite de velocidad de respuesta " +
+                    "del servidor a medida que aumenta indefinidamente la memoria requerida?",
+                steps: [
+                    "Calculamos el límite cuando $x\\to\\infty$:",
+                    "$$\\lim_{x\\to\\infty}f(x)=\\lim_{x\\to\\infty}\\left(8.5+\\dfrac{3x}{1+x^2}\\right)$$",
+                    "Estudiamos el término racional:",
+                    "$$\\lim_{x\\to\\infty}\\dfrac{3x}{1+x^2} = \\lim_{x\\to\\infty}\\dfrac{3/x}{1/x^2+1}=0$$",
+                    "Por tanto:",
+                    "$$\\lim_{x\\to\\infty}f(x)=8.5$$",
+                    "<strong>Resultado:</strong> El límite de velocidad es 8.5 Gbps."
+                ]
+            },
+            {
+                id: 5,
+                title: "Función con logaritmo",
+                problem:
+                    "Dada la función:<br><br>" +
+                    "$$f(x)=\\begin{cases}" +
+                    "x^2+x-2 & \\text{si } x\\le 1 \\\\" +
+                    "a+\\ln(x) & \\text{si } x>1" +
+                    "\\end{cases}$$<br><br>" +
+                    "calcula los valores $f(-1)$, $f(0)$ y $f(1)$.",
+                steps: [
+                    "$f(-1)$: $-1\\le 1$, usamos el primer tramo:",
+                    "$$f(-1)=(-1)^2+(-1)-2=1-1-2=-2$$",
+                    "$f(0)$: $0\\le 1$, usamos el primer tramo:",
+                    "$$f(0)=0^2+0-2=-2$$",
+                    "$f(1)$: $1\\le 1$, usamos el primer tramo:",
+                    "$$f(1)=1^2+1-2=0$$",
+                    "<strong>Resultado:</strong> $f(-1)=-2$, $f(0)=-2$, $f(1)=0$"
+                ]
+            },
+            {
+                id: 6,
+                title: "Material contaminante en una balsa",
+                problem:
+                    "Una fábrica arroja diariamente material contaminante a una balsa según la función:<br><br>" +
+                    "$$m(t)=\\dfrac{1}{200}t^3-\\dfrac{1}{10}t^2+\\dfrac{1}{2}t+\\dfrac{1}{2}$$<br><br>" +
+                    "donde $m$ es la cantidad de material en kilogramos y $t$ representa la hora del día. " +
+                    "Calcula la cantidad de material contaminante al inicio del día y a las tres de la tarde.",
+                steps: [
+                    "Inicio del día: $t=0$:",
+                    "$$m(0)=0.5\\ \\text{kg}$$",
+                    "Tres de la tarde: $t=15$:",
+                    "$$m(15)=16.875-22.5+7.5+0.5=2.375\\ \\text{kg}$$",
+                    "<strong>Resultado:</strong> Al inicio: 0.5 kg; a las 3 de la tarde: 2.375 kg."
+                ]
+            },
+            {
+                id: 7,
+                title: "Gasolina en un depósito",
+                problem:
+                    "Una planta de carburantes analiza la cantidad de gasolina, medida en miles de litros, " +
+                    "almacenada en un depósito, dada por:<br><br>" +
+                    "$$f(t)=\\begin{cases}" +
+                    "\\dfrac{3}{4}t^2+2 & \\text{si } 0\\le t\\le 2 \\\\" +
+                    "\\dfrac{15}{t+1} & \\text{si } t>2" +
+                    "\\end{cases}$$<br><br>" +
+                    "donde $t$ es el tiempo en horas. Determina la cantidad de gasolina almacenada inicialmente " +
+                    "y al cabo de 108 minutos.",
+                steps: [
+                    "Cantidad inicial: $t=0$:",
+                    "$$f(0)=2\\ \\text{miles de litros}=2000\\ \\text{L}$$",
+                    "108 minutos $=1.8$ horas, sigue en el primer tramo:",
+                    "$$f(1.8)=\\dfrac{3}{4}(1.8)^2+2=4.43\\ \\text{miles de litros}=4430\\ \\text{L}$$",
+                    "<strong>Resultado:</strong> Inicialmente: 2000 L; a los 108 minutos: 4430 L."
+                ]
+            }
+        ];
+
+        let currentExercise = null;
+        let currentStep = 0;
+
+        function init() {
+            const tabsContainer = document.getElementById('tabsContainer');
+            exercises.forEach((ex, index) => {
+                const tab = document.createElement('div');
+                tab.className = 'tab';
+                tab.textContent = `Ejercicio ${index + 1}`;
+                tab.onclick = () => loadExercise(index);
+                tabsContainer.appendChild(tab);
+            });
+            loadExercise(0);
+        }
+
+        function loadExercise(index) {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach((t, i) => t.classList.toggle('active', i === index));
+
+            const ex = exercises[index];
+            currentExercise = ex;
+            currentStep = 0;
+
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <div class="problem-section" id="problemSection" onclick="showSolution()">
+                    <div class="problem-title">Ejercicio ${index + 1}: ${ex.title}</div>
+                    <div class="problem-text">${ex.problem}</div>
+                </div>
+                <div class="solution-area" id="solutionArea"></div>
+                <div class="completion-message" id="completionMsg">🎉 ¡Ejercicio completado!</div>
+            `;
+
+            setTimeout(renderMath, 100);
+        }
+
+        function showSolution() {
+            const problemSection = document.getElementById('problemSection');
+            const solutionArea = document.getElementById('solutionArea');
+
+            if (!solutionArea.classList.contains('visible')) {
+                solutionArea.classList.add('visible');
+                problemSection.classList.add('solved');
+                renderSteps();
+            }
+        }
+
+        function renderSteps() {
+            const solutionArea = document.getElementById('solutionArea');
+            solutionArea.innerHTML = '';
+
+            currentExercise.steps.forEach((step, index) => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'step';
+                stepDiv.innerHTML = `<div class="step-content">${step}</div>`;
+                stepDiv.onclick = () => revealStep(index);
+                solutionArea.appendChild(stepDiv);
+            });
+
+            setTimeout(renderMath, 100);
+        }
+
+        function revealStep(index) {
+            const steps = document.querySelectorAll('.step');
+            if (index !== currentStep) return;
+
+            steps[index].classList.add('revealed');
+            currentStep++;
+
+            if (currentStep === currentExercise.steps.length) {
+                document.getElementById('completionMsg').classList.add('visible');
+            }
+
+            setTimeout(renderMath, 100);
+        }
+
+        function renderMath() {
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        { left: "$$", right: "$$", display: true },
+                        { left: "$", right: "$", display: false }
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        window.onload = function () {
+            init();
+            setTimeout(renderMath, 500);
+        };
+    </script>
+</body>
+</html>
