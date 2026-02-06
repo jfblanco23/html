@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Continuidad en un punto - Ejercicios</title>
+    
+    <!-- MathJax para fórmulas matemáticas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header moderno */
+        .header {
+            background: linear-gradient(135deg, #006400 0%, #004d00 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h2 {
+            font-size: 1.3rem;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+
+        /* Tabs modernos */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            color: #006400;
+        }
+
+        .tab:hover {
+            background: #f0f8f0;
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #006400 0%, #004d00 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 100, 0, 0.3);
+        }
+
+        /* Contenido de tabs */
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 0 10px 10px 10px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Definición destacada */
+        .definition-box {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left: 5px solid #285aa0;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+            box-shadow: 0 3px 15px rgba(40, 90, 160, 0.15);
+        }
+
+        .definition-box h3 {
+            color: #1a3a66;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        /* Enunciado del ejercicio */
+        .statement-box {
+            background: linear-gradient(135deg, #f0fff0 0%, #e8f5e9 100%);
+            border: 2px solid #006400;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 4px 20px rgba(0, 100, 0, 0.15);
+        }
+
+        .statement-box h3 {
+            color: #006400;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        /* Solución paso a paso */
+        .solution-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .solution-title {
+            color: #1e3a8a;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e3f2fd;
+        }
+
+        .step {
+            background: #f8fafc;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .step.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .step h4 {
+            color: #1e40af;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .step p {
+            margin-bottom: 10px;
+            color: #4b5563;
+        }
+
+        .step .math-display {
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .step .math-inline {
+            color: #006400;
+            font-weight: 600;
+        }
+
+        /* Tipos de discontinuidad */
+        .discontinuity-types {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .discontinuity-types h3 {
+            color: #006400;
+            margin-bottom: 20px;
+            font-size: 1.6rem;
+        }
+
+        .discontinuity-types ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .discontinuity-types li {
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #006400;
+            transition: all 0.3s ease;
+        }
+
+        .discontinuity-types li:hover {
+            background: #f0f8f0;
+            transform: translateX(5px);
+        }
+
+        .discontinuity-types li strong {
+            color: #006400;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* Conclusiones */
+        .conclusion {
+            background: linear-gradient(135deg, #fff0f0 0%, #ffebee 100%);
+            border: 2px solid #ef5350;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 25px 0;
+            box-shadow: 0 4px 20px rgba(239, 83, 80, 0.15);
+        }
+
+        .conclusion h4 {
+            color: #c62828;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .conclusion p {
+            color: #5d0000;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 25px 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                width: 100%;
+                padding: 10px;
+                font-size: 0.95rem;
+            }
+            
+            .tab-content {
+                padding: 20px 15px;
+            }
+        }
+
+        /* Animaciones adicionales */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .highlight {
+            animation: pulse 2s infinite;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Continuidad en un punto <math style="font-size: 1.2em"><mi>x</mi><mo>=</mo><mi>a</mi></math></h1>
+            <h2>Enunciados y Soluciones Rigurosas</h2>
+        </div>
+
+        <!-- Definición -->
+        <div class="definition-box">
+            <h3>Definición de Continuidad</h3>
+            <p>Una función <math><mi>f</mi></math> es <strong>continua</strong> en el punto <math><mi>x</mi><mo>=</mo><mi>a</mi></math> si y solo si se cumple:</p>
+            <div class="math-display">
+                <math display="block">
+                    <munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mi>a</mi><mo>-</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>&#x00A0;</mo><mo>=</mo><mo>&#x00A0;</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mi>a</mi><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>&#x00A0;</mo><mo>=</mo><mo>&#x00A0;</mo><mi>f</mi><mo>(</mo><mi>a</mi><mo>)</mo>
+                </math>
+            </div>
+        </div>
+
+        <!-- Tipos de discontinuidad -->
+        <div class="discontinuity-types">
+            <h3>Tipos de discontinuidad</h3>
+            <ul>
+                <li>
+                    <strong>Discontinuidad de salto finito:</strong> <math display="inline"><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mi>a</mi><mo>-</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>&#x2260;</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mi>a</mi><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</math>, ambos finitos.
+                </li>
+                <li>
+                    <strong>Discontinuidad de salto infinito:</strong> Al menos uno de los límites laterales es infinito.
+                </li>
+                <li>
+                    <strong>Discontinuidad evitable:</strong> <math display="inline"><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mi>a</mi><mo>-</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mi>a</mi><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>L</mi><mo>&#x2260;</mo><mi>f</mi><mo>(</mo><mi>a</mi><mo>)</mo></math> o <math><mi>f</mi><mo>(</mo><mi>a</mi><mo>)</mo></math> no existe.
+                </li>
+            </ul>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="openTab(event, 'tab1')">Ejercicio 1</button>
+            <button class="tab" onclick="openTab(event, 'tab2')">Ejercicio 2</button>
+            <button class="tab" onclick="openTab(event, 'tab3')">Ejercicio 3</button>
+            <button class="tab" onclick="openTab(event, 'tab4')">Ejercicio 4</button>
+            <button class="tab" onclick="openTab(event, 'tab5')">Ejercicio 5</button>
+            <button class="tab" onclick="openTab(event, 'tab6')">Ejercicio 6</button>
+            <button class="tab" onclick="openTab(event, 'tab7')">Ejercicio 7</button>
+            <button class="tab" onclick="openTab(event, 'tab8')">Ejercicio 8</button>
+            <button class="tab" onclick="openTab(event, 'tab9')">Ejercicio 9</button>
+        </div>
+
+        <!-- Tab 1 -->
+        <div id="tab1" class="tab-content active">
+            <div class="statement-box">
+                <h3>1. Función a trozos con ramas polinómicas.</h3>
+                <p>Sea</p>
+                <div class="math-display">
+                    <math display="block">
+                        <mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo>
+                        <mfenced open="{" close="" separators="|">
+                            <mtable>
+                                <mtr><mtd><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mn>3</mn><mi>x</mi><mo>-</mo><mn>2</mn></mtd><mtd><mi>x</mi><mo>&lt;</mo><mn>2</mn></mtd></mtr>
+                                <mtr><mtd><mn>5</mn><mi>x</mi><mo>-</mo><mn>4</mn></mtd><mtd><mi>x</mi><mo>&#x2265;</mo><mn>2</mn></mtd></mtr>
+                            </mtable>
+                        </mfenced>
+                    </math>
+                </div>
+                <p>Estudiar la continuidad de <math><mi>f</mi></math> en el punto <math><mi>x</mi><mo>=</mo><mn>2</mn></math>.</p>
+            </div>
+
+            <div class="solution-section">
+                <div class="solution-title">Solución</div>
+                
+                <div class="step">
+                    <h4>Paso a)</h4>
+                    <p><strong>Límite por la izquierda:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>-</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>-</mo></msup></mrow></munder><mo>(</mo><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mn>3</mn><mi>x</mi><mo>-</mo><mn>2</mn><mo>)</mo><mo>=</mo><msup><mn>2</mn><mn>2</mn></msup><mo>+</mo><mn>3</mn><mo>&#x22C5;</mo><mn>2</mn><mo>-</mo><mn>2</mn><mo>=</mo><mn>4</mn><mo>+</mo><mn>6</mn><mo>-</mo><mn>2</mn><mo>=</mo><mn>8</mn>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Paso b)</h4>
+                    <p><strong>Límite por la derecha:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>+</mo></msup></mrow></munder><mo>(</mo><mn>5</mn><mi>x</mi><mo>-</mo><mn>4</mn><mo>)</mo><mo>=</mo><mn>5</mn><mo>&#x22C5;</mo><mn>2</mn><mo>-</mo><mn>4</mn><mo>=</mo><mn>10</mn><mo>-</mo><mn>4</mn><mo>=</mo><mn>6</mn>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Paso c)</h4>
+                    <p><strong>Valor de la función:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <mi>f</mi><mo>(</mo><mn>2</mn><mo>)</mo><mo>=</mo><mn>5</mn><mo>&#x22C5;</mo><mn>2</mn><mo>-</mo><mn>4</mn><mo>=</mo><mn>6</mn><mo>&#x00A0;</mo><mo>(</mo><mtext>pues</mtext><mo>&#x00A0;</mo><mn>2</mn><mo>&#x2265;</mo><mn>2</mn><mo>)</mo>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="conclusion">
+                        <h4>Conclusión:</h4>
+                        <p>Como <math display="inline"><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>-</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mn>8</mn><mo>&#x2260;</mo><mn>6</mn><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>f</mi><mo>(</mo><mn>2</mn><mo>)</mo></math>, la función presenta una <strong>discontinuidad de salto finito</strong> en <math><mi>x</mi><mo>=</mo><mn>2</mn></math>. El salto es <math><mo>|</mo><mn>8</mn><mo>-</mo><mn>6</mn><mo>|</mo><mo>=</mo><mn>2</mn></math>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2 -->
+        <div id="tab2" class="tab-content">
+            <div class="statement-box">
+                <h3>2. Función a trozos con ramas racionales (I).</h3>
+                <p>Sea</p>
+                <div class="math-display">
+                    <math display="block">
+                        <mi>g</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo>
+                        <mfenced open="{" close="" separators="|">
+                            <mtable>
+                                <mtr><mtd><mfrac><mn>2</mn><mrow><mi>x</mi><mo>+</mo><mn>1</mn></mrow></mfrac></mtd><mtd><mi>x</mi><mo>&#x2264;</mo><mn>3</mn></mtd></mtr>
+                                <mtr><mtd><mfrac><mi>x</mi><mrow><mi>x</mi><mo>-</mo><mn>3</mn></mrow></mfrac></mtd><mtd><mi>x</mi><mo>&gt;</mo><mn>3</mn></mtd></mtr>
+                            </mtable>
+                        </mfenced>
+                    </math>
+                </div>
+                <p>Estudiar la continuidad de <math><mi>g</mi></math> en el punto <math><mi>x</mi><mo>=</mo><mn>3</mn></math>.</p>
+            </div>
+
+            <div class="solution-section">
+                <div class="solution-title">Solución</div>
+                
+                <div class="step">
+                    <h4>Paso a)</h4>
+                    <p><strong>Límite por la izquierda:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>3</mn><mo>-</mo></msup></mrow></munder><mi>g</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>3</mn><mo>-</mo></msup></mrow></munder><mfrac><mn>2</mn><mrow><mi>x</mi><mo>+</mo><mn>1</mn></mrow></mfrac><mo>=</mo><mfrac><mn>2</mn><mrow><mn>3</mn><mo>+</mo><mn>1</mn></mrow></mfrac><mo>=</mo><mfrac><mn>2</mn><mn>4</mn></mfrac><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Paso b)</h4>
+                    <p><strong>Límite por la derecha:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>3</mn><mo>+</mo></msup></mrow></munder><mi>g</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>3</mn><mo>+</mo></msup></mrow></munder><mfrac><mi>x</mi><mrow><mi>x</mi><mo>-</mo><mn>3</mn></mrow></mfrac>
+                        </math>
+                    </div>
+                    <p>Cuando <math><mi>x</mi><mo>&#x2192;</mo><msup><mn>3</mn><mo>+</mo></msup></math>, el numerador tiende a <math><mn>3</mn></math> y el denominador tiende a <math><msup><mn>0</mn><mo>+</mo></msup></math>, por lo tanto:</p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>3</mn><mo>+</mo></msup></mrow></munder><mi>g</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mo>+</mo><mn>&#x221E;</mn>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Paso c)</h4>
+                    <p><strong>Valor de la función:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <mi>g</mi><mo>(</mo><mn>3</mn><mo>)</mo><mo>=</mo><mfrac><mn>2</mn><mrow><mn>3</mn><mo>+</mo><mn>1</mn></mrow></mfrac><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>&#x00A0;</mo><mo>(</mo><mtext>pues</mtext><mo>&#x00A0;</mo><mn>3</mn><mo>&#x2264;</mo><mn>3</mn><mo>)</mo>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="conclusion">
+                        <h4>Conclusión:</h4>
+                        <p>Como <math display="inline"><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>3</mn><mo>+</mo></msup></mrow></munder><mi>g</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mo>+</mo><mn>&#x221E;</mn></math>, la función presenta una <strong>discontinuidad de salto infinito</strong> en <math><mi>x</mi><mo>=</mo><mn>3</mn></math> (asíntota vertical por la derecha).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3 -->
+        <div id="tab3" class="tab-content">
+            <div class="statement-box">
+                <h3>3. Función a trozos con ramas racionales (II).</h3>
+                <p>Sea</p>
+                <div class="math-display">
+                    <math display="block">
+                        <mi>h</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo>
+                        <mfenced open="{" close="" separators="|">
+                            <mtable>
+                                <mtr><mtd><mfrac><mrow><mi>x</mi><mo>+</mo><mn>1</mn></mrow><mrow><mi>x</mi><mo>-</mo><mn>2</mn></mrow></mfrac></mtd><mtd><mi>x</mi><mo>&lt;</mo><mn>5</mn></mtd></mtr>
+                                <mtr><mtd><mfrac><mn>4</mn><mrow><mi>x</mi><mo>+</mo><mn>2</mn></mrow></mfrac></mtd><mtd><mi>x</mi><mo>&#x2265;</mo><mn>5</mn></mtd></mtr>
+                            </mtable>
+                        </mfenced>
+                    </math>
+                </div>
+                <p>Estudiar la continuidad de <math><mi>h</mi></math> en el punto <math><mi>x</mi><mo>=</mo><mn>5</mn></math>.</p>
+            </div>
+
+            <div class="solution-section">
+                <div class="solution-title">Solución</div>
+                
+                <div class="step">
+                    <h4>Paso a)</h4>
+                    <p><strong>Límite por la izquierda:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>5</mn><mo>-</mo></msup></mrow></munder><mi>h</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>5</mn><mo>-</mo></msup></mrow></munder><mfrac><mrow><mi>x</mi><mo>+</mo><mn>1</mn></mrow><mrow><mi>x</mi><mo>-</mo><mn>2</mn></mrow></mfrac><mo>=</mo><mfrac><mrow><mn>5</mn><mo>+</mo><mn>1</mn></mrow><mrow><mn>5</mn><mo>-</mo><mn>2</mn></mrow></mfrac><mo>=</mo><mfrac><mn>6</mn><mn>3</mn></mfrac><mo>=</mo><mn>2</mn>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Paso b)</h4>
+                    <p><strong>Límite por la derecha:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>5</mn><mo>+</mo></msup></mrow></munder><mi>h</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>5</mn><mo>+</mo></msup></mrow></munder><mfrac><mn>4</mn><mrow><mi>x</mi><mo>+</mo><mn>2</mn></mrow></mfrac><mo>=</mo><mfrac><mn>4</mn><mrow><mn>5</mn><mo>+</mo><mn>2</mn></mrow></mfrac><mo>=</mo><mfrac><mn>4</mn><mn>7</mn></mfrac>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Paso c)</h4>
+                    <p><strong>Valor de la función:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <mi>h</mi><mo>(</mo><mn>5</mn><mo>)</mo><mo>=</mo><mfrac><mn>4</mn><mrow><mn>5</mn><mo>+</mo><mn>2</mn></mrow></mfrac><mo>=</mo><mfrac><mn>4</mn><mn>7</mn></mfrac><mo>&#x00A0;</mo><mo>(</mo><mtext>pues</mtext><mo>&#x00A0;</mo><mn>5</mn><mo>&#x2265;</mo><mn>5</mn><mo>)</mo>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="conclusion">
+                        <h4>Conclusión:</h4>
+                        <p>Como <math display="inline"><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>5</mn><mo>-</mo></msup></mrow></munder><mi>h</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mn>2</mn><mo>&#x2260;</mo><mfrac><mn>4</mn><mn>7</mn></mfrac><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>5</mn><mo>+</mo></msup></mrow></munder><mi>h</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>h</mi><mo>(</mo><mn>5</mn><mo>)</mo></math>, la función presenta una <strong>discontinuidad de salto finito</strong> en <math><mi>x</mi><mo>=</mo><mn>5</mn></math>. El salto es <math><mo>|</mo><mn>2</mn><mo>-</mo><mfrac><mn>4</mn><mn>7</mn></mfrac><mo>|</mo><mo>=</mo><mfrac><mn>10</mn><mn>7</mn></mfrac></math>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4 -->
+        <div id="tab4" class="tab-content">
+            <div class="statement-box">
+                <h3>4. Tasa de variación del IPC.</h3>
+                <p>La tasa de variación del IPC durante un año viene dada por</p>
+                <div class="math-display">
+                    <math display="block">
+                        <mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo>
+                        <mfenced open="{" close="" separators="|">
+                            <mtable>
+                                <mtr><mtd><mo>-</mo><mn>0.16</mn><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mn>1.6</mn><mi>x</mi><mo>+</mo><mn>3.64</mn></mtd><mtd><mn>0</mn><mo>&#x2264;</mo><mi>x</mi><mo>&lt;</mo><mn>7</mn></mtd></mtr>
+                                <mtr><mtd><mfrac><mrow><mn>3</mn><mi>x</mi><mo>+</mo><mn>49</mn></mrow><mrow><mi>x</mi><mo>+</mo><mn>3</mn></mrow></mfrac></mtd><mtd><mn>7</mn><mo>&#x2264;</mo><mi>x</mi><mo>&#x2264;</mo><mn>12</mn></mtd></mtr>
+                            </mtable>
+                        </mfenced>
+                    </math>
+                </div>
+                <p>donde <math><mi>x</mi></math> indica el tiempo en meses.</p>
+                <p>Aplicar el concepto de límite para estudiar si <math><mi>f</mi></math> es continua en <math><mi>x</mi><mo>=</mo><mn>7</mn></math>.</p>
+            </div>
+
+            <div class="solution-section">
+                <div class="solution-title">Solución</div>
+                
+                <div class="step">
+                    <h4>Paso a)</h4>
+                    <p><strong>Límite por la izquierda:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <mtable columnalign="left">
+                                <mtr><mtd><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>7</mn><mo>-</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo></mtd><mtd><mo>=</mo></mtd><mtd><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>7</mn><mo>-</mo></msup></mrow></munder><mo>(</mo><mo>-</mo><mn>0.16</mn><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mn>1.6</mn><mi>x</mi><mo>+</mo><mn>3.64</mn><mo>)</mo></mtd></mtr>
+                                <mtr><mtd></mtd><mtd><mo>=</mo></mtd><mtd><mo>-</mo><mn>0.16</mn><mo>&#x22C5;</mo><msup><mn>7</mn><mn>2</mn></msup><mo>+</mo><mn>1.6</mn><mo>&#x22C5;</mo><mn>7</mn><mo>+</mo><mn>3.64</mn></mtd></mtr>
+                                <mtr><mtd></mtd><mtd><mo>=</mo></mtd><mtd><mo>-</mo><mn>0.16</mn><mo>&#x22C5;</mo><mn>49</mn><mo>+</mo><mn>11.2</mn><mo>+</mo><mn>3.64</mn></mtd></mtr>
+                                <mtr><mtd></mtd><mtd><mo>=</mo></mtd><mtd><mo>-</mo><mn>7.84</mn><mo>+</mo><mn>11.2</mn><mo>+</mo><mn>3.64</mn><mo>=</mo><mn>7</mn></mtd></mtr>
+                            </mtable>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Paso b)</h4>
+                    <p><strong>Límite por la derecha:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>7</mn><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>7</mn><mo>+</mo></msup></mrow></munder><mfrac><mrow><mn>3</mn><mi>x</mi><mo>+</mo><mn>49</mn></mrow><mrow><mi>x</mi><mo>+</mo><mn>3</mn></mrow></mfrac><mo>=</mo><mfrac><mrow><mn>3</mn><mo>&#x22C5;</mo><mn>7</mn><mo>+</mo><mn>49</mn></mrow><mrow><mn>7</mn><mo>+</mo><mn>3</mn></mrow></mfrac><mo>=</mo><mfrac><mrow><mn>21</mn><mo>+</mo><mn>49</mn></mrow><mn>10</mn></mfrac><mo>=</mo><mfrac><mn>70</mn><mn>10</mn></mfrac><mo>=</mo><mn>7</mn>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Paso c)</h4>
+                    <p><strong>Valor de la función:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <mi>f</mi><mo>(</mo><mn>7</mn><mo>)</mo><mo>=</mo><mfrac><mrow><mn>3</mn><mo>&#x22C5;</mo><mn>7</mn><mo>+</mo><mn>49</mn></mrow><mrow><mn>7</mn><mo>+</mo><mn>3</mn></mrow></mfrac><mo>=</mo><mfrac><mn>70</mn><mn>10</mn></mfrac><mo>=</mo><mn>7</mn><mo>&#x00A0;</mo><mo>(</mo><mtext>pues</mtext><mo>&#x00A0;</mo><mn>7</mn><mo>&#x2265;</mo><mn>7</mn><mo>)</mo>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="conclusion">
+                        <h4>Conclusión:</h4>
+                        <p>Como <math display="inline"><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>7</mn><mo>-</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>7</mn><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>f</mi><mo>(</mo><mn>7</mn><mo>)</mo><mo>=</mo><mn>7</mn></math>, la función es <strong>continua</strong> en <math><mi>x</mi><mo>=</mo><mn>7</mn></math>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 5 -->
+        <div id="tab5" class="tab-content">
+            <div class="statement-box">
+                <h3>5. Función exponencial--polinómica.</h3>
+                <p>Sea</p>
+                <div class="math-display">
+                    <math display="block">
+                        <mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo>
+                        <mfenced open="{" close="" separators="|">
+                            <mtable>
+                                <mtr><mtd><msup><mi>e</mi><mrow><mo>-</mo><mi>x</mi></mrow></msup><mo>-</mo><mn>1</mn></mtd><mtd><mi>x</mi><mo>&#x2264;</mo><mn>0</mn></mtd></mtr>
+                                <mtr><mtd><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mi>x</mi></mtd><mtd><mi>x</mi><mo>&gt;</mo><mn>0</mn></mtd></mtr>
+                            </mtable>
+                        </mfenced>
+                    </math>
+                </div>
+                <p>Estudiar la continuidad de <math><mi>f</mi></math> en <math><mi>x</mi><mo>=</mo><mn>0</mn></math>.</p>
+            </div>
+
+            <div class="solution-section">
+                <div class="solution-title">Solución</div>
+                
+                <div class="step">
+                    <h4>Paso a)</h4>
+                    <p><strong>Límite por la izquierda:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>0</mn><mo>-</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>0</mn><mo>-</mo></msup></mrow></munder><mo>(</mo><msup><mi>e</mi><mrow><mo>-</mo><mi>x</mi></mrow></msup><mo>-</mo><mn>1</mn><mo>)</mo><mo>=</mo><msup><mi>e</mi><mn>0</mn></msup><mo>-</mo><mn>1</mn><mo>=</mo><mn>1</mn><mo>-</mo><mn>1</mn><mo>=</mo><mn>0</mn>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Paso b)</h4>
+                    <p><strong>Límite por la derecha:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>0</mn><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>0</mn><mo>+</mo></msup></mrow></munder><mo>(</mo><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mi>x</mi><mo>)</mo><mo>=</mo><msup><mn>0</mn><mn>2</mn></msup><mo>+</mo><mn>0</mn><mo>=</mo><mn>0</mn>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Paso c)</h4>
+                    <p><strong>Valor de la función:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <mi>f</mi><mo>(</mo><mn>0</mn><mo>)</mo><mo>=</mo><msup><mi>e</mi><mrow><mo>-</mo><mn>0</mn></mrow></msup><mo>-</mo><mn>1</mn><mo>=</mo><mn>1</mn><mo>-</mo><mn>1</mn><mo>=</mo><mn>0</mn><mo>&#x00A0;</mo><mo>(</mo><mtext>pues</mtext><mo>&#x00A0;</mo><mn>0</mn><mo>&#x2264;</mo><mn>0</mn><mo>)</mo>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="conclusion">
+                        <h4>Conclusión:</h4>
+                        <p>Como <math display="inline"><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>0</mn><mo>-</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>0</mn><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>f</mi><mo>(</mo><mn>0</mn><mo>)</mo><mo>=</mo><mn>0</mn></math>, la función es <strong>continua</strong> en <math><mi>x</mi><mo>=</mo><mn>0</mn></math>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 6 -->
+        <div id="tab6" class="tab-content">
+            <div class="statement-box">
+                <h3>6. Almacenamiento de gasolina.</h3>
+                <p>La cantidad de gasolina (en miles de litros) almacenada en un depósito viene dada por</p>
+                <div class="math-display">
+                    <math display="block">
+                        <mi>f</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo>
+                        <mfenced open="{" close="" separators="|">
+                            <mtable>
+                                <mtr><mtd><mfrac><mn>3</mn><mn>4</mn></mfrac><msup><mi>t</mi><mn>2</mn></msup><mo>+</mo><mn>2</mn></mtd><mtd><mn>0</mn><mo>&#x2264;</mo><mi>t</mi><mo>&#x2264;</mo><mn>2</mn></mtd></mtr>
+                                <mtr><mtd><mfrac><mn>15</mn><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></mfrac></mtd><mtd><mi>t</mi><mo>&gt;</mo><mn>2</mn></mtd></mtr>
+                            </mtable>
+                        </mfenced>
+                    </math>
+                </div>
+                <p>donde <math><mi>t</mi></math> es el tiempo en horas.</p>
+                <p>Aplicar el concepto de límite para estudiar si <math><mi>f</mi></math> es continua en <math><mi>t</mi><mo>=</mo><mn>2</mn></math>.</p>
+            </div>
+
+            <div class="solution-section">
+                <div class="solution-title">Solución</div>
+                
+                <div class="step">
+                    <h4>Paso a)</h4>
+                    <p><strong>Límite por la izquierda:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>t</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>-</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>t</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>-</mo></msup></mrow></munder><mo>(</mo><mfrac><mn>3</mn><mn>4</mn></mfrac><msup><mi>t</mi><mn>2</mn></msup><mo>+</mo><mn>2</mn><mo>)</mo><mo>=</mo><mfrac><mn>3</mn><mn>4</mn></mfrac><mo>&#x22C5;</mo><msup><mn>2</mn><mn>2</mn></msup><mo>+</mo><mn>2</mn><mo>=</mo><mfrac><mn>3</mn><mn>4</mn></mfrac><mo>&#x22C5;</mo><mn>4</mn><mo>+</mo><mn>2</mn><mo>=</mo><mn>3</mn><mo>+</mo><mn>2</mn><mo>=</mo><mn>5</mn>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Paso b)</h4>
+                    <p><strong>Límite por la derecha:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>t</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>t</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>+</mo></msup></mrow></munder><mfrac><mn>15</mn><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></mfrac><mo>=</mo><mfrac><mn>15</mn><mrow><mn>2</mn><mo>+</mo><mn>1</mn></mrow></mfrac><mo>=</mo><mfrac><mn>15</mn><mn>3</mn></mfrac><mo>=</mo><mn>5</mn>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Paso c)</h4>
+                    <p><strong>Valor de la función:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <mi>f</mi><mo>(</mo><mn>2</mn><mo>)</mo><mo>=</mo><mfrac><mn>3</mn><mn>4</mn></mfrac><mo>&#x22C5;</mo><msup><mn>2</mn><mn>2</mn></msup><mo>+</mo><mn>2</mn><mo>=</mo><mn>5</mn><mo>&#x00A0;</mo><mo>(</mo><mtext>pues</mtext><mo>&#x00A0;</mo><mn>2</mn><mo>&#x2264;</mo><mn>2</mn><mo>)</mo>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="conclusion">
+                        <h4>Conclusión:</h4>
+                        <p>Como <math display="inline"><munder><mo>lim</mo><mrow><mi>t</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>-</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>t</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><mi>f</mi><mo>(</mo><mn>2</mn><mo>)</mo><mo>=</mo><mn>5</mn></math>, la función es <strong>continua</strong> en <math><mi>t</mi><mo>=</mo><mn>2</mn></math>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 7 -->
+        <div id="tab7" class="tab-content">
+            <div class="statement-box">
+                <h3>7. Función con rama racional <math><mfrac><mn>1</mn><mrow><mn>2</mn><mi>x</mi><mo>-</mo><mn>1</mn></mrow></mfrac></math>.</h3>
+                <p>Sea</p>
+                <div class="math-display">
+                    <math display="block">
+                        <mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo>
+                        <mfenced open="{" close="" separators="|">
+                            <mtable>
+                                <mtr><mtd><msup><mi>x</mi><mn>2</mn></msup></mtd><mtd><mi>x</mi><mo>&#x2264;</mo><mn>1</mn></mtd></mtr>
+                                <mtr><mtd><mfrac><mn>1</mn><mrow><mn>2</mn><mi>x</mi><mo>-</mo><mn>1</mn></mrow></mfrac></mtd><mtd><mi>x</mi><mo>&gt;</mo><mn>1</mn></mtd></mtr>
+                            </mtable>
+                        </mfenced>
+                    </math>
+                </div>
+                <p>Estudiar la continuidad de <math><mi>f</mi></math> en todo su dominio y determinar, si los hay, los puntos de discontinuidad.</p>
+            </div>
+
+            <div class="solution-section">
+                <div class="solution-title">Solución</div>
+                
+                <div class="step">
+                    <h4>Paso 1: Dominio de la función</h4>
+                    <ul>
+                        <li>Para <math><mi>x</mi><mo>&#x2264;</mo><mn>1</mn></math>: <math><msup><mi>x</mi><mn>2</mn></msup></math> está definida <math><mo>&#x2200;</mo><mi>x</mi><mo>&#x2208;</mo><mi mathvariant="double-struck">R</mi></math>.</li>
+                        <li>Para <math><mi>x</mi><mo>&gt;</mo><mn>1</mn></math>: <math><mfrac><mn>1</mn><mrow><mn>2</mn><mi>x</mi><mo>-</mo><mn>1</mn></mrow></mfrac></math> está definida siempre que <math><mn>2</mn><mi>x</mi><mo>-</mo><mn>1</mn><mo>&#x2260;</mo><mn>0</mn><mo>&#x21D2;</mo><mi>x</mi><mo>&#x2260;</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></math>.</li>
+                        <li>Como la segunda rama solo se aplica para <math><mi>x</mi><mo>&gt;</mo><mn>1</mn></math>, el punto <math><mi>x</mi><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></math> no pertenece a su dominio efectivo.</li>
+                    </ul>
+                    <p>Por lo tanto, <math display="inline"><mi>Dom</mi><mo>(</mo><mi>f</mi><mo>)</mo><mo>=</mo><mi mathvariant="double-struck">R</mi></math>.</p>
+                </div>
+
+                <div class="step">
+                    <h4>Paso 2: Continuidad en el punto de ruptura <math><mi>x</mi><mo>=</mo><mn>1</mn></math></h4>
+                    <p><strong>Límite por la izquierda:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>1</mn><mo>-</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>1</mn><mo>-</mo></msup></mrow></munder><msup><mi>x</mi><mn>2</mn></msup><mo>=</mo><msup><mn>1</mn><mn>2</mn></msup><mo>=</mo><mn>1</mn>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <p><strong>Límite por la derecha:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>1</mn><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>1</mn><mo>+</mo></msup></mrow></munder><mfrac><mn>1</mn><mrow><mn>2</mn><mi>x</mi><mo>-</mo><mn>1</mn></mrow></mfrac><mo>=</mo><mfrac><mn>1</mn><mrow><mn>2</mn><mo>&#x22C5;</mo><mn>1</mn><mo>-</mo><mn>1</mn></mrow></mfrac><mo>=</mo><mfrac><mn>1</mn><mn>1</mn></mfrac><mo>=</mo><mn>1</mn>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <p><strong>Valor de la función:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <mi>f</mi><mo>(</mo><mn>1</mn><mo>)</mo><mo>=</mo><msup><mn>1</mn><mn>2</mn></msup><mo>=</mo><mn>1</mn><mo>&#x00A0;</mo><mo>(</mo><mtext>pues</mtext><mo>&#x00A0;</mo><mn>1</mn><mo>&#x2264;</mo><mn>1</mn><mo>)</mo>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="conclusion">
+                        <h4>Conclusión:</h4>
+                        <ul>
+                            <li>En <math><mi>x</mi><mo>=</mo><mn>1</mn></math>: <math display="inline"><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>1</mn><mo>-</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>1</mn><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>f</mi><mo>(</mo><mn>1</mn><mo>)</mo><mo>=</mo><mn>1</mn></math> <math><mo>&#x21D2;</mo></math> continua.</li>
+                            <li>En <math><mo>(</mo><mo>-</mo><mn>&#x221E;</mn><mo>,</mo><mn>1</mn><mo>)</mo></math>: <math><msup><mi>x</mi><mn>2</mn></msup></math> es continua (polinomio).</li>
+                            <li>En <math><mo>(</mo><mn>1</mn><mo>,</mo><mn>&#x221E;</mn><mo>)</mo></math>: <math><mfrac><mn>1</mn><mrow><mn>2</mn><mi>x</mi><mo>-</mo><mn>1</mn></mrow></mfrac></math> es continua (cociente de continuas con denominador no nulo).</li>
+                        </ul>
+                        <p>La función es <strong>continua en todo su dominio <math><mi mathvariant="double-struck">R</mi></math></strong>. No presenta puntos de discontinuidad.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 8 -->
+        <div id="tab8" class="tab-content">
+            <div class="statement-box">
+                <h3>8. Función con rama <math><mfrac><mn>1</mn><mi>x</mi></mfrac></math>.</h3>
+                <p>Sea</p>
+                <div class="math-display">
+                    <math display="block">
+                        <mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo>
+                        <mfenced open="{" close="" separators="|">
+                            <mtable>
+                                <mtr><mtd><mn>6</mn><mi>x</mi><mo>-</mo><mn>1</mn></mtd><mtd><mi>x</mi><mo>&#x2264;</mo><mn>0</mn></mtd></mtr>
+                                <mtr><mtd><mfrac><mn>1</mn><mi>x</mi></mfrac></mtd><mtd><mi>x</mi><mo>&gt;</mo><mn>0</mn></mtd></mtr>
+                            </mtable>
+                        </mfenced>
+                    </math>
+                </div>
+                <p>Estudiar la continuidad de <math><mi>f</mi></math> en todo su dominio y calcular, si los tiene, los puntos de discontinuidad.</p>
+            </div>
+
+            <div class="solution-section">
+                <div class="solution-title">Solución</div>
+                
+                <div class="step">
+                    <h4>Paso 1: Dominio de la función</h4>
+                    <ul>
+                        <li>Para <math><mi>x</mi><mo>&#x2264;</mo><mn>0</mn></math>: <math><mn>6</mn><mi>x</mi><mo>-</mo><mn>1</mn></math> está definida <math><mo>&#x2200;</mo><mi>x</mi><mo>&#x2208;</mo><mi mathvariant="double-struck">R</mi></math>.</li>
+                        <li>Para <math><mi>x</mi><mo>&gt;</mo><mn>0</mn></math>: <math><mfrac><mn>1</mn><mi>x</mi></mfrac></math> está definida <math><mo>&#x2200;</mo><mi>x</mi><mo>&gt;</mo><mn>0</mn></math> (el denominador nunca se anula en este intervalo).</li>
+                    </ul>
+                    <p>Por lo tanto, <math display="inline"><mi>Dom</mi><mo>(</mo><mi>f</mi><mo>)</mo><mo>=</mo><mi mathvariant="double-struck">R</mi></math>.</p>
+                </div>
+
+                <div class="step">
+                    <h4>Paso 2: Continuidad en el punto de ruptura <math><mi>x</mi><mo>=</mo><mn>0</mn></math></h4>
+                    <p><strong>Límite por la izquierda:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>0</mn><mo>-</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>0</mn><mo>-</mo></msup></mrow></munder><mo>(</mo><mn>6</mn><mi>x</mi><mo>-</mo><mn>1</mn><mo>)</mo><mo>=</mo><mn>6</mn><mo>&#x22C5;</mo><mn>0</mn><mo>-</mo><mn>1</mn><mo>=</mo><mo>-</mo><mn>1</mn>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <p><strong>Límite por la derecha:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>0</mn><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>0</mn><mo>+</mo></msup></mrow></munder><mfrac><mn>1</mn><mi>x</mi></mfrac><mo>=</mo><mo>+</mo><mn>&#x221E;</mn>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <p><strong>Valor de la función:</strong></p>
+                    <div class="math-display">
+                        <math display="block">
+                            <mi>f</mi><mo>(</mo><mn>0</mn><mo>)</mo><mo>=</mo><mn>6</mn><mo>&#x22C5;</mo><mn>0</mn><mo>-</mo><mn>1</mn><mo>=</mo><mo>-</mo><mn>1</mn><mo>&#x00A0;</mo><mo>(</mo><mtext>pues</mtext><mo>&#x00A0;</mo><mn>0</mn><mo>&#x2264;</mo><mn>0</mn><mo>)</mo>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="conclusion">
+                        <h4>Conclusión:</h4>
+                        <ul>
+                            <li>En <math><mi>x</mi><mo>=</mo><mn>0</mn></math>: <math display="inline"><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><msup><mn>0</mn><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mo>+</mo><mn>&#x221E;</mn></math> <math><mo>&#x21D2;</mo></math> <strong>discontinuidad de salto infinito</strong>.</li>
+                            <li>En <math><mo>(</mo><mo>-</mo><mn>&#x221E;</mn><mo>,</mo><mn>0</mn><mo>)</mo></math>: <math><mn>6</mn><mi>x</mi><mo>-</mo><mn>1</mn></math> es continua (polinomio).</li>
+                            <li>En <math><mo>(</mo><mn>0</mn><mo>,</mo><mn>&#x221E;</mn><mo>)</mo></math>: <math><mfrac><mn>1</mn><mi>x</mi></mfrac></math> es continua (cociente de continuas con denominador no nulo).</li>
+                        </ul>
+                        <p>La función presenta una <strong>única discontinuidad de salto infinito en <math><mi>x</mi><mo>=</mo><mn>0</mn></math></strong>. En el resto de su dominio es continua.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 9 -->
+        <div id="tab9" class="tab-content">
+            <div class="statement-box">
+                <h3>9. Consumo de combustible con parámetro <math><mi>a</mi></math>.</h3>
+                <p>El consumo de combustible (en litros/hora) durante un turno de <math><mn>8</mn></math> horas se modela mediante</p>
+                <div class="math-display">
+                    <math display="block">
+                        <mi>f</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo>
+                        <mfenced open="{" close="" separators="|">
+                            <mtable>
+                                <mtr><mtd><mo>-</mo><msup><mi>t</mi><mn>2</mn></msup><mo>+</mo><mn>6</mn><mi>t</mi><mo>+</mo><mn>3</mn></mtd><mtd><mn>0</mn><mo>&#x2264;</mo><mi>t</mi><mo>&#x2264;</mo><mn>2</mn></mtd></mtr>
+                                <mtr><mtd><mo>-</mo><mi>t</mi><mo>+</mo><mi>a</mi></mtd><mtd><mn>2</mn><mo>&lt;</mo><mi>t</mi><mo>&#x2264;</mo><mn>8</mn></mtd></mtr>
+                            </mtable>
+                        </mfenced>
+                    </math>
+                </div>
+                <p>donde <math><mi>t</mi></math> es el tiempo en horas desde el inicio del turno.</p>
+                <p><strong>a)</strong> Determinar el valor del parámetro <math><mi>a</mi></math> que hace que <math><mi>f</mi></math> sea continua en <math><mi>t</mi><mo>=</mo><mn>2</mn></math>.</p>
+                <p><strong>b)</strong> Calcular la variación del consumo por cada hora transcurrida a partir de la segunda hora.</p>
+            </div>
+
+            <div class="solution-section">
+                <div class="solution-title">Solución</div>
+                
+                <div class="step">
+                    <h4>Apartado a) Valor de <math><mi>a</mi></math> para continuidad en <math><mi>t</mi><mo>=</mo><mn>2</mn></math></h4>
+                    <p>Para que <math><mi>f</mi></math> sea continua en <math><mi>t</mi><mo>=</mo><mn>2</mn></math> debe cumplirse:</p>
+                    <div class="math-display">
+                        <math display="block">
+                            <munder><mo>lim</mo><mrow><mi>t</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>-</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><munder><mo>lim</mo><mrow><mi>t</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><mi>f</mi><mo>(</mo><mn>2</mn><mo>)</mo>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <p>Calculamos cada término:</p>
+                    <div class="math-display">
+                        <math display="block">
+                            <mtable columnalign="left">
+                                <mtr><mtd><munder><mo>lim</mo><mrow><mi>t</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>-</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>t</mi><mo>)</mo></mtd><mtd><mo>=</mo></mtd><mtd><munder><mo>lim</mo><mrow><mi>t</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>-</mo></msup></mrow></munder><mo>(</mo><mo>-</mo><msup><mi>t</mi><mn>2</mn></msup><mo>+</mo><mn>6</mn><mi>t</mi><mo>+</mo><mn>3</mn><mo>)</mo></mtd><mtd><mo>=</mo></mtd><mtd><mo>-</mo><msup><mn>2</mn><mn>2</mn></msup><mo>+</mo><mn>6</mn><mo>&#x22C5;</mo><mn>2</mn><mo>+</mo><mn>3</mn></mtd><mtd><mo>=</mo></mtd><mtd><mo>-</mo><mn>4</mn><mo>+</mo><mn>12</mn><mo>+</mo><mn>3</mn></mtd><mtd><mo>=</mo></mtd><mtd><mn>11</mn></mtd></mtr>
+                                <mtr><mtd><mi>f</mi><mo>(</mo><mn>2</mn><mo>)</mo></mtd><mtd><mo>=</mo></mtd><mtd><mo>-</mo><msup><mn>2</mn><mn>2</mn></msup><mo>+</mo><mn>6</mn><mo>&#x22C5;</mo><mn>2</mn><mo>+</mo><mn>3</mn></mtd><mtd><mo>=</mo></mtd><mtd><mn>11</mn></mtd><mtd><mo>&#x00A0;</mo></mtd><mtd><mo>(</mo><mtext>pues</mtext><mo>&#x00A0;</mo><mn>2</mn><mo>&#x2264;</mo><mn>2</mn><mo>)</mo></mtd></mtr>
+                                <mtr><mtd><munder><mo>lim</mo><mrow><mi>t</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>+</mo></msup></mrow></munder><mi>f</mi><mo>(</mo><mi>t</mi><mo>)</mo></mtd><mtd><mo>=</mo></mtd><mtd><munder><mo>lim</mo><mrow><mi>t</mi><mo>&#x2192;</mo><msup><mn>2</mn><mo>+</mo></msup></mrow></munder><mo>(</mo><mo>-</mo><mi>t</mi><mo>+</mo><mi>a</mi><mo>)</mo></mtd><mtd><mo>=</mo></mtd><mtd><mo>-</mo><mn>2</mn><mo>+</mo><mi>a</mi></mtd></mtr>
+                            </mtable>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <p>Igualando los límites:</p>
+                    <div class="math-display">
+                        <math display="block">
+                            <mo>-</mo><mn>2</mn><mo>+</mo><mi>a</mi><mo>=</mo><mn>11</mn><mo>&#x00A0;</mo><mo>&#x21D2;</mo><mo>&#x00A0;</mo><mi>a</mi><mo>=</mo><mn>13</mn>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>Apartado b) Tasa de cambio para <math><mi>t</mi><mo>&gt;</mo><mn>2</mn></math></h4>
+                    <p>Para <math><mi>t</mi><mo>&gt;</mo><mn>2</mn></math> y con <math><mi>a</mi><mo>=</mo><mn>13</mn></math>, la función es:</p>
+                    <div class="math-display">
+                        <math display="block">
+                            <mi>f</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><mo>-</mo><mi>t</mi><mo>+</mo><mn>13</mn>
+                        </math>
+                    </div>
+                    <p>La tasa de cambio instantánea es la derivada:</p>
+                    <div class="math-display">
+                        <math display="block">
+                            <msup><mi>f</mi><mo>&#x2032;</mo></msup><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><mfrac><mi>d</mi><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>(</mo><mo>-</mo><mi>t</mi><mo>+</mo><mn>13</mn><mo>)</mo><mo>=</mo><mo>-</mo><mn>1</mn>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="conclusion">
+                        <h4>Conclusión:</h4>
+                        <ul>
+                            <li>El valor que garantiza continuidad es <math><menclose notation="box"><mi>a</mi><mo>=</mo><mn>13</mn></menclose></math>.</li>
+                            <li>A partir de la segunda hora, el consumo <strong>disminuye</strong> a razón de <math><menclose notation="box"><mn>1</mn><mo>&#x00A0;</mo><mtext>litro/hora por cada hora</mtext></menclose></math> (pendiente <math><mo>-</mo><mn>1</mn></math>).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Continuidad en un punto - Material educativo</p>
+        </div>
+    </div>
+
+    <script>
+        // Función para cambiar de pestaña
+        function openTab(evt, tabName) {
+            // Ocultar todos los contenidos
+            var tabContents = document.getElementsByClassName("tab-content");
+            for (var i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+            
+            // Quitar clase active de todos los botones
+            var tabs = document.getElementsByClassName("tab");
+            for (var i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+            
+            // Mostrar el contenido seleccionado y activar el botón
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+            
+            // Reiniciar los pasos revelados al cambiar de pestaña
+            resetSteps();
+        }
+
+        // Sistema de revelado progresivo
+        let revealedSteps = 0;
+        const maxStepsPerTab = 9; // Máximo de pasos por ejercicio
+
+        function revealNextStep() {
+            const activeTab = document.querySelector('.tab-content.active');
+            if (!activeTab) return;
+            
+            const steps = activeTab.querySelectorAll('.step:not(.revealed)');
+            
+            if (steps.length > 0) {
+                steps[0].classList.add('revealed');
+                revealedSteps++;
+            }
+        }
+
+        function resetSteps() {
+            revealedSteps = 0;
+            const steps = document.querySelectorAll('.step');
+            steps.forEach(step => step.classList.remove('revealed'));
+        }
+
+        // Evento click en toda la pantalla para revelar pasos
+        document.addEventListener('click', function(e) {
+            // Evitar que el click en los tabs o botones revele pasos
+            if (e.target.closest('.tabs') || e.target.closest('.tab') || e.target.closest('button')) {
+                return;
+            }
+            revealNextStep();
+        });
+
+        // También permitir tecla Enter para revelar
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                revealNextStep();
+            }
+        });
+
+        // Inicializar: mostrar primer paso automáticamente
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                revealNextStep();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
