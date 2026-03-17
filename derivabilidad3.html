@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solución: Derivabilidad a trozos</title>
+    
+    <!-- Carga de MathJax 3 -->
+    <script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']],
+            displayMath: [['$$', '$$'], ['\\[', '\\]']],
+            processEscapes: true,
+            tags: 'ams'
+        },
+        svg: { fontCache: 'global' }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #16a34a;
+            --warning-color: #ca8a04;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), #1e40af);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        header h1 { margin: 0; font-size: 1.8rem; }
+        header p { margin: 10px 0 0; opacity: 0.9; }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 3px solid #e0e0e0;
+        }
+        .tab {
+            flex: 1;
+            padding: 18px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            border-right: 1px solid #e0e0e0;
+            transition: all .3s;
+        }
+        .tab:last-child { border-right: none; }
+        .tab:hover { background: #e9ecef; }
+        .tab.active { 
+            background: var(--primary-color);
+            color: white; 
+        }
+
+        #content-area {
+            padding: 40px;
+            min-height: 500px;
+        }
+
+        .step-card {
+            background: #fff;
+            border-left: 6px solid #ccc;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateY(20px);
+            display: none;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .step-card.visible {
+            display: block;
+            animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-enunciado { border-left-color: #3b82f6; background-color: #eff6ff; }
+        .step-continuidad { border-left-color: #3b82f6; }
+        .step-derivada { border-left-color: var(--warning-color); background-color: #fffbeb; }
+        .step-conclusion { border-left-color: var(--success-color); background-color: #f0fdf4; }
+
+        .step-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        mjx-container { font-size: 1.2em !important; margin: 15px 0 !important; }
+
+        .math-block {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+            text-align: center;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ffeeba;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        .btn-container {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            background: #f9fafb;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.5);
+        }
+
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        @media (max-width: 600px) {
+            #content-area { padding: 20px; }
+            .step-card { padding: 20px; }
+            header h1 { font-size: 1.4rem; }
+            .tabs { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>📚 Derivabilidad </h1>
+        <p>Funciones definidas a trozos -</p>
+    </header>
+
+    <div class="tabs">
+        <div class="tab active" data-tab="1">Ejercicio 1</div>
+        <div class="tab" data-tab="2">Ejercicio 2</div>
+        <div class="tab" data-tab="3">Ejercicio 3</div>
+        <div class="tab" data-tab="4">Ejercicio 4</div>
+    </div>
+
+    <div id="content-area"></div>
+    <div class="btn-container">
+        <button id="nextBtn" class="btn" onclick="nextStep()">Siguiente Paso ➡️</button>
+    </div>
+</div>
+
+<script>
+    // Configuración completa para cada ejercicio
+    const exercises = {
+        1: [  // Ejercicio 1: exponencial (CORREGIDO)
+            {
+                type: 'step-enunciado',
+                title: 'Ejercicio 1 - Enunciado',
+                content: `
+                    <p>Sea la función $f:\\mathbb{R}\\to\\mathbb{R}$ definida mediante:</p>
+                    <div class="math-block">
+                    $$ f(x)=\\begin{cases} e^{-x} & \\text{si } x\\leq 0 \\\\ x^3-x+1 & \\text{si } x>0. \\end{cases} $$
+                    </div>
+                    <div class="highlight">
+                        <p>(a) ¿Es $f$ continua en $x=0$? ¿Es continua en su dominio?</p>
+                        <p>(b) ¿Es $f$ derivable en $x=0$? ¿Es derivable en su dominio?</p>
+                    </div>
+                `
+            },
+            {
+                type: 'step-continuidad',
+                title: '1. Estudio de la Continuidad',
+                content: `
+                    <p>Las funciones $e^{-x}$ y $x^3-x+1$ son continuas en todo $\\mathbb{R}$. Por tanto $f$ es continua en $(-\\infty,0]$ y $(0,+\\infty)$.</p>
+                    <p><strong>Punto crítico: $x=0$</strong></p>
+                    <div class="math-block">$$ \\lim_{x\\to 0^-}f(x)=\\lim_{x\\to 0^-}e^{-x}=e^{0}=1 $$</div>
+                    <div class="math-block">$$ \\lim_{x\\to 0^+}f(x)=\\lim_{x\\to 0^+}(x^3-x+1)=1 $$</div>
+                    <div class="math-block">$$ f(0)=e^{-0}=1 $$</div>
+                    <div class="highlight">✅ $\\lim_{x\\to 0^-}f(x)=f(0)=\\lim_{x\\to 0^+}f(x)=1$ → <strong>ES continua</strong></div>
+                `
+            },
+            {
+                type: 'step-derivada',
+                title: '2. Estudio de la Derivabilidad',
+                content: `
+                    <p>Derivada a trozos <strong>(sin definir en $x=0$)</strong>:</p>
+                    <div class="math-block">
+                    $$ f'(x)=\\begin{cases} -e^{-x} & \\text{si } x<0 \\\\ 3x^2-1 & \\text{si } x>0 \\end{cases} $$
+                    </div>
+                    <p><strong>Límites laterales:</strong></p>
+                    <div class="math-block">$$ \\lim_{x\\to 0^-}f'(x)=-1 $$</div>
+                    <div class="math-block">$$ \\lim_{x\\to 0^+}f'(x)=-1 $$</div>
+                    <div class="highlight">✅ Límites coinciden → <em>discontinuidad evitable</em> → $f'(0)=-1$</div>
+                `
+            },
+            {
+                type: 'step-conclusion',
+                title: 'Conclusión',
+                content: `
+                    <div class="highlight" style="background:#dcfce7;color:#166534;border-color:#86efac;">
+                        <strong>🎯 $f$ es continua y derivable en todo $\\mathbb{R}$</strong>
+                    </div>
+                `
+            }
+        ],
+        2: [  // Ejercicio 2: |x|
+            {
+                type: 'step-enunciado',
+                title: 'Ejercicio 2 - Enunciado',
+                content: `
+                    <p>Estudiar continuidad y derivabilidad de $f(x)=|x|$ definida como:</p>
+                    <div class="math-block">
+                    $$ f(x)=\\begin{cases} x & \\text{si } x\\geq 0 \\\\ -x & \\text{si } x<0 \\end{cases} $$
+                    </div>
+                    <div class="highlight">
+                        <p>¿Es $f$ continua en $x=0$?</p>
+                        <p>¿Es $f$ derivable en $x=0$?</p>
+                    </div>
+                `
+            },
+            {
+                type: 'step-continuidad',
+                title: '1. Estudio de la Continuidad',
+                content: `
+                    <p>Las funciones $x$ y $-x$ son continuas en todo $\\mathbb{R}$. Por tanto $f$ es continua en $(−∞,0)$ y $[0,+∞)$.</p>
+                    <p><strong>Punto crítico: $x=0$</strong></p>
+                    <div class="math-block">$$ \\lim_{x\\to 0^-}f(x)=\\lim_{x\\to 0^-}(-x)=0 $$</div>
+                    <div class="math-block">$$ \\lim_{x\\to 0^+}f(x)=\\lim_{x\\to 0^+}(x)=0 $$</div>
+                    <div class="math-block">$$ f(0)=0 $$</div>
+                    <div class="highlight">✅ $\\lim_{x\\to 0^-}f(x)=f(0)=\\lim_{x\\to 0^+}f(x)=0$ → <strong>ES continua</strong></div>
+                `
+            },
+            {
+                type: 'step-derivada',
+                title: '2. Estudio de la Derivabilidad',
+                content: `
+                    <p>Derivada a trozos <strong>(sin definir en $x=0$)</strong>:</p>
+                    <div class="math-block">
+                    $$ f'(x)=\\begin{cases} -1 & \\text{si } x<0 \\\\ 1 & \\text{si } x>0 \\end{cases} $$
+                    </div>
+                    <p><strong>Límites laterales:</strong></p>
+                    <div class="math-block">$$ \\lim_{x\\to 0^-}f'(x)=-1 $$</div>
+                    <div class="math-block">$$ \\lim_{x\\to 0^+}f'(x)=1 $$</div>
+                    <div class="highlight">❌ Límites NO coinciden → <strong>NO derivable</strong> en $x=0$</div>
+                `
+            },
+            {
+                type: 'step-conclusion',
+                title: 'Conclusión',
+                content: `
+                    <div class="highlight" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5;">
+                        <strong>🎯 Continua SÍ, derivable NO en $x=0$</strong>
+                    </div>
+                `
+            }
+        ],
+        3: [  // Ejercicio 3: m,n (CORREGIDO)
+            {
+                type: 'step-enunciado',
+                title: 'Ejercicio 3 - Enunciado',
+                content: `
+                    <p>Calcula $m$ y $n$ para que:</p>
+                    <div class="math-block">
+                    $$ f(x)=\\begin{cases} x^2-5x+m & \\text{si } x\\leq 1 \\\\ -x^2+nx & \\text{si } x>1 \\end{cases} $$
+                    </div>
+                    <p>sea derivable en $\\mathbb{R}$.</p>
+                `
+            },
+            {
+                type: 'step-continuidad',
+                title: '1. Continuidad en $x=1$',
+                content: `
+                    <p><strong>Condición de continuidad:</strong> $\\lim_{x\\to1^-}f(x)=\\lim_{x\\to1^+}f(x)=f(1)$</p>
+                    <div class="math-block">$$ f(1)=1^2-5(1)+m=m-4 $$</div>
+                    <div class="math-block">$$ \\lim_{x\\to1^-}f(x)=m-4 $$</div>
+                    <div class="math-block">$$ \\lim_{x\\to1^+}f(x)=-1^2+n(1)=n-1 $$</div>
+                    <div class="highlight">$$ m-4=n-1 \\implies m=n+3 $$</div>
+                `
+            },
+            {
+                type: 'step-derivada',
+                title: '2. Derivabilidad en $x=1$',
+                content: `
+                    <p><strong>Derivadas a trozos:</strong></p>
+                    <div class="math-block">
+                    $$ f'(x)=\\begin{cases} 2x-5 & \\text{si } x<1 \\\\ -2x+n & \\text{si } x>1 \\end{cases} $$
+                    </div>
+                    <p><strong>Límites laterales de la derivada:</strong></p>
+                    <div class="math-block">$$ \\lim_{x\\to1^-}f'(x)=2(1)-5=-3 $$</div>
+                    <div class="math-block">$$ \\lim_{x\\to1^+}f'(x)=-2(1)+n=n-2 $$</div>
+                    <div class="highlight">$$ n-2=-3 \\implies n=-1 $$</div>
+                    <p>Entonces: $m=(-1)+3=2$</p>
+                `
+            },
+            {
+                type: 'step-conclusion',
+                title: 'Conclusión',
+                content: `
+                    <div class="highlight" style="background:#dcfce7;color:#166534;border-color:#86efac;">
+                        <strong>🎯 $m=2$, $n=-1$</strong>
+                    </div>
+                `
+            }
+        ],
+        4: [  // Ejercicio 4: CORREGIDO CON STRINGS SIMPLES
+            {
+                type: 'step-enunciado',
+                title: 'Ejercicio 4 - Enunciado',
+                content: '<p>Para que $f$ sea derivable en $(0,+\\infty)$, halla $a$:</p><div class="math-block">$$f(x)=\\begin{cases} x\\ln x & \\text{si } 0\\lt x\\leq 1 \\\\ a(1-e^{1-x}) & \\text{si } x\\gt1 \\end{cases}$$</div><div class="highlight"><p><strong>Punto crítico:</strong> $x=1$</p></div>'
+            },
+            {
+                type: 'step-continuidad',
+                title: '1. Continuidad en $x=1$',
+                content: '<p><strong>Primero continuidad:</strong> $\\lim_{x\\to1^-}f(x)=\\lim_{x\\to1^+}f(x)=f(1)$</p><div class="math-block">$$f(1)=1\\ln1=0$$</div><div class="math-block">$$\\lim_{x\\to1^-}f(x)=\\lim_{x\\to1^-}(x\\ln x)=1\\cdot0=0$$</div><div class="math-block">$$\\lim_{x\\to1^+}f(x)=\\lim_{x\\to1^+}[a(1-e^{1-x})]=a(1-e^0)=0$$</div><div class="highlight">✅ Continuidad OK para cualquier $a$</div>'
+            },
+            {
+                type: 'step-derivada',
+                title: '2. Derivabilidad en $x=1$',
+                content: '<p><strong>Derivadas a trozos:</strong></p><div class="math-block">$$f\'(x)=\\begin{cases} \\ln x+1 & \\text{si } 0\\lt x\\lt1 \\\\ a e^{1-x} & \\text{si } x\\gt1 \\end{cases}$$</div><p><strong>Límites laterales de la derivada:</strong></p><div class="math-block">$$\\lim_{x\\to1^-}f\'(x)=\\ln1+1=0+1=1$$</div><div class="math-block">$$\\lim_{x\\to1^+}f\'(x)=a e^{1-1}=a e^0=a$$</div><div class="highlight">$$a=1$$</div>'
+            },
+            {
+                type: 'step-conclusion',
+                title: 'Conclusión',
+                content: '<div class="highlight" style="background:#dcfce7;color:#166534;border-color:#86efac;"><strong>🎯 $a=1$</strong></div>'
+            }
+        ]
+    };
+
+    let currentTab = 1;
+    let currentStep = 0;
+    const contentArea = document.getElementById('content-area');
+    const btn = document.getElementById('nextBtn');
+
+    // Cambio de pestañas
+    document.querySelectorAll('.tab').forEach((tab, index) => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            currentTab = index + 1;
+            currentStep = 0;
+            contentArea.innerHTML = '';
+            btn.disabled = false;
+            btn.innerHTML = 'Siguiente Paso ➡️';
+            btn.style.background = 'var(--primary-color)';
+            
+            nextStep();
+        });
+    });
+
+    function nextStep() {
+        const exerciseSteps = exercises[currentTab];
+        if (!exerciseSteps || currentStep >= exerciseSteps.length) return;
+
+        const stepData = exerciseSteps[currentStep];
+        
+        const card = document.createElement('div');
+        card.className = `step-card ${stepData.type}`;
+        card.innerHTML = `
+            <div class="step-title">${stepData.title}</div>
+            <div class="step-content">${stepData.content}</div>
+        `;
+        
+        contentArea.appendChild(card);
+        void card.offsetWidth;
+        card.classList.add('visible');
+        
+        // MathJax con timeout garantizado
+        setTimeout(() => {
+            if (window.MathJax && MathJax.typesetPromise) {
+                MathJax.typesetPromise([card]).catch(err => console.log('MathJax error:', err));
+            }
+        }, 100);
+        
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        
+        currentStep++;
+        if (currentStep >= exerciseSteps.length) {
+            btn.disabled = true;
+            btn.innerHTML = "✅ Completo";
+            btn.style.background = "#16a34a";
+        }
+    }
+
+    // Click en content para avanzar
+    contentArea.addEventListener('click', () => {
+        if (!btn.disabled) nextStep();
+    });
+
+    // Iniciar
+    document.addEventListener('DOMContentLoaded', () => nextStep());
+</script>
+</body>
+</html>
