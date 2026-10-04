@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Página interactiva para calcular el rango (0, 1, 2 o 3) de una matriz con menores y combinaciones lineales.">
+<title>Rango de una matriz</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap">
+<style>
+:root{color-scheme:light}
+[hidden]{display:none!important}
+
+/* Diseño: cuaderno cuadriculado con los colores del canal (crema y azul marino). Una columna de 62rem con pestañas fijas arriba.
+   Las matrices son lo más grande de cada tarjeta y se dibujan entre paréntesis; los menores se marcan dentro de una caja turquesa. */
+:root{
+  --bg:#FCFBF7; --grid:rgba(27,42,65,.06); --surface:#FFFFFF; --ink:#1B2A41; --muted:#5A6576; --line:#E2DDCE;
+  --accent:#7B2CBF; --accent-bg:#F2E9FA; --accent-line:#D9C1EF;
+  --sel:#00A6A6; --sel-ink:#00706F; --sel-bg:#DCF2F1;
+  --zero:#B83247; --zero-bg:#FBE8EB;
+  --serif:"TeX Gyre Pagella","Palatino Linotype",Palatino,"URW Palladio L","Source Serif 4","Book Antiqua",Georgia,serif;
+  --sans:"Source Sans 3",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --u:clamp(1.2rem,4.8vw,1.75rem);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121B2C; --grid:rgba(243,239,228,.05); --surface:#1B2A41; --ink:#F3EFE4; --muted:#A9B3C4; --line:#32435F;
+    --accent:#C79DF3; --accent-bg:#35264F; --accent-line:#5C4688;
+    --sel:#2CC4C4; --sel-ink:#63D8D8; --sel-bg:#154853;
+    --zero:#F58595; --zero-bg:#4A2431;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121B2C; --grid:rgba(243,239,228,.05); --surface:#1B2A41; --ink:#F3EFE4; --muted:#A9B3C4; --line:#32435F;
+  --accent:#C79DF3; --accent-bg:#35264F; --accent-line:#5C4688;
+  --sel:#2CC4C4; --sel-ink:#63D8D8; --sel-bg:#154853;
+  --zero:#F58595; --zero-bg:#4A2431;
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background-color:var(--bg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+  color:var(--ink); font:400 1.08rem/1.6 var(--serif); font-variant-numeric:lining-nums;
+}
+:focus-visible{outline:3px solid var(--sel);outline-offset:2px}
+var{font-style:italic}
+sub{font-size:.7em;line-height:0}
+strong{font-weight:700}
+
+.page{max-width:62rem;margin:0 auto;padding-inline:16px}
+.head{padding-block:1.6rem 1rem}
+.eyebrow{margin:0 0 .6rem;font:600 .78rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1{margin:0;font:700 clamp(2.1rem,6.5vw,3.3rem)/1.05 var(--serif);letter-spacing:-.015em;text-wrap:balance}
+.sub{margin:.6rem 0 0;color:var(--muted);font-size:1.15rem;max-width:40rem}
+
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-block:1px solid var(--line)}
+.tabs-in{max-width:62rem;margin:0 auto;padding-inline:16px;display:flex;gap:.2rem;overflow-x:auto;scrollbar-width:thin}
+.tab{flex:none;padding:.95rem .85rem .8rem;border:0;border-bottom:3px solid transparent;background:none;color:var(--muted);font:600 .98rem/1 var(--sans);cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+.panel{display:flex;flex-direction:column;gap:1.15rem;padding-block:1.8rem 3rem}
+.panel p{margin:0;max-width:66ch}
+h2{margin:0;font:600 clamp(1.6rem,4.6vw,2.15rem)/1.15 var(--serif);text-wrap:balance}
+h3{margin:.9rem 0 0;font:600 1.3rem/1.2 var(--serif);text-wrap:balance}
+
+.rule{background:var(--accent-bg);border:1px solid var(--accent-line);border-radius:6px;padding:1rem 1.2rem;display:flex;flex-direction:column;gap:.45rem}
+.rule p{max-width:none}
+.tag{font:700 .72rem/1 var(--sans);letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}
+.big{font-size:clamp(1.2rem,3.4vw,1.5rem);line-height:1.35}
+.formula{font-size:1.25rem;color:var(--ink)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:1.1rem;min-width:0}
+.exn{margin:0 0 .85rem;font:700 .72rem/1 var(--sans);letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.cap{margin-top:.9rem}
+.grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(min(100%,19rem),1fr))}
+.grid.two{grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr))}
+.grid.order{--u:clamp(1.15rem,4.6vw,1.55rem)}
+.stack{display:flex;flex-direction:column;gap:1rem}
+
+.demo{display:flex;flex-wrap:wrap;gap:1.4rem 2rem;align-items:center}
+.demo .txt{flex:1 1 16rem;min-width:0;display:flex;flex-direction:column;gap:.7rem}
+.legend{display:flex;flex-direction:column;gap:.35rem;font-size:.98rem}
+.legend span{display:inline-flex;align-items:center;gap:.5rem}
+.sw{width:1rem;height:1rem;border-radius:3px;flex:none;border:1.5px solid var(--sel)}
+.sw.b{border-color:var(--accent);background:var(--accent-bg)}
+.sw.a{background:var(--sel-bg)}
+
+.scale{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1.4rem;padding:1rem 1.2rem;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.scale .lead{flex:1 1 14rem;font-size:1.1rem}
+.scale ul{display:flex;align-items:center;list-style:none;margin:0;padding:0}
+.scale li{display:flex;align-items:center;font:700 2.4rem/1 var(--serif);color:var(--accent)}
+.scale li:not(:last-child)::after{content:"";width:2rem;border-top:2px solid var(--line);margin-inline:.55rem}
+
+/* matrices */
+.mx{--cw:calc(var(--u)*1.9);--ch:calc(var(--u)*1.55);--pad:calc(var(--u)*.75);
+  display:inline-grid;grid-template-columns:auto auto;column-gap:.4rem;row-gap:.3rem;align-items:center;justify-items:start;font-family:var(--serif)}
+.mx.nolab{grid-template-columns:auto}
+.heads{display:grid;grid-template-columns:repeat(var(--n),var(--cw));padding-inline:var(--pad)}
+.rlabs{display:grid;grid-template-rows:repeat(var(--m),var(--ch));align-items:center}
+.cells{position:relative;display:grid;grid-template-columns:repeat(var(--n),var(--cw));grid-auto-rows:var(--ch);padding-inline:var(--pad);font-size:var(--u);font-variant-numeric:tabular-nums lining-nums}
+.cells::before,.cells::after{content:"";position:absolute;top:-.1em;bottom:-.1em;width:calc(var(--u)*.62);border:0 solid var(--ink);pointer-events:none}
+.cells::before{left:0;border-left-width:2.5px;border-radius:50%}
+.cells::after{right:0;border-right-width:2.5px;border-radius:50%}
+.cell{display:grid;place-items:center;border:2.5px solid transparent;transition:opacity .15s,background-color .15s}
+.cell.t-a,.cell.soft,.cell.sel{background:var(--sel-bg)}
+.cell.t-b{background:var(--accent-bg)}
+.cells.has-sel .cell:not(.sel){opacity:.35}
+.cell.e-t{border-top-color:var(--sel)}
+.cell.e-b{border-bottom-color:var(--sel)}
+.cell.e-l{border-left-color:var(--sel)}
+.cell.e-r{border-right-color:var(--sel)}
+.cell.e-t.e-l{border-top-left-radius:9px}
+.cell.e-t.e-r{border-top-right-radius:9px}
+.cell.e-b.e-l{border-bottom-left-radius:9px}
+.cell.e-b.e-r{border-bottom-right-radius:9px}
+
+.hd{display:inline-flex;align-items:center;justify-content:center;min-height:2rem;min-width:2rem;padding:0 .4rem;border:1.5px solid var(--line);border-radius:6px;background:var(--surface);color:var(--muted);font:600 .98rem/1 var(--serif)}
+button.hd{color:var(--ink);cursor:pointer;box-shadow:0 1px 0 var(--line)}
+button.hd:hover{border-color:var(--sel);color:var(--ink)}
+.hd.on{background:var(--sel-bg);border-color:var(--sel);color:var(--sel-ink)}
+.hd.ro{border-color:transparent;background:transparent}
+.hd.ro.on{border-color:var(--sel)}
+.heads .hd{margin-inline:3px}
+
+.mxscroll{overflow-x:auto;padding-block:.25rem}
+.mxc{display:grid;gap:1.4rem 2rem;grid-template-columns:minmax(0,1fr)}
+.mxc.two{grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr))}
+.m1,.m2{min-width:0;display:flex;flex-direction:column;gap:.8rem}
+.m2{padding-top:.2rem}
+.ctrl{display:flex;flex-wrap:wrap;gap:.45rem}
+.chip,.btn{display:inline-flex;align-items:center;gap:.5rem;min-height:2.5rem;padding:.35rem .85rem;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:600 .95rem/1 var(--serif);cursor:pointer}
+.chip:hover,.btn:hover{border-color:var(--sel)}
+.chip.on{border-color:var(--sel);background:var(--sel-bg)}
+.btn{font-family:var(--sans);border-radius:6px}
+.lb+.lb{margin-left:.15em}
+.sep{margin-inline:.35em;color:var(--muted)}
+.cv{font-weight:700}
+.cv.z,.val.z,.al.z b{color:var(--zero)}
+.cv.nz,.val.nz,.al.nz b{color:var(--accent)}
+
+.readout{display:flex;flex-direction:column;gap:.7rem;min-height:3.2rem}
+.ro-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .9rem}
+.eq{font-size:1.5rem}
+.val{font:700 1.5rem/1 var(--serif);padding:.3rem .65rem;border-radius:6px}
+.val.z{background:var(--zero-bg)}
+.val.nz{background:var(--accent-bg)}
+.dt{display:inline-grid;grid-template-columns:repeat(var(--k),auto);gap:.1rem .9rem;padding:.2rem .6rem;border-left:2.5px solid var(--ink);border-right:2.5px solid var(--ink);font-size:calc(var(--u)*.95);line-height:1.35;font-variant-numeric:tabular-nums lining-nums}
+.dc{text-align:right}
+.hint{color:var(--muted);font-style:italic}
+.verdict{font-size:1.05rem}
+.allbox{display:flex;flex-direction:column;gap:.6rem;padding:.8rem 1rem;border:1px dashed var(--line);border-radius:6px}
+.allbox p{margin:0}
+.alllist{display:flex;flex-wrap:wrap;gap:.45rem}
+.al{padding:.3rem .65rem;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:.98rem}
+.conc{font-weight:600}
+.conc.ok{color:var(--accent)}
+.conc.no{color:var(--zero)}
+.comb{font-size:1.5rem;line-height:1.3}
+.vec{font-size:1.1rem;overflow-wrap:anywhere}
+.m2 .conc{color:var(--zero)}
+
+.ordbtn{display:flex;justify-content:center;width:100%;padding:.5rem;border:0;border-radius:8px;background:none;cursor:pointer;color:inherit}
+.ordbtn:hover{background:var(--sel-bg)}
+.res{margin-top:.7rem;min-height:5.4rem;display:flex;flex-direction:column;gap:.4rem}
+.res p{margin:0}
+.ord{font-size:1.5rem;color:var(--accent)}
+
+.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:.7rem}
+.steps li{counter-increment:s;display:grid;grid-template-columns:2.2rem minmax(0,1fr) auto;gap:.2rem .9rem;align-items:center;padding:.9rem 1.1rem;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.steps li::before{content:counter(s);font:700 1.6rem/1 var(--serif);color:var(--muted)}
+.steps .r{font:700 1.15rem/1 var(--serif);color:var(--accent);background:var(--accent-bg);padding:.4rem .7rem;border-radius:6px;white-space:nowrap}
+@media (max-width:30rem){.steps li{grid-template-columns:1.6rem minmax(0,1fr)}.steps .r{grid-column:2;justify-self:start}}
+
+.pager{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:1rem}
+
+.kswitch{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem}
+.klbl{margin-right:.3rem;font:700 .72rem/1 var(--sans);letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.seg{min-height:2.2rem;padding:.25rem .8rem;border:1.5px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);font:600 .95rem/1 var(--serif);cursor:pointer}
+.seg:hover{border-color:var(--sel)}
+.seg.on{background:var(--sel-bg);border-color:var(--sel);color:var(--sel-ink)}
+.revealbox{display:flex;flex-direction:column;gap:.4rem;padding:.8rem 1rem;border:1px solid var(--accent-line);background:var(--accent-bg);border-radius:6px}
+.revealbox p{margin:0}
+.m1>.btn{align-self:flex-start}
+.m2btn{align-self:flex-start}
+.m2body{display:flex;flex-direction:column;gap:.8rem}
+.m2body[hidden]{display:none}
+.card:not(.done) .after{display:none}
+.btn.small{min-height:2rem;padding:.2rem .75rem;font-size:.85rem}
+.hist{display:flex;flex-direction:column;gap:.6rem}
+.hist-h{display:flex;flex-wrap:wrap;align-items:center;gap:.8rem}
+.tag.mut{color:var(--muted)}
+.hist-list{display:flex;flex-wrap:wrap;gap:.6rem}
+.hi{display:flex;flex-direction:column;align-items:flex-start;gap:.4rem;padding:.55rem .8rem;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font-family:var(--serif);text-align:left;cursor:pointer}
+.hi:hover{border-color:var(--sel)}
+.hi.cur{border-color:var(--sel);background:var(--sel-bg)}
+.hi-l{font:600 .85rem/1 var(--serif);color:var(--muted)}
+.hi.cur .hi-l{color:var(--sel-ink)}
+.hi-r{display:flex;align-items:center;gap:.5rem}
+.hi .dt{font-size:calc(var(--u)*.8)}
+.hi .eq{font-size:1.2rem}
+.hi .val{font-size:1.15rem;padding:.2rem .55rem}
+
+@media (prefers-reduced-motion:reduce){.cell{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="head">
+  <div class="page">
+    <p class="eyebrow">Matrices · 2º Bachillerato</p>
+    <h1>Rango de una matriz</h1>
+    <p class="sub">Cómo averiguarlo con menores y con combinaciones lineales.</p>
+  </div>
+</header>
+<div id="sentinel"></div>
+<nav class="tabs" aria-label="Apartados">
+  <div class="tabs-in" role="tablist">
+    <button class="tab" role="tab" id="t-idea" aria-controls="p-idea" data-tab="idea">Idea</button>
+    <button class="tab" role="tab" id="t-maximo" aria-controls="p-maximo" data-tab="maximo">Rango máximo</button>
+    <button class="tab" role="tab" id="t-rango0" aria-controls="p-rango0" data-tab="rango0">Rango 0</button>
+    <button class="tab" role="tab" id="t-rango3" aria-controls="p-rango3" data-tab="rango3">Rango 3</button>
+    <button class="tab" role="tab" id="t-rango2" aria-controls="p-rango2" data-tab="rango2">Rango 2</button>
+    <button class="tab" role="tab" id="t-rango1" aria-controls="p-rango1" data-tab="rango1">Rango 1</button>
+    <button class="tab" role="tab" id="t-resumen" aria-controls="p-resumen" data-tab="resumen">Resumen</button>
+    <button class="tab" role="tab" id="t-ejemplos" aria-controls="p-ejemplos" data-tab="ejemplos">Ejemplos</button>
+  </div>
+</nav>
+
+<main class="page">
+
+<!-- ============ 0 · IDEA ============ -->
+<section class="panel" id="p-idea" role="tabpanel" aria-labelledby="t-idea">
+  <h2>¿Qué es el rango?</h2>
+  <div class="rule">
+    <p class="tag">Definición</p>
+    <p class="big">El <strong>rango</strong> de una matriz es el número de <strong>filas</strong> (o de <strong>columnas</strong>) <strong>linealmente independientes</strong>.</p>
+  </div>
+  <div class="card demo">
+    <div class="mxw" data-mode="static" data-m="1 0 2; 0 1 3; 1 1 5" data-tint="a,a,b" data-rank="2" data-combo='{"t":3,"c":[[1,1],[2,1]]}'></div>
+    <div class="txt">
+      <p>Esta matriz tiene 3 filas, pero <var>F</var><sub>3</sub> = <var>F</var><sub>1</sub> + <var>F</var><sub>2</sub>. Solo hay 2 filas independientes, así que su <strong>rango es 2</strong>.</p>
+      <div class="legend">
+        <span><i class="sw a"></i> <var>F</var><sub>1</sub> y <var>F</var><sub>2</sub>: independientes</span>
+        <span><i class="sw b"></i> <var>F</var><sub>3</sub>: combinación de las otras dos</span>
+      </div>
+    </div>
+  </div>
+  <p>Contar filas independientes o contar columnas independientes da siempre el mismo número.</p>
+  <div class="scale">
+    <p class="lead">En este tema solo estudiaremos matrices de rango</p>
+    <ul aria-label="Rangos posibles"><li>0</li><li>1</li><li>2</li><li>3</li></ul>
+  </div>
+  <p>Orden de la lección: primero el tope que puede tener el rango, después el rango 0, y luego los rangos 3, 2 y 1, buscando siempre el más alto posible.</p>
+  <div class="pager"><span></span><button class="btn" data-go="1">Rango máximo →</button></div>
+</section>
+
+<!-- ============ 1 · RANGO MÁXIMO ============ -->
+<section class="panel" id="p-maximo" role="tabpanel" aria-labelledby="t-maximo" hidden>
+  <h2>El rango tiene un tope</h2>
+  <div class="rule">
+    <p class="tag">Regla</p>
+    <p class="big">El rango de una matriz es como máximo el menor número de filas o de columnas.</p>
+    <p class="formula">rango(<var>A</var>) ≤ mín(filas, columnas)</p>
+  </div>
+  <p>No puede haber más filas independientes que filas, ni más columnas independientes que columnas.</p>
+  <p>El <strong>orden</strong> de una matriz es su número de filas × su número de columnas. Pincha en cada matriz para ver su orden y su rango máximo.</p>
+  <div class="grid order">
+    <article class="card"><div class="mxw" data-mode="order" data-m="2 -1 0; 1 3 4"></div></article>
+    <article class="card"><div class="mxw" data-mode="order" data-m="3 -1 2 5"></div></article>
+    <article class="card"><div class="mxw" data-mode="order" data-m="1 0; 2 -1; -3 4"></div></article>
+    <article class="card"><div class="mxw" data-mode="order" data-m="2 1; -1 3"></div></article>
+    <article class="card"><div class="mxw" data-mode="order" data-m="1 2 0 -1; 3 1 4 2; 0 -2 1 5"></div></article>
+  </div>
+  <p>Las matrices habituales de los problemas son de 3 × 4 (o de 4 × 3): su rango máximo es 3.</p>
+  <div class="pager"><button class="btn" data-go="0">← Idea</button><button class="btn" data-go="2">Rango 0 →</button></div>
+</section>
+
+<!-- ============ 2 · RANGO 0 ============ -->
+<section class="panel" id="p-rango0" role="tabpanel" aria-labelledby="t-rango0" hidden>
+  <h2>Rango 0</h2>
+  <div class="rule">
+    <p class="tag">Regla</p>
+    <p class="big">Solo la matriz nula tiene rango 0.</p>
+  </div>
+  <p>Una matriz nula tiene todos sus elementos iguales a 0. No tiene ninguna fila ni columna independiente, sea cual sea su orden. Pincha en cada una:</p>
+  <div class="grid order">
+    <article class="card"><div class="mxw" data-mode="zero" data-rank="0" data-m="0 0; 0 0"></div></article>
+    <article class="card"><div class="mxw" data-mode="zero" data-rank="0" data-m="0 0 0 0"></div></article>
+    <article class="card"><div class="mxw" data-mode="zero" data-rank="0" data-m="0 0; 0 0; 0 0"></div></article>
+    <article class="card"><div class="mxw" data-mode="zero" data-rank="0" data-m="0; 0"></div></article>
+    <article class="card"><div class="mxw" data-mode="zero" data-rank="0" data-m="0 0 0; 0 0 0; 0 0 0"></div></article>
+  </div>
+  <p>En cuanto aparece un solo elemento distinto de 0, el rango pasa a ser al menos 1.</p>
+  <div class="pager"><button class="btn" data-go="1">← Rango máximo</button><button class="btn" data-go="3">Rango 3 →</button></div>
+</section>
+
+<!-- ============ 3 · RANGO 3 ============ -->
+<section class="panel" id="p-rango3" role="tabpanel" aria-labelledby="t-rango3" hidden>
+  <h2>Rango 3</h2>
+  <div class="rule">
+    <p class="tag">Condición</p>
+    <p class="big">Una matriz tiene rango 3 si existe un <strong>menor de orden 3</strong>, es decir, un determinante de orden 3, distinto de 0.</p>
+  </div>
+  <p>Para que sea posible, la matriz necesita al menos 3 filas y 3 columnas. Si le falta alguna, el tope del rango ya impide llegar a 3.</p>
+
+  <h3>¿Qué es un menor?</h3>
+  <p>Un <strong>menor de orden 3</strong> es el determinante de una submatriz 3 × 3: eliges 3 filas y 3 columnas y te quedas con los elementos donde se cruzan. En general, un menor de orden <var>k</var> es el determinante de una submatriz <var>k</var> × <var>k</var>.</p>
+  <p>Esta matriz tiene 3 filas, así que solo hay que elegir qué 3 de las 4 columnas se usan. Pulsa sobre las <var>C</var> de arriba: el menor queda marcado dentro de una caja. Si marcas una columna de más, se desmarca la primera que elegiste.</p>
+  <article class="card"><div class="mxw" data-m="3 1 0 2; 1 4 2 0; 0 2 5 1" data-k="3" data-pick="1,2,3|1,2,3" data-verdict="none" data-noall="1"></div></article>
+
+  <h3>Matrices 3 × 3</h3>
+  <p>Con una matriz 3 × 3 solo hay un menor de orden 3: el determinante de toda la matriz.</p>
+  <div class="grid two">
+    <article class="card">
+      <p class="exn">Ejemplo 1</p>
+      <div class="mxw" data-m="1 2 3; 0 1 1; 2 0 2" data-k="3" data-rank="2" data-yes="Rango 3." data-no="Esta matriz no tiene rango 3." data-hint="Pulsa el botón para calcular el determinante."></div>
+      <p class="cap after">Aquí <var>C</var><sub>3</sub> = <var>C</var><sub>1</sub> + <var>C</var><sub>2</sub>, por eso el determinante se anula.</p>
+    </article>
+    <article class="card">
+      <p class="exn">Ejemplo 2</p>
+      <div class="mxw" data-m="1 2 0; 0 1 3; 2 1 1" data-k="3" data-rank="3" data-yes="Distinto de 0: la matriz tiene rango 3." data-no="Esta matriz no tiene rango 3."></div>
+    </article>
+  </div>
+
+  <h3>Matrices 3 × 4</h3>
+  <p>Con 4 columnas hay 4 menores de orden 3, uno por cada columna que se deja fuera. Basta con que uno de ellos sea distinto de 0.</p>
+  <article class="card">
+    <p class="exn">Ejemplo 3</p>
+    <div class="mxw" data-m="1 2 3 4; 0 1 0 2; 2 2 6 5" data-k="3" data-rank="3" data-yes="Hay un menor de orden 3 distinto de 0: rango 3." data-no="Este menor no decide: hay que probar con otro."></div>
+    <p class="cap">Marca primero <var>C</var><sub>1</sub> <var>C</var><sub>2</sub> <var>C</var><sub>3</sub>: es el primer menor. Después pulsa <var>C</var><sub>4</sub>: se quita <var>C</var><sub>1</sub> y queda el último menor, <var>C</var><sub>2</sub> <var>C</var><sub>3</sub> <var>C</var><sub>4</sub>. Un menor igual a 0 no descarta el rango 3; uno distinto de 0 lo confirma.</p>
+  </article>
+
+  <h3>Cuando los cuatro menores valen 0</h3>
+  <p>Para decir que una matriz <strong>no</strong> tiene rango 3 tienen que valer 0 los cuatro menores. Siempre que ocurre, hay una <strong>combinación lineal</strong> entre las filas (o entre las columnas). La más frecuente es que una fila sea la suma de otras dos.</p>
+  <p>Se puede justificar de dos maneras: calculando los cuatro determinantes, o explicando la combinación lineal.</p>
+  <article class="card">
+    <p class="exn">Ejemplo 4</p>
+    <div class="mxw" data-m="1 0 2 1; 0 1 1 3; 1 1 3 4" data-k="3" data-rank="2" data-combo='{"t":3,"c":[[1,1],[2,1]]}' data-allzero="Los 4 menores de orden 3 valen 0: no tiene rango 3." data-tone="no" data-no="Este menor vale 0. Hay que ver los cuatro."></div>
+  </article>
+
+  <h3>Dos columnas iguales</h3>
+  <article class="card">
+    <p class="exn">Ejemplo 5</p>
+    <div class="mxw" data-m="1 2 1 0; 0 1 0 1; 1 0 1 3" data-k="3" data-rank="3" data-yes="Distinto de 0: rango 3." data-no="Este menor vale 0."></div>
+    <p class="cap after">En esta matriz <var>C</var><sub>1</sub> = <var>C</var><sub>3</sub>, y aun así tiene rango 3. Cualquier menor que use a la vez <var>C</var><sub>1</sub> y <var>C</var><sub>3</sub> vale 0, porque tiene dos columnas iguales. Hay que dejar fuera una de las dos.</p>
+  </article>
+
+  <h3>Una columna de ceros</h3>
+  <article class="card">
+    <p class="exn">Ejemplo 6</p>
+    <div class="mxw" data-m="1 0 2 1; 2 0 1 3; 0 0 1 1" data-k="3" data-rank="3" data-yes="Distinto de 0: rango 3." data-no="Este menor vale 0."></div>
+    <p class="cap after">Un menor que incluya la columna de ceros vale 0. Hay que dejarla fuera: <var>C</var><sub>1</sub><var>C</var><sub>3</sub><var>C</var><sub>4</sub> es el único que puede salir distinto de 0.</p>
+  </article>
+
+  <h3>Combinaciones lineales entre filas</h3>
+  <p>No siempre se ven a simple vista. En cada ejemplo, calcula los cuatro menores y compáralo con la combinación lineal.</p>
+  <div class="stack">
+    <article class="card">
+      <p class="exn">Ejemplo 7</p>
+      <div class="mxw" data-m="1 2 0 -1; 0 1 3 2; 2 3 -3 -4" data-k="3" data-rank="2" data-combo='{"t":3,"c":[[1,2],[2,-1]]}' data-allzero="Los 4 menores de orden 3 valen 0: no tiene rango 3." data-tone="no" data-no="Este menor vale 0. Hay que ver los cuatro."></div>
+    </article>
+    <article class="card">
+      <p class="exn">Ejemplo 8</p>
+      <div class="mxw" data-m="1 1 0 2; 2 3 1 5; 0 1 1 1" data-k="3" data-rank="2" data-combo='{"t":2,"c":[[1,2],[3,1]]}' data-allzero="Los 4 menores de orden 3 valen 0: no tiene rango 3." data-tone="no" data-no="Este menor vale 0. Hay que ver los cuatro."></div>
+    </article>
+    <article class="card">
+      <p class="exn">Ejemplo 9</p>
+      <div class="mxw" data-m="1 2 1 0; 0 1 2 1; 3 4 -1 -2" data-k="3" data-rank="2" data-combo='{"t":3,"c":[[1,3],[2,-2]]}' data-allzero="Los 4 menores de orden 3 valen 0: no tiene rango 3." data-tone="no" data-no="Este menor vale 0. Hay que ver los cuatro."></div>
+    </article>
+    <article class="card">
+      <p class="exn">Ejemplo 10</p>
+      <div class="mxw" data-m="-1 1 1 3; 2 1 4 0; 1 0 1 -1" data-k="3" data-rank="2" data-combo='{"t":1,"c":[[2,1],[3,-3]]}' data-allzero="Los 4 menores de orden 3 valen 0: no tiene rango 3." data-tone="no" data-no="Este menor vale 0. Hay que ver los cuatro."></div>
+    </article>
+  </div>
+  <p>Si no hay ningún menor de orden 3 distinto de 0, el rango es menor que 3 y pasamos a buscar rango 2.</p>
+  <div class="pager"><button class="btn" data-go="2">← Rango 0</button><button class="btn" data-go="4">Rango 2 →</button></div>
+</section>
+
+<!-- ============ 4 · RANGO 2 ============ -->
+<section class="panel" id="p-rango2" role="tabpanel" aria-labelledby="t-rango2" hidden>
+  <h2>Rango 2</h2>
+  <div class="rule">
+    <p class="tag">Condición</p>
+    <p class="big">Si la matriz no puede tener rango 3, puede tener rango 2: buscamos un <strong>menor de orden 2</strong> distinto de 0.</p>
+  </div>
+
+  <h3>Una matriz 2 × 2</h3>
+  <article class="card">
+    <p class="exn">Ejemplo 1</p>
+    <div class="mxw" data-m="3 1; 2 4" data-k="2" data-rank="2" data-yes="Distinto de 0: rango 2." data-no="Esta matriz no tiene rango 2." data-hint="Pulsa el botón para calcular el determinante."></div>
+  </article>
+
+  <h3>Una matriz 2 × 3</h3>
+  <article class="card">
+    <p class="exn">Ejemplo 2</p>
+    <div class="mxw" data-m="1 2 3; 1 2 4" data-k="2" data-rank="2" data-yes="Distinto de 0: rango 2." data-no="Este menor no decide: hay que probar con otro."></div>
+    <p class="cap">Marca <var>C</var><sub>1</sub> <var>C</var><sub>2</sub> (el primer menor) y luego <var>C</var><sub>2</sub> <var>C</var><sub>3</sub> (el último).</p>
+  </article>
+
+  <h3>Una matriz 3 × 4 con filas nulas</h3>
+  <article class="card">
+    <p class="exn">Ejemplo 3</p>
+    <div class="mxw" data-m="1 0 0 0; 0 0 0 0; 0 0 0 1" data-ks="2,3" data-rank="2" data-yes="Distinto de 0: rango 2." data-no="Este menor vale 0."></div>
+    <p class="cap after">Prueba con la fila nula <var>F</var><sub>2</sub>: cualquier menor que la use vale 0. Hay que quedarse con <var>F</var><sub>1</sub> y <var>F</var><sub>3</sub>.</p>
+  </article>
+
+  <h3>Las matrices que no tenían rango 3</h3>
+  <p>Recuperamos las de la pestaña anterior. Como no tenían rango 3, solo falta encontrar un menor de orden 2 distinto de 0.</p>
+  <div class="grid two">
+    <article class="card"><p class="exn">Del ejemplo 1 (3 × 3)</p><div class="mxw" data-m="1 2 3; 0 1 1; 2 0 2" data-ks="2,3" data-rank="2" data-noall="1" data-yes="Distinto de 0: rango 2." data-no="Este menor vale 0."></div></article>
+    <article class="card"><p class="exn">Del ejemplo 4</p><div class="mxw" data-m="1 0 2 1; 0 1 1 3; 1 1 3 4" data-ks="2,3" data-rank="2" data-noall="1" data-yes="Distinto de 0: rango 2." data-no="Este menor vale 0."></div></article>
+    <article class="card"><p class="exn">Del ejemplo 7</p><div class="mxw" data-m="1 2 0 -1; 0 1 3 2; 2 3 -3 -4" data-ks="2,3" data-rank="2" data-noall="1" data-yes="Distinto de 0: rango 2." data-no="Este menor vale 0."></div></article>
+    <article class="card"><p class="exn">Del ejemplo 8</p><div class="mxw" data-m="1 1 0 2; 2 3 1 5; 0 1 1 1" data-ks="2,3" data-rank="2" data-noall="1" data-yes="Distinto de 0: rango 2." data-no="Este menor vale 0."></div></article>
+    <article class="card"><p class="exn">Del ejemplo 9</p><div class="mxw" data-m="1 2 1 0; 0 1 2 1; 3 4 -1 -2" data-ks="2,3" data-rank="2" data-noall="1" data-yes="Distinto de 0: rango 2." data-no="Este menor vale 0."></div></article>
+    <article class="card"><p class="exn">Del ejemplo 10</p><div class="mxw" data-m="-1 1 1 3; 2 1 4 0; 1 0 1 -1" data-ks="2,3" data-rank="2" data-noall="1" data-yes="Distinto de 0: rango 2." data-no="Este menor vale 0."></div></article>
+  </div>
+
+  <h3>Cuando ningún menor de orden 2 sirve</h3>
+  <article class="card">
+    <p class="exn">Ejemplo 4</p>
+    <div class="mxw" data-m="1 2 3; 1 2 3" data-k="2" data-rank="1" data-allzero="Los 3 menores de orden 2 valen 0: no tiene rango 2." data-tone="no" data-no="Este menor vale 0."></div>
+    <p class="cap after">Las dos filas son iguales. Los tres menores de orden 2 dan 0, así que el rango no es 2. Veamos el rango 1.</p>
+  </article>
+  <div class="pager"><button class="btn" data-go="3">← Rango 3</button><button class="btn" data-go="5">Rango 1 →</button></div>
+</section>
+
+<!-- ============ 5 · RANGO 1 ============ -->
+<section class="panel" id="p-rango1" role="tabpanel" aria-labelledby="t-rango1" hidden>
+  <h2>Rango 1</h2>
+  <div class="rule">
+    <p class="tag">Condición</p>
+    <p class="big">Una matriz tiene rango 1 si todas sus filas no nulas son iguales o proporcionales entre sí, y al menos una no es nula.</p>
+  </div>
+  <p>Puede pasar de tres formas: que todas las filas sean iguales, que sean proporcionales (con alguna nula, si se quiere), o que todas sean nulas excepto una. En los tres casos todos los menores de orden 2 valen 0, pero hay algún elemento distinto de 0.</p>
+  <p>En los problemas lo habitual es una matriz 3 × 4, aunque también aparecen de 3 × 2 y de 4 × 3.</p>
+  <div class="stack">
+    <article class="card">
+      <p class="exn">Ejemplo 1 · 3 × 3</p>
+      <div class="mxw" data-m="1 2 3; 1 2 3; 1 2 3" data-ks="2,3" data-rank="1" data-allzero="Todos los menores de orden 2 valen 0 y hay elementos distintos de 0: rango 1." data-tone="ok"></div>
+      <p class="cap after">Las tres filas son iguales.</p>
+    </article>
+    <article class="card">
+      <p class="exn">Ejemplo 2 · 3 × 4</p>
+      <div class="mxw" data-m="2 4 -2 6; 0 0 0 0; -1 -2 1 -3" data-ks="2,3" data-rank="1" data-allzero="Todos los menores de orden 2 valen 0 y hay elementos distintos de 0: rango 1." data-tone="ok"></div>
+      <p class="cap after"><var>F</var><sub>2</sub> es nula y <var>F</var><sub>1</sub> = −2·<var>F</var><sub>3</sub>.</p>
+    </article>
+    <article class="card">
+      <p class="exn">Ejemplo 3 · 3 × 2</p>
+      <div class="mxw" data-m="1 2; 3 6; -2 -4" data-k="2" data-rank="1" data-allzero="Los 3 menores de orden 2 valen 0 y hay elementos distintos de 0: rango 1." data-tone="ok"></div>
+      <p class="cap after"><var>F</var><sub>2</sub> = 3·<var>F</var><sub>1</sub> y <var>F</var><sub>3</sub> = −2·<var>F</var><sub>1</sub>.</p>
+    </article>
+    <article class="card">
+      <p class="exn">Ejemplo 4 · 4 × 3</p>
+      <div class="mxw" data-m="0 0 0; 0 0 0; 2 -1 3; 0 0 0" data-ks="2,3" data-rank="1" data-allzero="Todos los menores de orden 2 valen 0 y hay elementos distintos de 0: rango 1." data-tone="ok"></div>
+      <p class="cap after">Todas las filas son nulas excepto <var>F</var><sub>3</sub>.</p>
+    </article>
+  </div>
+  <div class="pager"><button class="btn" data-go="4">← Rango 2</button><button class="btn" data-go="6">Resumen →</button></div>
+</section>
+
+<!-- ============ 6 · RESUMEN ============ -->
+<section class="panel" id="p-resumen" role="tabpanel" aria-labelledby="t-resumen" hidden>
+  <h2>Cómo calcular el rango</h2>
+  <p>Se busca siempre el rango más alto posible y se va bajando.</p>
+  <ol class="steps">
+    <li><span>¿Todos los elementos son 0?</span><span class="r">rango 0</span></li>
+    <li><span>¿Hay un menor de orden 3 distinto de 0? Solo es posible con al menos 3 filas y 3 columnas.</span><span class="r">rango 3</span></li>
+    <li><span>Si no, ¿hay un menor de orden 2 distinto de 0?</span><span class="r">rango 2</span></li>
+    <li><span>Si no, y hay algún elemento distinto de 0:</span><span class="r">rango 1</span></li>
+  </ol>
+  <div class="rule">
+    <p class="tag">Recuerda</p>
+    <p>El rango es como máximo el menor número de filas o de columnas.</p>
+    <p>Para justificar que no hay rango 3: o se calculan todos los menores de orden 3 y valen 0, o se explica la combinación lineal entre filas (o columnas).</p>
+  </div>
+  <div class="pager"><button class="btn" data-go="5">← Rango 1</button><button class="btn" data-go="7">Ejemplos →</button></div>
+</section>
+
+<!-- ============ 7 · EJEMPLOS ============ -->
+<section class="panel" id="p-ejemplos" role="tabpanel" aria-labelledby="t-ejemplos" hidden>
+  <h2>Ejemplos para practicar</h2>
+  <p>Calcula el rango de cada matriz. Elige el orden del menor, marca filas y columnas pulsando sobre las <var>F</var> y las <var>C</var>, y cuando quieras comprobarlo pulsa Ver el rango.</p>
+
+  <h3>Matrices 2 × 3</h3>
+  <div class="grid two">
+    <article class="card"><p class="exn">Ejemplo 1</p><div class="mxw" data-m="2 1 0; 1 3 -1" data-k="2" data-practice="1" data-noall="1" data-rank="2"></div></article>
+    <article class="card"><p class="exn">Ejemplo 2</p><div class="mxw" data-m="1 -2 3; -2 4 -6" data-k="2" data-practice="1" data-noall="1" data-rank="1"></div></article>
+  </div>
+
+  <h3>Matrices 2 × 4</h3>
+  <div class="grid two">
+    <article class="card"><p class="exn">Ejemplo 3</p><div class="mxw" data-m="1 0 2 1; 0 1 -1 3" data-k="2" data-practice="1" data-noall="1" data-rank="2"></div></article>
+    <article class="card"><p class="exn">Ejemplo 4</p><div class="mxw" data-m="1 2 0 -1; 3 6 0 -3" data-k="2" data-practice="1" data-noall="1" data-rank="1"></div></article>
+  </div>
+
+  <h3>Matrices 3 × 3</h3>
+  <div class="grid two">
+    <article class="card"><p class="exn">Ejemplo 5</p><div class="mxw" data-m="2 1 0; 0 1 3; 1 0 1" data-ks="3,2" data-practice="1" data-noall="1" data-rank="3"></div></article>
+    <article class="card"><p class="exn">Ejemplo 6</p><div class="mxw" data-m="1 2 1; 2 1 0; 3 3 1" data-ks="3,2" data-practice="1" data-noall="1" data-rank="2"></div></article>
+    <article class="card"><p class="exn">Ejemplo 7</p><div class="mxw" data-m="1 -1 2; 2 -2 4; -3 3 -6" data-ks="3,2" data-practice="1" data-noall="1" data-rank="1"></div></article>
+  </div>
+
+  <h3>Matrices 4 × 3</h3>
+  <div class="grid two">
+    <article class="card"><p class="exn">Ejemplo 8</p><div class="mxw" data-m="1 0 2; 0 1 1; 1 1 0; 2 0 3" data-ks="3,2" data-practice="1" data-noall="1" data-rank="3"></div></article>
+    <article class="card"><p class="exn">Ejemplo 9</p><div class="mxw" data-m="1 2 0; 0 1 1; 1 3 1; 2 5 1" data-ks="3,2" data-practice="1" data-noall="1" data-rank="2"></div></article>
+  </div>
+
+  <h3>Matrices 3 × 4</h3>
+  <div class="grid two">
+    <article class="card"><p class="exn">Ejemplo 10</p><div class="mxw" data-m="1 0 2 -1; 2 1 0 3; 0 1 1 2" data-ks="3,2" data-practice="1" data-noall="1" data-rank="3"></div></article>
+    <article class="card"><p class="exn">Ejemplo 11</p><div class="mxw" data-m="1 2 0 3; 0 1 1 -1; 2 5 1 5" data-ks="3,2" data-practice="1" data-noall="1" data-rank="2"></div></article>
+  </div>
+  <div class="pager"><button class="btn" data-go="6">← Resumen</button><span></span></div>
+</section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+  const MINUS = '−';
+  const fmt = v => (v < 0 ? MINUS + Math.abs(v) : String(v));
+  const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+  const parseM = s => s.split(';').map(r => r.trim().split(/\s+/).map(Number));
+  const det = a => {
+    const n = a.length;
+    if (n === 1) return a[0][0];
+    if (n === 2) return a[0][0] * a[1][1] - a[0][1] * a[1][0];
+    let s = 0;
+    for (let j = 0; j < n; j++) {
+      const minor = a.slice(1).map(r => r.filter((_, c) => c !== j));
+      s += (j % 2 ? -1 : 1) * a[0][j] * det(minor);
+    }
+    return s;
+  };
+  const combos = (n, k) => {
+    const out = [];
+    const rec = (start, cur) => {
+      if (cur.length === k) { out.push(cur.slice()); return; }
+      for (let i = start; i < n; i++) { cur.push(i); rec(i + 1, cur); cur.pop(); }
+    };
+    rec(0, []);
+    return out;
+  };
+  const subm = (a, rs, cs) => rs.map(i => cs.map(j => a[i][j]));
+  const lab = (L, i) => '<var>' + L + '</var><sub>' + (i + 1) + '</sub>';
+  const labs = (L, idx) => idx.map(i => '<span class="lb">' + lab(L, i) + '</span>').join('');
+  const plural = (n, s, p) => n + ' ' + (n === 1 ? s : p);
+  const num = (x, y) => x - y;
+  const vec = r => '(' + r.map(fmt).join(', ') + ')';
+
+  function detEl(s) {
+    const d = el('span', 'dt');
+    d.style.setProperty('--k', s.length);
+    s.forEach(r => r.forEach(v => d.appendChild(el('span', 'dc', fmt(v)))));
+    return d;
+  }
+
+  function buildMatrix(a, o) {
+    const m = a.length, n = a[0].length;
+    const wrap = el('div', 'mx' + (o.labels ? '' : ' nolab'));
+    wrap.style.setProperty('--n', n);
+    wrap.style.setProperty('--m', m);
+    const colBtns = [], rowBtns = [], cellEls = [];
+    if (o.labels) {
+      wrap.appendChild(el('div', 'corner'));
+      const heads = el('div', 'heads');
+      for (let j = 0; j < n; j++) {
+        let h;
+        if (o.headsC) { h = el('button', 'hd', lab('C', j)); h.type = 'button'; h.setAttribute('aria-pressed', 'false'); h.addEventListener('click', () => o.onCol(j)); }
+        else h = el('span', 'hd ro', lab('C', j));
+        heads.appendChild(h); colBtns.push(h);
+      }
+      wrap.appendChild(heads);
+      const rlabs = el('div', 'rlabs');
+      for (let i = 0; i < m; i++) {
+        let h;
+        if (o.headsR) { h = el('button', 'hd', lab('F', i)); h.type = 'button'; h.setAttribute('aria-pressed', 'false'); h.addEventListener('click', () => o.onRow(i)); }
+        else h = el('span', 'hd ro', lab('F', i));
+        rlabs.appendChild(h); rowBtns.push(h);
+      }
+      wrap.appendChild(rlabs);
+    }
+    const cells = el('div', 'cells');
+    for (let i = 0; i < m; i++) {
+      const row = [];
+      for (let j = 0; j < n; j++) {
+        const t = o.tint && o.tint[i] ? ' t-' + o.tint[i] : '';
+        const c = el('div', 'cell' + t, fmt(a[i][j]));
+        cells.appendChild(c); row.push(c);
+      }
+      cellEls.push(row);
+    }
+    wrap.appendChild(cells);
+    return { wrap, cells, cellEls, colBtns, rowBtns };
+  }
+
+  function initStatic(root, a) {
+    const tint = (root.dataset.tint || '').split(',');
+    root.appendChild(buildMatrix(a, { labels: true, tint }).wrap);
+  }
+
+  function initOrder(root, a, zero) {
+    const m = a.length, n = a[0].length;
+    const btn = el('button', 'ordbtn'); btn.type = 'button';
+    btn.setAttribute('aria-label', 'Matriz: pulsa para ver su orden');
+    btn.appendChild(buildMatrix(a, { labels: false }).wrap);
+    const res = el('div', 'res'); res.setAttribute('aria-live', 'polite');
+    res.innerHTML = '<p class="hint">Pincha en la matriz</p>';
+    btn.addEventListener('click', () => {
+      const mn = Math.min(m, n);
+      if (zero) {
+        res.innerHTML = '<p class="ord">Orden <b>' + m + '</b> × <b>' + n + '</b></p><p>Matriz nula: todos sus elementos son 0, así que su <strong>rango es 0</strong>.</p>';
+      } else {
+        res.innerHTML = '<p class="ord">Orden <b>' + m + '</b> × <b>' + n + '</b></p><p>' + plural(m, 'fila', 'filas') + ' y ' + plural(n, 'columna', 'columnas') + ': el menor es ' + mn + ', así que el rango es como máximo <strong>' + mn + '</strong>.</p>';
+      }
+    });
+    root.append(btn, res);
+  }
+
+  function buildCombo(a, combo) {
+    const t = combo.t - 1;
+    const box = el('div', 'm2');
+    const toggle = el('button', 'btn m2btn', 'Método 2 · Combinación lineal');
+    toggle.type = 'button';
+    toggle.setAttribute('aria-expanded', 'false');
+    const body = el('div', 'm2body');
+    body.hidden = true;
+    let expr = lab('F', t) + ' = ';
+    let line = '';
+    const res = a[t].map(() => 0);
+    combo.c.forEach((tc, idx) => {
+      const c = tc[1], abs = Math.abs(c), r = a[tc[0] - 1];
+      const sign = c < 0 ? MINUS : '+';
+      expr += (idx === 0 ? (c < 0 ? MINUS : '') : ' ' + sign + ' ') + (abs === 1 ? '' : abs) + lab('F', tc[0] - 1);
+      line += (idx === 0 ? (c < 0 ? MINUS : '') : ' ' + sign + ' ') + (abs === 1 ? '' : abs + '·') + vec(r);
+      r.forEach((v, j) => { res[j] += c * v; });
+    });
+    const ok = res.every((v, j) => v === a[t][j]);
+    line += ' = ' + vec(res) + (ok ? ' = ' + lab('F', t) : ' (¡no coincide!)');
+    body.appendChild(el('p', 'comb', expr));
+    body.appendChild(el('p', 'vec', line));
+    body.appendChild(el('p', 'conc', 'La fila ' + lab('F', t) + ' depende de las otras: no hay 3 filas independientes, así que el rango no es 3.'));
+    toggle.addEventListener('click', () => {
+      const open = body.hidden;
+      body.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.textContent = open ? 'Ocultar el método 2' : 'Método 2 · Combinación lineal';
+    });
+    box.append(toggle, body);
+    return box;
+  }
+
+  function rankInfo(a) {
+    const m = a.length, n = a[0].length, kmax = Math.min(m, n);
+    let r = 0, wit = null;
+    for (let k = 1; k <= kmax; k++) {
+      let found = null;
+      combos(m, k).forEach(rs => combos(n, k).forEach(cs => {
+        if (!found) { const d = det(subm(a, rs, cs)); if (d !== 0) found = { rs, cs, d }; }
+      }));
+      if (!found) break;
+      r = k; wit = found;
+    }
+    const nextN = r < kmax ? combos(m, r + 1).length * combos(n, r + 1).length : 0;
+    return { r, wit, kmax, nextN };
+  }
+
+  function initMinor(root, a) {
+    const m = a.length, n = a[0].length;
+    const ks = (root.dataset.ks || root.dataset.k).split(',').map(Number);
+    const combo = root.dataset.combo ? JSON.parse(root.dataset.combo) : null;
+    const practice = root.dataset.practice === '1';
+    const showVerdict = root.dataset.verdict !== 'none';
+    const sorted = x => x.slice().sort(num);
+    const keyOf = (k, rs, cs) => k + ':' + rs.join(',') + '|' + cs.join(',');
+    const card = root.closest('article');
+    const markDone = () => { if (card) card.classList.add('done'); };
+    const hist = [];                       // menores ya calculados en esta tarjeta
+    let pickPending = !!root.dataset.pick;
+
+    const chipLabel = (rs, cs) => {
+      const parts = [];
+      if (rs.length < m) parts.push(labs('F', rs));
+      if (cs.length < n) parts.push(labs('C', cs));
+      if (!parts.length) return '|<var>A</var>|';
+      return parts.join('<span class="sep">·</span>');
+    };
+    const parsePick = s => {
+      const p = s.split('|');
+      return { rs: p[0].split(',').map(x => parseInt(x, 10) - 1), cs: p[1].split(',').map(x => parseInt(x, 10) - 1) };
+    };
+
+    root.classList.add('mxc');
+    if (combo) root.classList.add('two');
+    const col1 = el('div', 'm1');
+    root.appendChild(col1);
+    if (combo) col1.appendChild(el('p', 'tag', 'Método 1 · Los menores de orden ' + ks[0]));
+
+    const kbtns = [];
+    if (ks.length > 1) {
+      const sw = el('div', 'kswitch');
+      sw.appendChild(el('span', 'klbl', 'Orden del menor'));
+      ks.forEach(kk => {
+        const b = el('button', 'seg', kk + ' × ' + kk);
+        b.type = 'button';
+        b.addEventListener('click', () => build(kk, null));
+        kbtns.push({ b, kk });
+        sw.appendChild(b);
+      });
+      col1.appendChild(sw);
+    }
+
+    const view = el('div', 'view');
+    col1.appendChild(view);
+
+    if (practice) {
+      const rbtn = el('button', 'btn', 'Ver el rango');
+      rbtn.type = 'button';
+      rbtn.setAttribute('aria-expanded', 'false');
+      const rbox = el('div', 'revealbox');
+      rbox.hidden = true;
+      rbox.setAttribute('aria-live', 'polite');
+      rbtn.addEventListener('click', () => {
+        const open = rbox.hidden;
+        rbox.hidden = !open;
+        rbtn.setAttribute('aria-expanded', String(open));
+        rbtn.textContent = open ? 'Ocultar el rango' : 'Ver el rango';
+        if (!open) return;
+        const info = rankInfo(a);
+        let html;
+        if (info.r === 0) html = '<p class="conc ok">Rango 0: todos los elementos son 0.</p>';
+        else {
+          html = '<p class="conc ok">Rango ' + info.r + '.</p>';
+          html += info.r === 1
+            ? '<p>Hay un elemento distinto de 0.</p>'
+            : '<p>Hay un menor de orden ' + info.r + ' distinto de 0: ' + chipLabel(info.wit.rs, info.wit.cs) + ' = ' + fmt(info.wit.d) + '.</p>';
+          if (info.r < info.kmax) {
+            html += '<p>' + (info.nextN === 1
+              ? 'El único menor de orden ' + (info.r + 1) + ' vale 0.'
+              : 'Los ' + info.nextN + ' menores de orden ' + (info.r + 1) + ' valen 0.') + '</p>';
+          } else html += '<p>No hay menores de orden mayor: es el rango máximo.</p>';
+        }
+        rbox.innerHTML = html;
+        if (info.r >= 2 && ks.indexOf(info.r) > -1) build(info.r, info.wit);
+      });
+      col1.append(rbtn, rbox);
+    }
+
+    if (combo) root.appendChild(buildCombo(a, combo));
+
+    function build(k, pick) {
+      kbtns.forEach(x => { x.b.classList.toggle('on', x.kk === k); x.b.setAttribute('aria-pressed', String(x.kk === k)); });
+      view.innerHTML = '';
+      const yesTxt = (k === ks[0] && root.dataset.yes) || ('Menor de orden ' + k + ' distinto de 0.');
+      const noTxt = (k === ks[0] && root.dataset.no) || 'Este menor vale 0.';
+      const rowSets = combos(m, k), colSets = combos(n, k);
+      const total = rowSets.length * colSets.length;
+      const rowsFixed = m === k, colsFixed = n === k;
+      const single = rowsFixed && colsFixed;
+      let selR = rowsFixed && !single ? rowSets[0].slice() : [];
+      let selC = colsFixed && !single ? colSets[0].slice() : [];
+      let curKey = null;
+      let pk = pick ? { rs: pick.rs, cs: pick.cs } : null;
+      if (!pk && pickPending && k === ks[0]) pk = parsePick(root.dataset.pick);
+      pickPending = false;
+      if (pk) { selR = pk.rs.slice(); selC = pk.cs.slice(); }
+
+      function toggleRow(i) {
+        const p = selR.indexOf(i);
+        if (p > -1) selR.splice(p, 1); else { selR.push(i); if (selR.length > k) selR.shift(); }
+        update();
+      }
+      function toggleCol(j) {
+        const p = selC.indexOf(j);
+        if (p > -1) selC.splice(p, 1); else { selC.push(j); if (selC.length > k) selC.shift(); }
+        update();
+      }
+      function go(it) {
+        if (it.k !== k) { build(it.k, { rs: it.rs, cs: it.cs }); return; }
+        selR = it.rs.slice(); selC = it.cs.slice(); update();
+      }
+
+      const M = buildMatrix(a, { labels: true, headsR: !rowsFixed, headsC: !colsFixed, onRow: toggleRow, onCol: toggleCol });
+      const scroll = el('div', 'mxscroll');
+      scroll.appendChild(M.wrap);
+      view.appendChild(scroll);
+
+      const ctrl = el('div', 'ctrl');
+      if (single) {
+        const cb = el('button', 'btn', 'Calcular el determinante');
+        cb.type = 'button';
+        cb.addEventListener('click', () => { selR = rowSets[0].slice(); selC = colSets[0].slice(); update(); });
+        ctrl.appendChild(cb);
+      }
+      const allOpen = root.dataset.allopen === '1';
+      const allbox = el('div', 'allbox');
+      allbox.hidden = true;
+      let allBtn = null;
+      if (total > 1 && root.dataset.noall !== '1' && !allOpen) {
+        allBtn = el('button', 'btn', 'Calcular los ' + total + ' menores');
+        allBtn.type = 'button';
+        allBtn.addEventListener('click', () => openAll());
+        ctrl.appendChild(allBtn);
+      }
+      if (ctrl.children.length) view.appendChild(ctrl);
+
+      const ro = el('div', 'readout');
+      ro.setAttribute('aria-live', 'polite');
+      view.appendChild(ro);
+      const histBox = el('div', 'hist');
+      histBox.hidden = true;
+      view.appendChild(histBox);
+      view.appendChild(allbox);
+
+      function renderHist() {
+        histBox.innerHTML = '';
+        histBox.hidden = hist.length === 0;
+        if (!hist.length) return;
+        const head = el('div', 'hist-h');
+        head.appendChild(el('p', 'tag mut', 'Menores calculados'));
+        const clr = el('button', 'btn small', 'Borrar');
+        clr.type = 'button';
+        clr.addEventListener('click', () => { hist.length = 0; build(k, null); });
+        head.appendChild(clr);
+        histBox.appendChild(head);
+        const list = el('div', 'hist-list');
+        hist.forEach(h => {
+          const b = el('button', 'hi' + (h.key === curKey ? ' cur' : ''));
+          b.type = 'button';
+          b.appendChild(el('span', 'hi-l', chipLabel(h.rs, h.cs)));
+          const r = el('span', 'hi-r');
+          r.appendChild(detEl(subm(a, h.rs, h.cs)));
+          r.appendChild(el('span', 'eq', '='));
+          r.appendChild(el('span', 'val ' + (h.d === 0 ? 'z' : 'nz'), fmt(h.d)));
+          b.appendChild(r);
+          b.addEventListener('click', () => go(h));
+          list.appendChild(b);
+        });
+        histBox.appendChild(list);
+      }
+
+      function openAll() {
+        const items = [];
+        rowSets.forEach(rs => colSets.forEach(cs => items.push({ rs, cs, d: det(subm(a, rs, cs)) })));
+        items.forEach(x => {
+          const key = keyOf(k, x.rs, x.cs);
+          if (!hist.some(h => h.key === key)) hist.push({ key, k, rs: x.rs, cs: x.cs, d: x.d });
+        });
+        const nz = items.filter(x => x.d !== 0);
+        const z = items.length - nz.length;
+        allbox.innerHTML = '';
+        let txt;
+        if (nz.length === 0) txt = 'Los <strong>' + items.length + '</strong> menores de orden ' + k + ' valen 0.';
+        else txt = 'De los <strong>' + items.length + '</strong> menores de orden ' + k + ', <strong>' + nz.length + '</strong> ' + (nz.length === 1 ? 'es distinto de 0' : 'son distintos de 0') + ' y <strong>' + z + '</strong> ' + (z === 1 ? 'vale' : 'valen') + ' 0.';
+        allbox.appendChild(el('p', '', txt));
+        if (nz.length === 0 && root.dataset.allzero && k === ks[0]) {
+          allbox.appendChild(el('p', 'conc ' + (root.dataset.tone || 'no'), root.dataset.allzero));
+        }
+        allbox.hidden = false;
+        if (allBtn) allBtn.hidden = true;
+        markDone();
+        renderHist();
+      }
+
+      function update() {
+        const full = selR.length === k && selC.length === k;
+        M.cells.classList.toggle('has-sel', full);
+        for (let i = 0; i < m; i++) {
+          for (let j = 0; j < n; j++) {
+            const c = M.cellEls[i][j];
+            const inr = selR.indexOf(i) > -1, inc = selC.indexOf(j) > -1;
+            const s = full && inr && inc;
+            c.classList.toggle('sel', s);
+            c.classList.toggle('soft', !full && ((inr && !rowsFixed) || (inc && !colsFixed)));
+            c.classList.toggle('e-t', s && selR.indexOf(i - 1) < 0);
+            c.classList.toggle('e-b', s && selR.indexOf(i + 1) < 0);
+            c.classList.toggle('e-l', s && selC.indexOf(j - 1) < 0);
+            c.classList.toggle('e-r', s && selC.indexOf(j + 1) < 0);
+          }
+        }
+        M.colBtns.forEach((h, j) => { const on = selC.indexOf(j) > -1; h.classList.toggle('on', on); if (h.tagName === 'BUTTON') h.setAttribute('aria-pressed', String(on)); });
+        M.rowBtns.forEach((h, i) => { const on = selR.indexOf(i) > -1; h.classList.toggle('on', on); if (h.tagName === 'BUTTON') h.setAttribute('aria-pressed', String(on)); });
+
+        ro.innerHTML = '';
+        if (!full) {
+          curKey = null;
+          renderHist();
+          let hint = root.dataset.hint;
+          if (!hint) {
+            if (single) hint = 'Pulsa el botón para calcular el determinante.';
+            else if (rowsFixed) hint = 'Elige ' + k + ' de las ' + n + ' columnas pulsando sobre las <var>C</var> de arriba.' + (selC.length ? ' Llevas ' + selC.length + '.' : '');
+            else if (colsFixed) hint = 'Elige ' + k + ' de las ' + m + ' filas pulsando sobre las <var>F</var> de la izquierda.' + (selR.length ? ' Llevas ' + selR.length + '.' : '');
+            else hint = 'Elige ' + k + ' filas y ' + k + ' columnas pulsando sobre las <var>F</var> y las <var>C</var>.' + (selR.length || selC.length ? ' Llevas ' + plural(selR.length, 'fila', 'filas') + ' y ' + plural(selC.length, 'columna', 'columnas') + '.' : '');
+          }
+          ro.appendChild(el('p', 'hint', hint));
+          return;
+        }
+        markDone();
+        const rs = sorted(selR), cs = sorted(selC);
+        const d = det(subm(a, rs, cs));
+        curKey = keyOf(k, rs, cs);
+        if (!hist.some(h => h.key === curKey)) hist.push({ key: curKey, k, rs, cs, d });
+        renderHist();
+        if (showVerdict) ro.appendChild(el('p', 'verdict', d === 0 ? noTxt : yesTxt));
+      }
+
+      if (allOpen) openAll();
+      update();
+    }
+
+    build(ks[0], null);
+  }
+
+  document.querySelectorAll('.mxw').forEach(root => {
+    const a = parseM(root.dataset.m);
+    const mode = root.dataset.mode || 'minor';
+    if (mode === 'order') initOrder(root, a, false);
+    else if (mode === 'zero') initOrder(root, a, true);
+    else if (mode === 'static') initStatic(root, a);
+    else initMinor(root, a);
+  });
+
+  /* pestañas */
+  const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+  const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+  const strip = document.querySelector('.tabs-in');
+  const sentinel = document.getElementById('sentinel');
+  const names = tabs.map(t => t.dataset.tab);
+
+  function show(i, scroll) {
+    tabs.forEach((t, j) => {
+      t.setAttribute('aria-selected', String(j === i));
+      t.tabIndex = j === i ? 0 : -1;
+      panels[j].hidden = j !== i;
+    });
+    const t = tabs[i];
+    if (t.offsetLeft < strip.scrollLeft || t.offsetLeft + t.offsetWidth > strip.scrollLeft + strip.clientWidth) strip.scrollLeft = Math.max(0, t.offsetLeft - 24);
+    if (scroll) {
+      const y = sentinel.getBoundingClientRect().top + window.pageYOffset;
+      if (window.pageYOffset > y) window.scrollTo(0, y);
+    }
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => show(i, true));
+    t.addEventListener('keydown', e => {
+      let j = null;
+      if (e.key === 'ArrowRight') j = (i + 1) % tabs.length;
+      else if (e.key === 'ArrowLeft') j = (i - 1 + tabs.length) % tabs.length;
+      if (j !== null) { e.preventDefault(); show(j, false); tabs[j].focus(); }
+    });
+  });
+  document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => show(parseInt(b.dataset.go, 10), true)));
+
+  function fromHash() {
+    try {
+      const h = (window.location.hash || '').replace('#', '');
+      const i = names.indexOf(h);
+      return i > -1 ? i : 0;
+    } catch (e) { return 0; }
+  }
+  show(fromHash(), false);
+  window.addEventListener('hashchange', () => show(fromHash(), true));
+})();
+</script>
+
+</body>
+</html>
