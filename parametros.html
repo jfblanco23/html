@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Rango de una matriz con parámetros: discusión paso a paso, con m en una o varias columnas.">
+<title>Rango con parámetros</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap">
+<style>
+:root{color-scheme:light}
+[hidden]{display:none!important}
+
+
+/* Diseño: cuaderno cuadriculado con los colores del canal (crema y azul marino). Una columna de 62rem con pestañas fijas arriba.
+   Las matrices son lo más grande de cada tarjeta y se dibujan entre paréntesis; los menores se marcan dentro de una caja turquesa. */
+:root{
+  --bg:#FCFBF7; --grid:rgba(27,42,65,.06); --surface:#FFFFFF; --ink:#1B2A41; --muted:#5A6576; --line:#E2DDCE;
+  --accent:#7B2CBF; --accent-bg:#F2E9FA; --accent-line:#D9C1EF;
+  --sel:#00A6A6; --sel-ink:#00706F; --sel-bg:#DCF2F1;
+  --zero:#B83247; --zero-bg:#FBE8EB;
+  --serif:"TeX Gyre Pagella","Palatino Linotype",Palatino,"URW Palladio L","Source Serif 4","Book Antiqua",Georgia,serif;
+  --sans:"Source Sans 3",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --u:clamp(1.2rem,4.8vw,1.75rem);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121B2C; --grid:rgba(243,239,228,.05); --surface:#1B2A41; --ink:#F3EFE4; --muted:#A9B3C4; --line:#32435F;
+    --accent:#C79DF3; --accent-bg:#35264F; --accent-line:#5C4688;
+    --sel:#2CC4C4; --sel-ink:#63D8D8; --sel-bg:#154853;
+    --zero:#F58595; --zero-bg:#4A2431;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121B2C; --grid:rgba(243,239,228,.05); --surface:#1B2A41; --ink:#F3EFE4; --muted:#A9B3C4; --line:#32435F;
+  --accent:#C79DF3; --accent-bg:#35264F; --accent-line:#5C4688;
+  --sel:#2CC4C4; --sel-ink:#63D8D8; --sel-bg:#154853;
+  --zero:#F58595; --zero-bg:#4A2431;
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background-color:var(--bg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+  color:var(--ink); font:400 1.08rem/1.6 var(--serif); font-variant-numeric:lining-nums;
+}
+:focus-visible{outline:3px solid var(--sel);outline-offset:2px}
+var{font-style:italic}
+sub{font-size:.7em;line-height:0}
+strong{font-weight:700}
+
+.page{max-width:62rem;margin:0 auto;padding-inline:16px}
+.head{padding-block:1.6rem 1rem}
+.eyebrow{margin:0 0 .6rem;font:600 .78rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1{margin:0;font:700 clamp(2.1rem,6.5vw,3.3rem)/1.05 var(--serif);letter-spacing:-.015em;text-wrap:balance}
+.sub{margin:.6rem 0 0;color:var(--muted);font-size:1.15rem;max-width:40rem}
+
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-block:1px solid var(--line)}
+.tabs-in{max-width:62rem;margin:0 auto;padding-inline:16px;display:flex;gap:.2rem;overflow-x:auto;scrollbar-width:thin}
+.tab{flex:none;padding:.95rem .85rem .8rem;border:0;border-bottom:3px solid transparent;background:none;color:var(--muted);font:600 .98rem/1 var(--sans);cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+.panel{display:flex;flex-direction:column;gap:1.15rem;padding-block:1.8rem 3rem}
+.panel p{margin:0;max-width:66ch}
+h2{margin:0;font:600 clamp(1.6rem,4.6vw,2.15rem)/1.15 var(--serif);text-wrap:balance}
+h3{margin:.9rem 0 0;font:600 1.3rem/1.2 var(--serif);text-wrap:balance}
+
+.rule{background:var(--accent-bg);border:1px solid var(--accent-line);border-radius:6px;padding:1rem 1.2rem;display:flex;flex-direction:column;gap:.45rem}
+.rule p{max-width:none}
+.tag{font:700 .72rem/1 var(--sans);letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}
+.big{font-size:clamp(1.2rem,3.4vw,1.5rem);line-height:1.35}
+.formula{font-size:1.25rem;color:var(--ink)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:1.1rem;min-width:0}
+.exn{margin:0 0 .85rem;font:700 .72rem/1 var(--sans);letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.cap{margin-top:.9rem}
+.grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(min(100%,19rem),1fr))}
+.grid.two{grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr))}
+.grid.order{--u:clamp(1.15rem,4.6vw,1.55rem)}
+.stack{display:flex;flex-direction:column;gap:1rem}
+
+.demo{display:flex;flex-wrap:wrap;gap:1.4rem 2rem;align-items:center}
+.demo .txt{flex:1 1 16rem;min-width:0;display:flex;flex-direction:column;gap:.7rem}
+.legend{display:flex;flex-direction:column;gap:.35rem;font-size:.98rem}
+.legend span{display:inline-flex;align-items:center;gap:.5rem}
+.sw{width:1rem;height:1rem;border-radius:3px;flex:none;border:1.5px solid var(--sel)}
+.sw.b{border-color:var(--accent);background:var(--accent-bg)}
+.sw.a{background:var(--sel-bg)}
+
+.scale{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1.4rem;padding:1rem 1.2rem;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.scale .lead{flex:1 1 14rem;font-size:1.1rem}
+.scale ul{display:flex;align-items:center;list-style:none;margin:0;padding:0}
+.scale li{display:flex;align-items:center;font:700 2.4rem/1 var(--serif);color:var(--accent)}
+.scale li:not(:last-child)::after{content:"";width:2rem;border-top:2px solid var(--line);margin-inline:.55rem}
+
+/* matrices */
+.mx{--cw:calc(var(--u)*1.9);--ch:calc(var(--u)*1.55);--pad:calc(var(--u)*.75);
+  display:inline-grid;grid-template-columns:auto auto;column-gap:.4rem;row-gap:.3rem;align-items:center;justify-items:start;font-family:var(--serif)}
+.mx.nolab{grid-template-columns:auto}
+.heads{display:grid;grid-template-columns:repeat(var(--n),var(--cw));padding-inline:var(--pad)}
+.rlabs{display:grid;grid-template-rows:repeat(var(--m),var(--ch));align-items:center}
+.cells{position:relative;display:grid;grid-template-columns:repeat(var(--n),var(--cw));grid-auto-rows:var(--ch);padding-inline:var(--pad);font-size:var(--u);font-variant-numeric:tabular-nums lining-nums}
+.cells::before,.cells::after{content:"";position:absolute;top:-.1em;bottom:-.1em;width:calc(var(--u)*.62);border:0 solid var(--ink);pointer-events:none}
+.cells::before{left:0;border-left-width:2.5px;border-radius:50%}
+.cells::after{right:0;border-right-width:2.5px;border-radius:50%}
+.cell{display:grid;place-items:center;border:2.5px solid transparent;transition:opacity .15s,background-color .15s}
+.cell.t-a,.cell.soft,.cell.sel{background:var(--sel-bg)}
+.cell.t-b{background:var(--accent-bg)}
+.cells.has-sel .cell:not(.sel){opacity:.35}
+.cell.e-t{border-top-color:var(--sel)}
+.cell.e-b{border-bottom-color:var(--sel)}
+.cell.e-l{border-left-color:var(--sel)}
+.cell.e-r{border-right-color:var(--sel)}
+.cell.e-t.e-l{border-top-left-radius:9px}
+.cell.e-t.e-r{border-top-right-radius:9px}
+.cell.e-b.e-l{border-bottom-left-radius:9px}
+.cell.e-b.e-r{border-bottom-right-radius:9px}
+
+.hd{display:inline-flex;align-items:center;justify-content:center;min-height:2rem;min-width:2rem;padding:0 .4rem;border:1.5px solid var(--line);border-radius:6px;background:var(--surface);color:var(--muted);font:600 .98rem/1 var(--serif)}
+button.hd{color:var(--ink);cursor:pointer;box-shadow:0 1px 0 var(--line)}
+button.hd:hover{border-color:var(--sel);color:var(--ink)}
+.hd.on{background:var(--sel-bg);border-color:var(--sel);color:var(--sel-ink)}
+.hd.ro{border-color:transparent;background:transparent}
+.hd.ro.on{border-color:var(--sel)}
+.heads .hd{margin-inline:3px}
+
+.mxscroll{overflow-x:auto;padding-block:.25rem}
+.mxc{display:grid;gap:1.4rem 2rem;grid-template-columns:minmax(0,1fr)}
+.mxc.two{grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr))}
+.m1,.m2{min-width:0;display:flex;flex-direction:column;gap:.8rem}
+.m2{padding-top:.2rem}
+.ctrl{display:flex;flex-wrap:wrap;gap:.45rem}
+.chip,.btn{display:inline-flex;align-items:center;gap:.5rem;min-height:2.5rem;padding:.35rem .85rem;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:600 .95rem/1 var(--serif);cursor:pointer}
+.chip:hover,.btn:hover{border-color:var(--sel)}
+.chip.on{border-color:var(--sel);background:var(--sel-bg)}
+.btn{font-family:var(--sans);border-radius:6px}
+.lb+.lb{margin-left:.15em}
+.sep{margin-inline:.35em;color:var(--muted)}
+.cv{font-weight:700}
+.cv.z,.val.z,.al.z b{color:var(--zero)}
+.cv.nz,.val.nz,.al.nz b{color:var(--accent)}
+
+.readout{display:flex;flex-direction:column;gap:.7rem;min-height:3.2rem}
+.ro-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .9rem}
+.eq{font-size:1.5rem}
+.val{font:700 1.5rem/1 var(--serif);padding:.3rem .65rem;border-radius:6px}
+.val.z{background:var(--zero-bg)}
+.val.nz{background:var(--accent-bg)}
+.dt{display:inline-grid;grid-template-columns:repeat(var(--k),auto);gap:.1rem .9rem;padding:.2rem .6rem;border-left:2.5px solid var(--ink);border-right:2.5px solid var(--ink);font-size:calc(var(--u)*.95);line-height:1.35;font-variant-numeric:tabular-nums lining-nums}
+.dc{text-align:right}
+.hint{color:var(--muted);font-style:italic}
+.verdict{font-size:1.05rem}
+.allbox{display:flex;flex-direction:column;gap:.6rem;padding:.8rem 1rem;border:1px dashed var(--line);border-radius:6px}
+.allbox p{margin:0}
+.alllist{display:flex;flex-wrap:wrap;gap:.45rem}
+.al{padding:.3rem .65rem;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:.98rem}
+.conc{font-weight:600}
+.conc.ok{color:var(--accent)}
+.conc.no{color:var(--zero)}
+.comb{font-size:1.5rem;line-height:1.3}
+.vec{font-size:1.1rem;overflow-wrap:anywhere}
+.m2 .conc{color:var(--zero)}
+
+.ordbtn{display:flex;justify-content:center;width:100%;padding:.5rem;border:0;border-radius:8px;background:none;cursor:pointer;color:inherit}
+.ordbtn:hover{background:var(--sel-bg)}
+.res{margin-top:.7rem;min-height:5.4rem;display:flex;flex-direction:column;gap:.4rem}
+.res p{margin:0}
+.ord{font-size:1.5rem;color:var(--accent)}
+
+.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:.7rem}
+.steps li{counter-increment:s;display:grid;grid-template-columns:2.2rem minmax(0,1fr) auto;gap:.2rem .9rem;align-items:center;padding:.9rem 1.1rem;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.steps li::before{content:counter(s);font:700 1.6rem/1 var(--serif);color:var(--muted)}
+.steps .r{font:700 1.15rem/1 var(--serif);color:var(--accent);background:var(--accent-bg);padding:.4rem .7rem;border-radius:6px;white-space:nowrap}
+@media (max-width:30rem){.steps li{grid-template-columns:1.6rem minmax(0,1fr)}.steps .r{grid-column:2;justify-self:start}}
+
+.pager{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:1rem}
+
+.kswitch{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem}
+.klbl{margin-right:.3rem;font:700 .72rem/1 var(--sans);letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.seg{min-height:2.2rem;padding:.25rem .8rem;border:1.5px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);font:600 .95rem/1 var(--serif);cursor:pointer}
+.seg:hover{border-color:var(--sel)}
+.seg.on{background:var(--sel-bg);border-color:var(--sel);color:var(--sel-ink)}
+.revealbox{display:flex;flex-direction:column;gap:.4rem;padding:.8rem 1rem;border:1px solid var(--accent-line);background:var(--accent-bg);border-radius:6px}
+.revealbox p{margin:0}
+.m1>.btn{align-self:flex-start}
+.m2btn{align-self:flex-start}
+.m2body{display:flex;flex-direction:column;gap:.8rem}
+.m2body[hidden]{display:none}
+.card:not(.done) .after{display:none}
+.btn.small{min-height:2rem;padding:.2rem .75rem;font-size:.85rem}
+.hist{display:flex;flex-direction:column;gap:.6rem}
+.hist-h{display:flex;flex-wrap:wrap;align-items:center;gap:.8rem}
+.tag.mut{color:var(--muted)}
+.hist-list{display:flex;flex-wrap:wrap;gap:.6rem}
+.hi{display:flex;flex-direction:column;align-items:flex-start;gap:.4rem;padding:.55rem .8rem;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font-family:var(--serif);text-align:left;cursor:pointer}
+.hi:hover{border-color:var(--sel)}
+.hi.cur{border-color:var(--sel);background:var(--sel-bg)}
+.hi-l{font:600 .85rem/1 var(--serif);color:var(--muted)}
+.hi.cur .hi-l{color:var(--sel-ink)}
+.hi-r{display:flex;align-items:center;gap:.5rem}
+.hi .dt{font-size:calc(var(--u)*.8)}
+.hi .eq{font-size:1.2rem}
+.hi .val{font-size:1.15rem;padding:.2rem .55rem}
+
+@media (prefers-reduced-motion:reduce){.cell{transition:none}}
+
+/* ===== rango con parámetros ===== */
+.mx.par{--cw:calc(var(--u)*3.3)}
+.cell.pc:not(.sel):not(.soft){background:var(--accent-bg)}
+.hd.pcol:not(.on){border-color:var(--accent);color:var(--accent)}
+.stmt{margin:0 0 .8rem;max-width:none}
+.steps.plain li{grid-template-columns:2.2rem minmax(0,1fr)}
+.dt.one{border:0;padding-inline:0}
+.mut{color:var(--muted)}
+p.mut{margin:0}
+.dwrap{min-width:0}
+.disc{display:flex;flex-direction:column;gap:.8rem;padding:1rem 1.1rem;border:1px solid var(--accent-line);background:var(--accent-bg);border-radius:8px}
+.disc p{margin:0;max-width:none}
+.mrows{display:flex;flex-direction:column;gap:.5rem}
+.mrow{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem 1rem;padding:.55rem .8rem;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.mrow .hi-l{min-width:4.5rem}
+.mrow .hi-r{display:flex;align-items:center;gap:.5rem}
+.mrow .dt{font-size:calc(var(--u)*.8)}
+.mrow .eq{font-size:1.2rem}
+.mrow .val{font-size:1.15rem;padding:.2rem .55rem}
+.rootnote{font-size:.95rem;color:var(--muted)}
+.cases{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.6rem}
+.case{display:flex;flex-direction:column;gap:.7rem;padding:.7rem .9rem;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.case-h{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.4rem .8rem;font-size:1.1rem}
+.rk{font:700 1.05rem/1 var(--serif);color:var(--accent);background:var(--accent-bg);padding:.4rem .7rem;border-radius:6px;white-space:nowrap}
+.case-b{display:flex;flex-direction:column;gap:.6rem;min-width:0}
+.case-b p{margin:0}
+.case-b .mx{--u:1.15rem}
+.rlabs .hd{min-height:0;height:calc(var(--ch) - 6px)}
+sup{font-size:.7em;line-height:0}
+
+</style>
+</head>
+<body>
+
+<header class="head">
+  <div class="page">
+    <p class="eyebrow">Matrices · 2º Bachillerato</p>
+    <h1>Rango con parámetros</h1>
+    <p class="sub">Discute el rango de una matriz en la que aparece un parámetro <var>m</var> en una o varias columnas.</p>
+  </div>
+</header>
+<div id="sentinel"></div>
+<nav class="tabs" aria-label="Apartados">
+  <div class="tabs-in" role="tablist">
+    <button class="tab" role="tab" id="t-metodo" aria-controls="p-metodo" data-tab="metodo">Método</button>
+    <button class="tab" role="tab" id="t-2x2" aria-controls="p-2x2" data-tab="2x2">2 × 2</button>
+    <button class="tab" role="tab" id="t-2x3" aria-controls="p-2x3" data-tab="2x3">2 × 3</button>
+    <button class="tab" role="tab" id="t-2x4" aria-controls="p-2x4" data-tab="2x4">2 × 4</button>
+    <button class="tab" role="tab" id="t-3x3" aria-controls="p-3x3" data-tab="3x3">3 × 3</button>
+    <button class="tab" role="tab" id="t-3x4" aria-controls="p-3x4" data-tab="3x4">3 × 4</button>
+  </div>
+</nav>
+
+<main class="page">
+
+<!-- ============ MÉTODO ============ -->
+<section class="panel" id="p-metodo" role="tabpanel" aria-labelledby="t-metodo">
+  <h2>Cómo se discute el rango</h2>
+  <p>Las columnas donde aparece el parámetro <var>m</var> están sombreadas. Hay que decir cuánto vale el rango para cada valor de <var>m</var>. Primero se ve el caso de <var>m</var> en una sola columna y después en varias.</p>
+  <div class="rule">
+    <p class="tag">Si <var>m</var> está en una sola columna</p>
+    <p class="big">Si quitas la columna de <var>m</var>, queda una matriz de rango <var>r</var>. Al volver a poner la columna de <var>m</var>, el rango de la matriz completa es <var>r</var> o <var>r</var> + 1.</p>
+  </div>
+  <ol class="steps plain">
+    <li><span>Quita la columna de <var>m</var>. Los menores que solo usan las columnas que quedan son números: calcúlalos.</span></li>
+    <li><span>Si uno tiene el mayor orden posible de la matriz y vale distinto de 0, el rango es ese orden, valga lo que valga <var>m</var>.</span></li>
+    <li><span>Si no, calcula los menores de orden mayor que usan la columna de <var>m</var>. Salen expresiones de la forma <var>a</var><var>m</var> + <var>b</var>. Busca el valor de <var>m</var> que las anula todas a la vez.</span></li>
+    <li><span>Sustituye ese valor de <var>m</var> en la matriz y calcula su rango. Para cualquier otro valor de <var>m</var>, el rango es el orden de esos menores.</span></li>
+  </ol>
+
+  <h3><var>m</var> en varias columnas</h3>
+  <ol class="steps plain">
+    <li><span>Calcula los menores del mayor orden posible. Salen polinomios en <var>m</var> de grado 1, 2 o 3. Si alguno es un número distinto de 0, el rango es máximo para todo <var>m</var>.</span></li>
+    <li><span>Iguala a 0 cada menor y resuelve. Solo cuentan las soluciones reales: <var>m</var> = ±√5 es válida, pero <var>m</var> = ±<i>i</i> no.</span></li>
+    <li><span>Los valores especiales son los que anulan todos los menores a la vez. Si dos menores se anulan para valores distintos, o uno no se anula nunca, no hay ninguno y el rango es máximo siempre.</span></li>
+    <li><span>Sustituye cada valor especial, también los no enteros, y calcula el rango. Puede bajar más de uno (con una raíz doble, por ejemplo).</span></li>
+  </ol>
+
+  <h3>Ejemplo resuelto</h3>
+  <p>Pulsa sobre las <var>F</var> y las <var>C</var> para marcar un menor. Queda escrito debajo como determinante, con su resultado. Compara con la discusión de abajo.</p>
+  <div class="exlist" data-size="ej" data-label="Ejemplo"></div>
+
+  <div class="pager"><span></span><button class="btn" data-go="1">Matrices 2 × 2 →</button></div>
+</section>
+
+<!-- ============ 2 × 2 ============ -->
+<section class="panel" id="p-2x2" role="tabpanel" aria-labelledby="t-2x2" hidden>
+  <h2>Matrices 2 × 2</h2>
+  <p>El rango puede ser 0, 1 o 2. Al quitar la columna de <var>m</var> queda una columna de dos números.</p>
+  <h3>La columna sin <var>m</var> no es nula</h3>
+  <div class="exlist" data-size="2x2" data-type="A"></div>
+  <h3>La columna sin <var>m</var> es nula</h3>
+  <div class="exlist" data-size="2x2" data-type="B"></div>
+  <h3>El parámetro <var>m</var> en varias columnas</h3>
+  <p>Ahora <var>m</var> aparece en las dos columnas y el determinante es una ecuación en <var>m</var> de primer o segundo grado. Solo valen las soluciones reales: si salen <var>m</var> = ±√5 se usan tal cual, y si la ecuación no tiene soluciones reales (por ejemplo <var>m</var>² + 1 = 0) el determinante no se anula nunca.</p>
+  <div class="exlist" data-size="2x2" data-type="C"></div>
+  <div class="pager"><button class="btn" data-go="0">← Método</button><button class="btn" data-go="2">Matrices 2 × 3 →</button></div>
+</section>
+
+<!-- ============ 2 × 3 ============ -->
+<section class="panel" id="p-2x3" role="tabpanel" aria-labelledby="t-2x3" hidden>
+  <h2>Matrices 2 × 3</h2>
+  <p>El rango puede ser 0, 1 o 2. Al quitar la columna de <var>m</var> queda un menor de orden 2 sin <var>m</var>.</p>
+  <h3>El menor sin <var>m</var> es distinto de 0</h3>
+  <div class="exlist" data-size="2x3" data-type="A"></div>
+  <h3>El menor sin <var>m</var> vale 0</h3>
+  <div class="exlist" data-size="2x3" data-type="B"></div>
+  <h3>El parámetro <var>m</var> en varias columnas</h3>
+  <p>Ahora <var>m</var> aparece en varias columnas y los tres menores de orden 2 son ecuaciones en <var>m</var>. Hay que ver si algún valor las anula todas a la vez.</p>
+  <div class="rule">
+    <p class="tag">Valores distintos</p>
+    <p class="big">Si un menor se anula para un valor de <var>m</var> y otro menor se anula para un valor distinto, ningún valor de <var>m</var> anula los dos. Entonces hay siempre un menor de orden 2 distinto de 0 y el rango es 2 para cualquier <var>m</var>. Pasa lo mismo si alguna de las ecuaciones no tiene soluciones reales (<var>m</var> = ±√5 sí es real; <var>m</var> = ±<i>i</i> no).</p>
+  </div>
+  <div class="exlist" data-size="2x3" data-type="C"></div>
+  <div class="pager"><button class="btn" data-go="1">← Matrices 2 × 2</button><button class="btn" data-go="3">Matrices 2 × 4 →</button></div>
+</section>
+
+<!-- ============ 2 × 4 ============ -->
+<section class="panel" id="p-2x4" role="tabpanel" aria-labelledby="t-2x4" hidden>
+  <h2>Matrices 2 × 4</h2>
+  <p>El rango puede ser 0, 1 o 2. Al quitar la columna de <var>m</var> quedan tres columnas y tres menores de orden 2 sin <var>m</var>.</p>
+  <h3>Hay un menor de orden 2 sin <var>m</var> distinto de 0</h3>
+  <div class="exlist" data-size="2x4" data-type="A"></div>
+  <h3>Los menores de orden 2 sin <var>m</var> valen todos 0</h3>
+  <div class="exlist" data-size="2x4" data-type="B"></div>
+  <h3>El parámetro <var>m</var> en varias columnas</h3>
+  <p>Con <var>m</var> en varias columnas salen seis menores de orden 2. Solo los valores que anulan los seis a la vez bajan el rango.</p>
+  <div class="exlist" data-size="2x4" data-type="C"></div>
+  <div class="pager"><button class="btn" data-go="2">← Matrices 2 × 3</button><button class="btn" data-go="4">Matrices 3 × 3 →</button></div>
+</section>
+
+<!-- ============ 3 × 3 ============ -->
+<section class="panel" id="p-3x3" role="tabpanel" aria-labelledby="t-3x3" hidden>
+  <h2>Matrices 3 × 3</h2>
+  <p>El rango puede ser 0, 1, 2 o 3. Al quitar la columna de <var>m</var> quedan dos columnas, y con ellas solo se pueden formar menores de orden 2.</p>
+  <h3>Hay un menor de orden 2 sin <var>m</var> distinto de 0</h3>
+  <div class="exlist" data-size="3x3" data-type="A"></div>
+  <h3>Los menores de orden 2 sin <var>m</var> valen todos 0</h3>
+  <div class="exlist" data-size="3x3" data-type="B"></div>
+  <h3>El parámetro <var>m</var> en varias columnas</h3>
+  <p>El determinante puede ser de primer, segundo o tercer grado. Se resuelve la ecuación y se estudia cada solución real.</p>
+  <div class="exlist" data-size="3x3" data-type="C"></div>
+  <div class="pager"><button class="btn" data-go="3">← Matrices 2 × 4</button><button class="btn" data-go="5">Matrices 3 × 4 →</button></div>
+</section>
+
+<!-- ============ 3 × 4 ============ -->
+<section class="panel" id="p-3x4" role="tabpanel" aria-labelledby="t-3x4" hidden>
+  <h2>Matrices 3 × 4</h2>
+  <p>El rango puede ser 0, 1, 2 o 3. Al quitar la columna de <var>m</var> queda un menor de orden 3 sin <var>m</var>.</p>
+  <h3>El menor de orden 3 sin <var>m</var> es distinto de 0</h3>
+  <div class="exlist" data-size="3x4" data-type="A"></div>
+  <h3>El menor de orden 3 sin <var>m</var> vale 0</h3>
+  <div class="exlist" data-size="3x4" data-type="B"></div>
+  <h3>El parámetro <var>m</var> en varias columnas</h3>
+  <p>Con <var>m</var> en varias columnas hay cuatro menores de orden 3, cada uno una ecuación en <var>m</var>. Hay que ver si hay valores que las anulan todas.</p>
+  <div class="exlist" data-size="3x4" data-type="C"></div>
+  <div class="pager"><button class="btn" data-go="4">← Matrices 3 × 3</button><span></span></div>
+</section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+  const MINUS = '−';
+  const EX = [{"s":"ej","t":"B","m":"1 3 m; 2 6 8","open":true},{"s":"2x2","t":"A","m":"m 3; 2 1"},{"s":"2x2","t":"A","m":"2 m; 1 m-1"},{"s":"2x2","t":"A","m":"1 m; 2 2m+3"},{"s":"2x2","t":"B","m":"0 m-3; 0 2m-6"},{"s":"2x2","t":"B","m":"m 0; 3 0"},{"s":"2x2","t":"C","m":"m 1; 2 m-1"},{"s":"2x2","t":"C","m":"m 5; 1 m"},{"s":"2x2","t":"C","m":"m -1; 1 m"},{"s":"2x2","t":"C","m":"m-1 2m-2; 3m-3 m-1"},{"s":"2x3","t":"A","m":"1 2 m; 3 4 m-1"},{"s":"2x3","t":"A","m":"m 1 0; m+1 2 3"},{"s":"2x3","t":"B","m":"m 1 2; 6 3 6"},{"s":"2x3","t":"B","m":"0 0 m-1; 0 0 3m-3"},{"s":"2x3","t":"B","m":"m 1 2; 2m 2 4"},{"s":"2x3","t":"C","m":"0 1 -1; m-2 m+1 2"},{"s":"2x3","t":"C","m":"m 5 2m; 1 m 2"},{"s":"2x3","t":"C","m":"m -1 2m; 1 m 2"},{"s":"2x3","t":"C","m":"m 1 2m; -2 m-3 -4"},{"s":"2x4","t":"A","m":"1 m 0 2; 2 m+1 1 3"},{"s":"2x4","t":"A","m":"1 0 2 m; 0 1 3 2m-1"},{"s":"2x4","t":"B","m":"1 2 3 m; 2 4 6 6"},{"s":"2x4","t":"B","m":"0 0 m+2 0; 0 0 2m+4 0"},{"s":"2x4","t":"C","m":"3 m+1 1 m; m-1 m+1 2 m-1"},{"s":"2x4","t":"C","m":"m 1 2m 3; -2 m-3 -4 -6"},{"s":"3x3","t":"A","m":"1 0 m; 0 1 2; 1 1 5"},{"s":"3x3","t":"A","m":"m 1 2; 2m 1 1; m 0 3"},{"s":"3x3","t":"A","m":"1 0 m; 0 1 1; 1 1 m+3"},{"s":"3x3","t":"B","m":"1 2 m; 2 4 2m; 3 6 3"},{"s":"3x3","t":"B","m":"0 m-1 0; 0 2m-2 0; 0 3m-3 0"},{"s":"3x3","t":"C","m":"m m 1; 1 2 0; 0 1 1"},{"s":"3x3","t":"C","m":"m 1 0; -2 m-3 0; m 1 1"},{"s":"3x3","t":"C","m":"m 5 0; 1 m 0; m 5 1"},{"s":"3x3","t":"C","m":"m -1 1; 1 m 0; 0 1 1"},{"s":"3x3","t":"C","m":"m 1 1; 1 m 1; 1 1 m"},{"s":"3x4","t":"A","m":"1 m 2 0; 0 m+1 1 1; 2 2m 1 3"},{"s":"3x4","t":"A","m":"1 2 0 m; 0 1 1 1; 1 0 2 m-1"},{"s":"3x4","t":"B","m":"1 0 1 m; 0 1 1 2; 1 1 2 5"},{"s":"3x4","t":"B","m":"1 2 3 m; 2 4 6 2m; 1 2 3 1"},{"s":"3x4","t":"B","m":"0 0 m-2 0; 0 0 2m-4 0; 0 0 m-2 0"},{"s":"3x4","t":"C","m":"m 1 1 1; 1 m 1 0; 1 1 m 1"},{"s":"3x4","t":"C","m":"m -1 1 0; 1 m 0 m-1; 0 1 1 0"},{"s":"3x4","t":"C","m":"m 5 0 2m; 1 m 0 2; m 5 1 2m"}];
+  const fmt = v => (v < 0 ? MINUS + Math.abs(v) : String(v));
+  const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+  const plural = (n, s, p) => n + ' ' + (n === 1 ? s : p);
+  const lab = (L, i) => '<var>' + L + '</var><sub>' + (i + 1) + '</sub>';
+  const labs = (L, idx) => idx.map(i => '<span class="lb">' + lab(L, i) + '</span>').join('');
+  const sortN = x => x.slice().sort((a, b) => a - b);
+  const M_ = '<var>m</var>';
+
+  /* ---------- polinomios en m: [c0, c1, ...] ---------- */
+  const trim = a => { a = a.slice(); while (a.length > 1 && a[a.length - 1] === 0) a.pop(); return a; };
+  const padd = (a, b) => { const r = []; for (let i = 0; i < Math.max(a.length, b.length); i++) r.push((a[i] || 0) + (b[i] || 0)); return trim(r); };
+  const pmul = (a, b) => { const r = Array(a.length + b.length - 1).fill(0); a.forEach((x, i) => b.forEach((y, j) => { r[i + j] += x * y; })); return trim(r); };
+  const pneg = a => a.map(x => 0 - x);
+  const isZ = a => a.length === 1 && a[0] === 0;
+  const deg = a => (isZ(a) ? -1 : a.length - 1);
+  function parseTok(t) {
+    let c = 0, p = 0;
+    (t.replace(/−/g, '-').match(/[+-]?[^+-]+/g) || []).forEach(term => {
+      if (term.endsWith('m')) { const k = term.slice(0, -1); p += (k === '' || k === '+') ? 1 : (k === '-' ? -1 : Number(k)); }
+      else c += Number(term);
+    });
+    return trim([c, p]);
+  }
+  const parseM = s => s.split(';').map(r => r.trim().split(/\s+/).map(parseTok));
+  function fmtP(a) {
+    let s = '';
+    for (let i = a.length - 1; i >= 0; i--) {
+      const c = a[i];
+      if (c === 0) continue;
+      const abs = Math.abs(c);
+      const t = i === 0 ? String(abs) : (abs === 1 ? '' : abs) + M_ + (i > 1 ? '<sup>' + i + '</sup>' : '');
+      if (!s) s = (c < 0 ? MINUS : '') + t; else s += ' ' + (c < 0 ? MINUS : '+') + ' ' + t;
+    }
+    return s || '0';
+  }
+  function detP(a) {
+    const n = a.length;
+    if (n === 1) return a[0][0];
+    let s = [0];
+    for (let j = 0; j < n; j++) {
+      const minor = a.slice(1).map(r => r.filter((_, c) => c !== j));
+      let t = pmul(a[0][j], detP(minor));
+      if (j % 2) t = pneg(t);
+      s = padd(s, t);
+    }
+    return s;
+  }
+  const combos = (n, k) => {
+    const out = [];
+    const rec = (start, cur) => { if (cur.length === k) { out.push(cur.slice()); return; } for (let i = start; i < n; i++) { cur.push(i); rec(i + 1, cur); cur.pop(); } };
+    rec(0, []);
+    return out;
+  };
+  const subm = (a, rs, cs) => rs.map(i => cs.map(j => a[i][j]));
+  const chipLabel = (rs, cs, m, n) => {
+    const parts = [];
+    if (rs.length < m) parts.push(labs('F', rs));
+    if (cs.length < n) parts.push(labs('C', cs));
+    if (!parts.length) return '|<var>A</var>|';
+    return parts.join('<span class="sep">·</span>');
+  };
+
+  /* ---------- polinomios enteros: mcd, raíces racionales, cuadráticas ---------- */
+  const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) { const t = a % b; a = b; b = t; } return a; };
+  const cont = a => a.reduce((g, x) => gcd(g, x), 0) || 1;
+  const prim = a => { a = trim(a); const c = cont(a); a = a.map(x => x / c); if (a[a.length - 1] < 0) a = a.map(x => 0 - x); return a; };
+  function prem(a, b) {            // resto pseudo-dividiendo a entre b: es 0 si b divide a
+    a = trim(a);
+    const db = deg(b), lb = b[b.length - 1];
+    while (!isZ(a) && deg(a) >= db) {
+      const da = deg(a), la = a[a.length - 1];
+      const na = a.map(x => x * lb);
+      for (let i = 0; i <= db; i++) na[i + da - db] -= la * b[i];
+      a = trim(na);
+      if (!isZ(a)) a = prim(a);
+    }
+    return a;
+  }
+  function pgcd(a, b) {
+    a = prim(a); b = prim(b);
+    while (!isZ(b)) { const r = prem(a, b); a = b; b = isZ(r) ? [0] : prim(r); }
+    return a;
+  }
+  const divisors = n => { const d = []; for (let i = 1; i <= n; i++) if (n % i === 0) d.push(i); return d; };
+  const evalRat = (q, n, d) => { const D = q.length - 1; let s = 0; q.forEach((c, i) => { s += c * Math.pow(n, i) * Math.pow(d, D - i); }); return s; };
+  function divLinear(q, n, d) {    // q / (d·x − n), división exacta
+    const D = q.length - 1, s = Array(D).fill(0);
+    s[D - 1] = q[D] / d;
+    for (let i = D - 1; i >= 1; i--) s[i - 1] = (q[i] + n * s[i]) / d;
+    return trim(s);
+  }
+  function splitRoots(p) {
+    let q = prim(p);
+    const roots = [];
+    const add = (n, d) => { const r = roots.find(x => x.n === n && x.d === d); if (r) r.mult++; else roots.push({ n, d, mult: 1 }); };
+    while (q.length > 1 && q[0] === 0) { q = q.slice(1); add(0, 1); }
+    let found = true;
+    while (found && deg(q) >= 1) {
+      found = false;
+      const dc = divisors(Math.abs(q[0])), dl = divisors(Math.abs(q[q.length - 1]));
+      outer: for (const pn of dc) for (const qd of dl) for (const sg of [1, -1]) {
+        if (gcd(pn, qd) !== 1) continue;
+        const n = sg * pn, d = qd;
+        if (evalRat(q, n, d) === 0) { q = divLinear(q, n, d); add(n, d); found = true; break outer; }
+      }
+    }
+    if (deg(q) >= 3) throw new Error('factor irreducible de grado ' + deg(q));
+    roots.sort((x, y) => x.n / x.d - y.n / y.d);
+    return { roots, rest: q };       // rest: constante o cuadrática sin raíces racionales
+  }
+  const squareFree = n => { let s = 1, t = n; for (let f = 2; f * f <= t; f++) while (t % (f * f) === 0) { t /= f * f; s *= f; } return { s, t }; };
+  function quadRoots(q) {          // q = [c, b, a], sin raíces racionales
+    const c = q[0], b = q[1], a = q[2];
+    const D = b * b - 4 * a * c, real = D > 0;
+    const { s, t } = squareFree(Math.abs(D));
+    let x0 = 0 - b, y = s, den = 2 * a;
+    if (den < 0) { x0 = 0 - x0; den = 0 - den; }
+    const g = gcd(gcd(Math.abs(x0), y), den) || 1;
+    x0 /= g; y /= g; den /= g;
+    const rad = t === 1 ? '' : '√' + t, unit = real ? '' : '<var>i</var>';
+    const body = (y === 1 && (rad || unit) ? '' : String(y)) + rad + (rad && unit ? ' ' : '') + unit;
+    let html;
+    if (x0 === 0) html = '±' + body + (den > 1 ? '/' + den : '');
+    else if (den === 1) html = fmt(x0) + ' ± ' + body;
+    else html = '(' + fmt(x0) + ' ± ' + body + ')/' + den;
+    const vals = real ? [(x0 - y * Math.sqrt(t)) / den, (x0 + y * Math.sqrt(t)) / den] : [];
+    return { html, real, vals };
+  }
+  const fmtFrac = r => (r.d === 1 ? fmt(r.n) : fmt(r.n) + '/' + r.d);
+  const rkey = r => r.n + '/' + r.d;
+
+  /* ---------- análisis del rango según m ---------- */
+  const allMinors = (P, k) => { const o = []; combos(P.length, k).forEach(rs => combos(P[0].length, k).forEach(cs => o.push({ rs, cs, p: detP(subm(P, rs, cs)) }))); return o; };
+  function rankInt(B) {
+    const Bp = B.map(r => r.map(x => [x]));
+    const m = B.length, n = B[0].length;
+    for (let k = Math.min(m, n); k >= 1; k--) {
+      for (const rs of combos(m, k)) for (const cs of combos(n, k)) {
+        const d = detP(subm(Bp, rs, cs))[0];
+        if (d !== 0) return { r: k, wit: { rs, cs, d } };
+      }
+    }
+    return { r: 0, wit: null };
+  }
+  function rankMod(P, q, g) {      // rango cuando m es raíz de q (irreducible): mayor orden con un menor no divisible por q
+    const m = P.length, n = P[0].length;
+    for (let k = g - 1; k >= 1; k--) {
+      for (const rs of combos(m, k)) for (const cs of combos(n, k)) {
+        const p = detP(subm(P, rs, cs));
+        if (!isZ(p) && !isZ(prem(p, q))) return { r: k, wit: { rs, cs, p } };
+      }
+    }
+    return { r: 0, wit: null };
+  }
+  function rootInfo(p) {
+    const sr = splitRoots(p);
+    const info = { rat: sr.roots, quad: null, qr: null };
+    if (deg(sr.rest) === 2) { info.quad = sr.rest; info.qr = quadRoots(sr.rest); }
+    return info;
+  }
+  const realCount = info => info.rat.length + (info.qr && info.qr.real ? 1 : 0);
+
+  function analyze(P) {
+    const m = P.length, n = P[0].length, kmax = Math.min(m, n);
+    let g = 0, list = [];
+    for (let k = kmax; k >= 1; k--) {
+      const l = allMinors(P, k);
+      if (l.some(x => !isZ(x.p))) { g = k; list = l; break; }
+    }
+    if (!g) return { g: 0, kmax, cst: null, groups: [], zeros: 0, critical: [], complexOnly: false, noCommon: false };
+    const cst = list.find(x => deg(x.p) === 0 && x.p[0] !== 0) || null;
+    const dep = list.filter(x => deg(x.p) >= 1);
+    const zeros = list.filter(x => isZ(x.p)).length;
+    const groups = [];
+    dep.forEach(x => {
+      const key = prim(x.p).join(',');
+      let gr = groups.find(q => q.key === key);
+      if (!gr) { gr = { key, p: x.p, first: x, count: 0, info: rootInfo(x.p) }; groups.push(gr); }
+      gr.count++;
+    });
+    const critical = [];
+    let complexOnly = false, noCommon = false, complexHtml = '';
+    if (!cst) {
+      const G = dep.map(x => prim(x.p)).reduce((a, b) => pgcd(a, b));
+      if (deg(G) < 1) noCommon = true;
+      else {
+        const sr = splitRoots(G);
+        sr.roots.forEach(r => {
+          const B = P.map(row => row.map(p => p[0] * r.d + (p[1] || 0) * r.n));
+          const ri = rankInt(B);
+          critical.push({
+            kind: 'rat', n: r.n, d: r.d, B, r: ri.r, wit: ri.wit, vals: [r.n / r.d], label: fmtFrac(r), key: rkey(r),
+            nextN: ri.r < kmax ? combos(m, ri.r + 1).length * combos(n, ri.r + 1).length : 0
+          });
+        });
+        if (deg(sr.rest) === 2) {
+          const qr = quadRoots(sr.rest);
+          if (qr.real) {
+            const rk = rankMod(P, sr.rest, g);
+            critical.push({
+              kind: 'quad', q: sr.rest, r: rk.r, wit: rk.wit, vals: qr.vals, label: qr.html, key: 'q:' + sr.rest.join(','),
+              nextN: rk.r < kmax ? combos(m, rk.r + 1).length * combos(n, rk.r + 1).length : 0
+            });
+          } else { complexOnly = true; complexHtml = qr.html; }
+        }
+      }
+    }
+    critical.sort((a, b) => a.vals[0] - b.vals[0]);
+    return { g, kmax, cst, groups, zeros, critical, complexOnly, complexHtml, noCommon };
+  }
+
+  /* ---------- piezas visuales ---------- */
+  function detEl(cells) {
+    const k = cells.length;
+    const d = el('span', 'dt' + (k === 1 ? ' one' : ''));
+    d.style.setProperty('--k', k);
+    cells.forEach(r => r.forEach(v => d.appendChild(el('span', 'dc', v))));
+    return d;
+  }
+  function minorRow(P, rs, cs, p, note) {
+    const r = el('div', 'mrow');
+    r.appendChild(el('span', 'hi-l', chipLabel(rs, cs, P.length, P[0].length)));
+    const box = el('span', 'hi-r');
+    box.appendChild(detEl(subm(P, rs, cs).map(row => row.map(fmtP))));
+    box.appendChild(el('span', 'eq', '='));
+    box.appendChild(el('span', 'val ' + (isZ(p) ? 'z' : 'nz'), fmtP(p)));
+    r.appendChild(box);
+    if (note) r.appendChild(el('span', 'rootnote', note));
+    return r;
+  }
+
+  function buildMatrix(cells, o) {
+    const m = cells.length, n = cells[0].length;
+    const pcols = o.pcols || [];
+    const wrap = el('div', 'mx' + (o.labels ? '' : ' nolab') + (o.par ? ' par' : ''));
+    wrap.style.setProperty('--n', n);
+    wrap.style.setProperty('--m', m);
+    const colBtns = [], rowBtns = [], cellEls = [];
+    if (o.labels) {
+      wrap.appendChild(el('div', 'corner'));
+      const heads = el('div', 'heads');
+      for (let j = 0; j < n; j++) {
+        const pc = pcols.indexOf(j) > -1 ? ' pcol' : '';
+        let h;
+        if (o.headsC) { h = el('button', 'hd' + pc, lab('C', j)); h.type = 'button'; h.setAttribute('aria-pressed', 'false'); h.addEventListener('click', () => o.onCol(j)); }
+        else h = el('span', 'hd ro' + pc, lab('C', j));
+        heads.appendChild(h); colBtns.push(h);
+      }
+      wrap.appendChild(heads);
+      const rlabs = el('div', 'rlabs');
+      for (let i = 0; i < m; i++) {
+        let h;
+        if (o.headsR) { h = el('button', 'hd', lab('F', i)); h.type = 'button'; h.setAttribute('aria-pressed', 'false'); h.addEventListener('click', () => o.onRow(i)); }
+        else h = el('span', 'hd ro', lab('F', i));
+        rlabs.appendChild(h); rowBtns.push(h);
+      }
+      wrap.appendChild(rlabs);
+    }
+    const grid = el('div', 'cells');
+    for (let i = 0; i < m; i++) {
+      const row = [];
+      for (let j = 0; j < n; j++) {
+        const c = el('div', 'cell' + (pcols.indexOf(j) > -1 ? ' pc' : ''), '<span>' + cells[i][j] + '</span>');
+        grid.appendChild(c); row.push(c);
+      }
+      cellEls.push(row);
+    }
+    wrap.appendChild(grid);
+    return { wrap, cells: grid, cellEls, colBtns, rowBtns };
+  }
+
+  /* ---------- discusión (se construye al pulsar) ---------- */
+  function rootNote(gr) {
+    const info = gr.info, parts = info.rat.map(r => M_ + ' = ' + fmtFrac(r) + (r.mult === 2 ? ' (doble)' : r.mult === 3 ? ' (triple)' : ''));
+    if (info.qr && info.qr.real) parts.push(M_ + ' = ' + info.qr.html);
+    let txt;
+    if (parts.length) {
+      txt = 'se anula si ' + parts.join(' o ');
+      if (info.qr && !info.qr.real) txt += '; las otras soluciones (' + M_ + ' = ' + info.qr.html + ') no son reales';
+    } else txt = 'no tiene soluciones reales (' + M_ + ' = ' + info.qr.html + '): nunca vale 0';
+    if (gr.count > 1) txt += ' · la misma ecuación sale en ' + gr.count + ' menores';
+    return txt;
+  }
+
+  function discussion(P) {
+    const A = analyze(P), m = P.length, n = P[0].length;
+    const box = el('div', 'disc');
+    box.appendChild(el('p', 'tag', 'Discusión'));
+    if (A.g < A.kmax) box.appendChild(el('p', '', 'Los menores de orden ' + (A.g + 1) + ' valen 0 para cualquier ' + M_ + ', así que el rango es como mucho ' + A.g + '.'));
+    const cases = el('ul', 'cases');
+    const addCase = (cond, rank, detail) => {
+      const li = el('li', 'case');
+      const h = el('div', 'case-h');
+      h.appendChild(el('span', 'cond', cond));
+      h.appendChild(el('span', 'rk', 'rango ' + rank));
+      li.appendChild(h);
+      if (detail) li.appendChild(detail);
+      cases.appendChild(li);
+    };
+    if (A.cst) {
+      box.appendChild(el('p', '', 'Hay un menor de orden ' + A.g + ' que no depende de ' + M_ + ' y es distinto de 0:'));
+      box.appendChild(minorRow(P, A.cst.rs, A.cst.cs, A.cst.p));
+      addCase('Para cualquier valor de ' + M_, A.g);
+    } else {
+      box.appendChild(el('p', '', 'Menores de orden ' + A.g + ' que dependen de ' + M_ + ':'));
+      const rows = el('div', 'mrows');
+      A.groups.slice(0, 8).forEach(gr => rows.appendChild(minorRow(P, gr.first.rs, gr.first.cs, gr.first.p, rootNote(gr))));
+      box.appendChild(rows);
+      if (A.zeros > 0) box.appendChild(el('p', 'mut', 'El resto de menores de orden ' + A.g + ' valen 0.'));
+
+      if (!A.critical.length) {
+        if (A.complexOnly) box.appendChild(el('p', '', 'Se anulan todos a la vez solo con ' + M_ + ' = ' + A.complexHtml + ', que no son números reales. Ningún valor real de ' + M_ + ' los anula todos.'));
+        else if (A.groups.some(gr => realCount(gr.info) === 0)) box.appendChild(el('p', '', 'Hay un menor que no se anula para ningún valor real de ' + M_ + ', así que ningún valor los anula todos a la vez.'));
+        else box.appendChild(el('p', '', 'Cada menor se anula para valores de ' + M_ + ' distintos: ningún valor los anula todos a la vez.'));
+        addCase('Para cualquier valor de ' + M_, A.g);
+      } else {
+        const keys = new Set(A.critical.map(c => c.key));
+        const other = [];
+        A.groups.forEach(gr => {
+          gr.info.rat.forEach(r => { if (!keys.has(rkey(r)) && !other.some(o => o.k === 'r' + rkey(r))) other.push({ k: 'r' + rkey(r), t: fmtFrac(r) }); });
+          if (gr.info.qr && gr.info.qr.real && !keys.has('q:' + gr.info.quad.join(',')) && !other.some(o => o.k === 'q' + gr.info.quad.join(','))) other.push({ k: 'q' + gr.info.quad.join(','), t: gr.info.qr.html });
+        });
+        box.appendChild(el('p', '', 'Se anulan todos a la vez solo si ' + M_ + ' = ' + A.critical.map(c => c.label).join(' o ') + '.'));
+        if (other.length) box.appendChild(el('p', 'mut', 'Con ' + M_ + ' = ' + other.map(o => o.t).join(' o ') + ' se anula algún menor, pero no todos: el rango no cambia.'));
+        addCase('Si ' + M_ + ' ≠ ' + A.critical.map(c => c.label).join(', '), A.g);
+        A.critical.forEach(c => {
+          const d = el('div', 'case-b');
+          if (c.kind === 'rat') {
+            if (c.d > 1) d.appendChild(el('p', 'mut', 'Con ' + M_ + ' = ' + fmtFrac(c) + ' multiplicamos la matriz por ' + c.d + ', lo que no cambia el rango.'));
+            const sc = el('div', 'mxscroll');
+            sc.appendChild(buildMatrix(c.B.map(r => r.map(fmt)), { labels: false }).wrap);
+            d.appendChild(sc);
+            if (c.r === 0) d.appendChild(el('p', '', 'Todos los elementos valen 0.'));
+            else {
+              d.appendChild(el('p', '', c.r === 1 ? 'Hay un elemento distinto de 0:' : 'Hay un menor de orden ' + c.r + ' distinto de 0:'));
+              d.appendChild(minorRow(c.B.map(r => r.map(x => [x])), c.wit.rs, c.wit.cs, [c.wit.d]));
+              if (c.r < A.kmax) d.appendChild(el('p', '', c.nextN === 1 ? 'El menor de orden ' + (c.r + 1) + ' vale 0.' : 'Los ' + c.nextN + ' menores de orden ' + (c.r + 1) + ' valen 0.'));
+            }
+          } else {
+            d.appendChild(el('p', 'mut', 'Con estos valores de ' + M_ + ' la matriz no tiene números enteros, pero se razona igual con los menores.'));
+            if (c.r === 0) d.appendChild(el('p', '', 'Todos los elementos valen 0.'));
+            else {
+              d.appendChild(el('p', '', 'Este menor de orden ' + c.r + ' no se anula para ' + M_ + ' = ' + c.label + ':'));
+              d.appendChild(minorRow(P, c.wit.rs, c.wit.cs, c.wit.p));
+              d.appendChild(el('p', '', (c.nextN === 1 ? 'El menor de orden ' + (c.r + 1) + ' se anula' : 'Los ' + c.nextN + ' menores de orden ' + (c.r + 1) + ' se anulan') + ': ' + (c.nextN === 1 ? 'es múltiplo' : 'son múltiplos') + ' de ' + fmtP(c.q) + ', que vale 0.'));
+            }
+          }
+          addCase('Si ' + M_ + ' = ' + c.label, c.r, d);
+        });
+      }
+    }
+    box.appendChild(cases);
+    return box;
+  }
+
+  /* ---------- tarjeta de ejercicio ---------- */
+  function mountCard(root, spec) {
+    const P = parseM(spec.m), m = P.length, n = P[0].length, kmax = Math.min(m, n);
+    const cellsHtml = P.map(r => r.map(fmtP));
+    const pcols = P[0].map((_, j) => j).filter(j => P.some(r => deg(r[j]) >= 1));
+    const card = root.closest('article');
+    const hist = [];
+    const key = (k, rs, cs) => k + ':' + rs.join(',') + '|' + cs.join(',');
+    let goTo = null, curKey = null;
+
+    root.classList.add('mxc');
+    const col1 = el('div', 'm1');
+    root.appendChild(col1);
+
+    const kbtns = [];
+    const sw = el('div', 'kswitch');
+    sw.appendChild(el('span', 'klbl', 'Orden del menor'));
+    for (let k = kmax; k >= 1; k--) {
+      const b = el('button', 'seg', k + ' × ' + k);
+      b.type = 'button';
+      b.addEventListener('click', () => build(k));
+      kbtns.push({ b, k });
+      sw.appendChild(b);
+    }
+    col1.appendChild(sw);
+
+    const view = el('div', 'view');
+    col1.appendChild(view);
+    const histBox = el('div', 'hist');
+    histBox.hidden = true;
+    col1.appendChild(histBox);
+
+    const dbtn = el('button', 'btn', 'Ver la discusión');
+    dbtn.type = 'button';
+    dbtn.setAttribute('aria-expanded', 'false');
+    const dwrap = el('div', 'dwrap');
+    dwrap.hidden = true;
+    dwrap.setAttribute('aria-live', 'polite');
+    let dbuilt = false;
+    const setDisc = open => {
+      dwrap.hidden = !open;
+      dbtn.setAttribute('aria-expanded', String(open));
+      dbtn.textContent = open ? 'Ocultar la discusión' : 'Ver la discusión';
+      if (open && !dbuilt) { dwrap.appendChild(discussion(P)); dbuilt = true; }
+    };
+    dbtn.addEventListener('click', () => setDisc(dwrap.hidden));
+    col1.append(dbtn, dwrap);
+    if (spec.open) setDisc(true);
+
+    function renderHist() {
+      histBox.innerHTML = '';
+      histBox.hidden = hist.length === 0;
+      if (!hist.length) return;
+      const head = el('div', 'hist-h');
+      head.appendChild(el('p', 'tag mut', 'Menores calculados'));
+      const clr = el('button', 'btn small', 'Borrar');
+      clr.type = 'button';
+      clr.addEventListener('click', () => { hist.length = 0; curKey = null; renderHist(); if (goTo) goTo(null); });
+      head.appendChild(clr);
+      histBox.appendChild(head);
+      const list = el('div', 'hist-list');
+      hist.forEach(h => {
+        const b = el('button', 'hi' + (h.key === curKey ? ' cur' : ''));
+        b.type = 'button';
+        b.appendChild(el('span', 'hi-l', chipLabel(h.rs, h.cs, m, n)));
+        const r = el('span', 'hi-r');
+        r.appendChild(detEl(subm(P, h.rs, h.cs).map(row => row.map(fmtP))));
+        r.appendChild(el('span', 'eq', '='));
+        r.appendChild(el('span', 'val ' + (isZ(h.p) ? 'z' : 'nz'), fmtP(h.p)));
+        b.appendChild(r);
+        b.addEventListener('click', () => { if (goTo) goTo(h); });
+        list.appendChild(b);
+      });
+      histBox.appendChild(list);
+    }
+
+    function build(k, pick) {
+      kbtns.forEach(x => { x.b.classList.toggle('on', x.k === k); x.b.setAttribute('aria-pressed', String(x.k === k)); });
+      view.innerHTML = '';
+      curKey = null;
+      const rowSets = combos(m, k), colSets = combos(n, k);
+      const total = rowSets.length * colSets.length;
+      const rowsFixed = m === k, colsFixed = n === k, single = rowsFixed && colsFixed;
+      let selR = rowsFixed && !single ? rowSets[0].slice() : [];
+      let selC = colsFixed && !single ? colSets[0].slice() : [];
+      if (pick) { selR = pick.rs.slice(); selC = pick.cs.slice(); }
+
+      const toggleRow = i => { const p = selR.indexOf(i); if (p > -1) selR.splice(p, 1); else { selR.push(i); if (selR.length > k) selR.shift(); } update(); };
+      const toggleCol = j => { const p = selC.indexOf(j); if (p > -1) selC.splice(p, 1); else { selC.push(j); if (selC.length > k) selC.shift(); } update(); };
+      goTo = it => {
+        if (!it) { selR = rowsFixed && !single ? rowSets[0].slice() : []; selC = colsFixed && !single ? colSets[0].slice() : []; update(); return; }
+        if (it.k !== k) { build(it.k, { rs: it.rs, cs: it.cs }); return; }
+        selR = it.rs.slice(); selC = it.cs.slice(); update();
+      };
+
+      const M = buildMatrix(cellsHtml, { labels: true, par: true, pcols, headsR: !rowsFixed, headsC: !colsFixed, onRow: toggleRow, onCol: toggleCol });
+      const scroll = el('div', 'mxscroll');
+      scroll.appendChild(M.wrap);
+      view.appendChild(scroll);
+
+      const ctrl = el('div', 'ctrl');
+      if (single) {
+        const cb = el('button', 'btn', 'Calcular el determinante');
+        cb.type = 'button';
+        cb.addEventListener('click', () => { selR = rowSets[0].slice(); selC = colSets[0].slice(); update(); });
+        ctrl.appendChild(cb);
+      }
+      let allBtn = null;
+      if (total > 1 && total <= 12) {
+        allBtn = el('button', 'btn', 'Calcular los ' + total + ' menores');
+        allBtn.type = 'button';
+        allBtn.addEventListener('click', () => {
+          rowSets.forEach(rs => colSets.forEach(cs => {
+            const kk = key(k, rs, cs);
+            if (!hist.some(h => h.key === kk)) hist.push({ key: kk, k, rs, cs, p: detP(subm(P, rs, cs)) });
+          }));
+          allBtn.hidden = true;
+          if (card) card.classList.add('done');
+          renderHist();
+        });
+        ctrl.appendChild(allBtn);
+      }
+      if (ctrl.children.length) view.appendChild(ctrl);
+      const ro = el('div', 'readout');
+      ro.setAttribute('aria-live', 'polite');
+      view.appendChild(ro);
+
+      function update() {
+        const full = selR.length === k && selC.length === k;
+        M.cells.classList.toggle('has-sel', full);
+        for (let i = 0; i < m; i++) for (let j = 0; j < n; j++) {
+          const c = M.cellEls[i][j];
+          const inr = selR.indexOf(i) > -1, inc = selC.indexOf(j) > -1;
+          const s = full && inr && inc;
+          c.classList.toggle('sel', s);
+          c.classList.toggle('soft', !full && ((inr && !rowsFixed) || (inc && !colsFixed)));
+          c.classList.toggle('e-t', s && selR.indexOf(i - 1) < 0);
+          c.classList.toggle('e-b', s && selR.indexOf(i + 1) < 0);
+          c.classList.toggle('e-l', s && selC.indexOf(j - 1) < 0);
+          c.classList.toggle('e-r', s && selC.indexOf(j + 1) < 0);
+        }
+        M.colBtns.forEach((h, j) => { const on = selC.indexOf(j) > -1; h.classList.toggle('on', on); if (h.tagName === 'BUTTON') h.setAttribute('aria-pressed', String(on)); });
+        M.rowBtns.forEach((h, i) => { const on = selR.indexOf(i) > -1; h.classList.toggle('on', on); if (h.tagName === 'BUTTON') h.setAttribute('aria-pressed', String(on)); });
+        ro.innerHTML = '';
+        if (!full) {
+          curKey = null;
+          let hint;
+          if (single) hint = 'Pulsa el botón para calcular el determinante.';
+          else if (rowsFixed) hint = 'Elige ' + k + ' de las ' + n + ' columnas pulsando sobre las <var>C</var> de arriba.' + (selC.length ? ' Llevas ' + selC.length + '.' : '');
+          else if (colsFixed) hint = 'Elige ' + k + ' de las ' + m + ' filas pulsando sobre las <var>F</var> de la izquierda.' + (selR.length ? ' Llevas ' + selR.length + '.' : '');
+          else hint = 'Elige ' + k + (k === 1 ? ' fila y 1 columna' : ' filas y ' + k + ' columnas') + ' pulsando sobre las <var>F</var> y las <var>C</var>.' + (selR.length || selC.length ? ' Llevas ' + plural(selR.length, 'fila', 'filas') + ' y ' + plural(selC.length, 'columna', 'columnas') + '.' : '');
+          ro.appendChild(el('p', 'hint', hint));
+          renderHist();
+          return;
+        }
+        if (card) card.classList.add('done');
+        const rs = sortN(selR), cs = sortN(selC);
+        curKey = key(k, rs, cs);
+        if (!hist.some(h => h.key === curKey)) hist.push({ key: curKey, k, rs, cs, p: detP(subm(P, rs, cs)) });
+        renderHist();
+      }
+      update();
+    }
+
+    build(kmax);
+  }
+
+  /* ---------- montar los ejercicios ---------- */
+  const counters = {};
+  document.querySelectorAll('.exlist').forEach(box => {
+    const size = box.dataset.size, type = box.dataset.type, label = box.dataset.label || 'Ejercicio';
+    const list = EX.filter(e => e.s === size && (!type || e.t === type));
+    list.forEach(spec => {
+      counters[size] = (counters[size] || 0) + 1;
+      const art = el('article', 'card');
+      art.appendChild(el('p', 'exn', label + (label === 'Ejercicio' ? ' ' + counters[size] : '')));
+      art.appendChild(el('p', 'stmt', 'Discute el rango de la matriz según los valores de ' + M_ + '.'));
+      const root = el('div', 'mxw');
+      art.appendChild(root);
+      box.appendChild(art);
+      mountCard(root, spec);
+    });
+  });
+
+  /* ---------- pestañas ---------- */
+  const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+  const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+  const strip = document.querySelector('.tabs-in');
+  const sentinel = document.getElementById('sentinel');
+  const names = tabs.map(t => t.dataset.tab);
+  function show(i, scroll) {
+    tabs.forEach((t, j) => { t.setAttribute('aria-selected', String(j === i)); t.tabIndex = j === i ? 0 : -1; panels[j].hidden = j !== i; });
+    const t = tabs[i];
+    if (t.offsetLeft < strip.scrollLeft || t.offsetLeft + t.offsetWidth > strip.scrollLeft + strip.clientWidth) strip.scrollLeft = Math.max(0, t.offsetLeft - 24);
+    if (scroll) { const y = sentinel.getBoundingClientRect().top + window.pageYOffset; if (window.pageYOffset > y) window.scrollTo(0, y); }
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => show(i, true));
+    t.addEventListener('keydown', e => {
+      let j = null;
+      if (e.key === 'ArrowRight') j = (i + 1) % tabs.length;
+      else if (e.key === 'ArrowLeft') j = (i - 1 + tabs.length) % tabs.length;
+      if (j !== null) { e.preventDefault(); show(j, false); tabs[j].focus(); }
+    });
+  });
+  document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => show(parseInt(b.dataset.go, 10), true)));
+  function fromHash() { try { const i = names.indexOf((window.location.hash || '').replace('#', '')); return i > -1 ? i : 0; } catch (e) { return 0; } }
+  show(fromHash(), false);
+  window.addEventListener('hashchange', () => show(fromHash(), true));
+
+  window.RP = { EX, analyze, parseM, fmtP };
+})();
+
+</script>
+
+</body>
+</html>
