@@ -1219,7 +1219,7 @@ function aplicar(anim) {
   const n = libro.T;
   $("contador").textContent = EJERCICIOS[actual].titulo + " · " + s + " / " + n;
   $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
-  $("btnAtras").disabled = (actual === 0 && s === 0);
+  $("btnAtras").disabled = (actual === 0 && s <= 1);
   $("btnAdelante").disabled = (actual === EJERCICIOS.length - 1 && s === n);
 }
 
@@ -1251,7 +1251,7 @@ async function cargar(i, alFinal) {
   actual = i;
   if (document.fonts && document.fonts.ready) await document.fonts.ready;
   construir();
-  s = alFinal ? libro.T : 0;
+  s = alFinal ? libro.T : 1;          // al abrir un ejercicio ya se ve el enunciado
   Lprev = 0;
   pintarPestanas();
   aplicar(false);
@@ -1263,7 +1263,7 @@ function avanzar() {
   else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
 }
 function retroceder() {
-  if (s > 0) { s--; aplicar(true); }
+  if (s > 1) { s--; aplicar(true); }
   else if (actual > 0) cargar(actual - 1, true);
 }
 
@@ -1277,13 +1277,13 @@ $("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
 $("tira").onclick = ev => {
   ev.stopPropagation();
   const r = $("tira").getBoundingClientRect();
-  s = Math.round((ev.clientX - r.left) / r.width * libro.T);
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * libro.T));
   aplicar(true);
 };
 document.addEventListener("keydown", ev => {
   if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
   else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
-  else if (ev.key === "Home") { s = 0; aplicar(true); }
+  else if (ev.key === "Home") { s = 1; aplicar(true); }
   else if (ev.key === "End") { s = libro.T; aplicar(true); }
 });
 let tRes = null;
