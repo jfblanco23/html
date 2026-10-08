@@ -14,31 +14,59 @@
   }
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{margin:0;background:#fff;color:var(--texto);cursor:pointer;
+  body{margin:0;color:var(--texto);cursor:pointer;
     font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
     font-size:20px;line-height:1.55;-webkit-tap-highlight-color:transparent}
 
-  /* barra superior y progreso */
-  .barra-sup{position:fixed;top:0;left:0;right:0;z-index:5;background:#fff;border-bottom:1px solid #e3e3e3;
-    padding:8px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:.85rem;color:var(--gris)}
-  .barra-sup .tit{font-weight:bold;color:#333}
-  .pestanas{display:flex;gap:6px;margin-left:auto}
-  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;
+  html,body{overflow:hidden}
+  body{background:#fff}
+
+  /* barra superior */
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:0 14px;display:flex;gap:14px;align-items:center;font-size:.85rem;color:var(--gris)}
+  .barra-sup .tit{font-weight:bold;color:#333;white-space:nowrap}
+  .pestanas{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
     background:#fff;border:1.5px solid #333;color:#333}
   .pestanas button[aria-selected="true"]{background:#333;color:#fff}
-  .progreso{position:fixed;left:0;right:0;bottom:0;z-index:5;height:30px;background:#fff;border-top:1px solid #e3e3e3;
-    display:flex;align-items:center;gap:12px;padding:0 16px;font-size:.82rem;color:var(--gris)}
-  .progreso .tira{flex:1;height:5px;background:#e8e8e8;border-radius:3px;overflow:hidden}
-  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
-  .progreso button{font:inherit;font-size:.82rem;background:none;border:0;color:#2e9e2e;cursor:pointer;padding:0 4px}
-  .progreso button:disabled{opacity:.3;cursor:default}
 
-  /* una pantalla = un bloque centrado */
-  main{min-height:100%;padding:56px 18px 46px;display:flex;justify-content:center}
-  .pantalla{width:100%;max-width:900px;margin:auto 0;animation:entra .35s ease both}
-  @keyframes entra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-  @media (prefers-reduced-motion:reduce){.pantalla{animation:none}}
-  h1{margin:0 0 20px;font-size:1.9rem;line-height:1.2}
+  /* barra inferior: botones grandes (pizarra digital) y progreso */
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:.85rem;color:var(--gris)}
+  .progreso .tira{flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .nav{font:inherit;font-size:1.5rem;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:9.5em;text-align:right;white-space:nowrap}
+
+  /* el libro: dos páginas, separadas solo por una línea fina */
+  #libro{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:hidden;background:#fff;transition:opacity .25s ease}
+  #libro.fuera{opacity:0}
+  #pista{position:absolute;left:0;top:0;height:100%;will-change:transform}
+  #pista.anim{transition:transform .9s cubic-bezier(.65,.05,.25,1)}
+  .hoja{position:absolute;top:0;padding:6px 8px}
+  .pag{position:relative;background:#fff;transform-origin:0 0;padding:30px 40px 0}
+  .pag .cuerpo{display:flow-root;overflow:hidden}
+  .pag .num{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#bbb;font-size:.8rem}
+  #lomo{position:absolute;left:50%;top:14px;bottom:14px;width:0;border-left:1px solid #c9c9c9;pointer-events:none;z-index:2}
+  .hoja.gira .pag{animation:gira .9s ease both}
+  @keyframes gira{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#pista.anim{transition:none}.hoja.gira .pag{animation:none}}
+
+  /* lo que se va escribiendo */
+  .cont{opacity:0;transition:opacity .35s ease}
+  .cont.on{opacity:1}
+  .u{opacity:0;clip-path:inset(-40px 100% -40px -40px);transition:opacity .25s ease,clip-path .85s ease}
+  span.u{display:block}
+  .u.on{opacity:1;clip-path:inset(-40px -40px -40px -40px)}
+  .u.rapido,.cont.rapido{transition:none}
+  .cont.sigue{margin-top:0;padding-top:14px;border-top-left-radius:0;border-top-right-radius:0}
+  .fila-menores{display:flex;justify-content:space-around;align-items:center;gap:.4em;margin:.8em 0}
+  .fila-menores .sub{display:block}
+  h1{margin:0 0 6px;font-size:2.1rem;line-height:1.2}
   h4{margin:16px 0 6px;font-size:1.18rem}
 
   /* cajas verdes del modelo */
@@ -55,7 +83,7 @@
   .mat{--w:2.5em;--h:1.7em;position:relative;display:inline-grid;
     grid-template-columns:repeat(var(--nc),var(--w));grid-auto-rows:var(--h);
     margin:1.1em .7em .2em;text-align:center}
-  .mat .c{display:flex;align-items:center;justify-content:center}
+  .mat .c{display:flex;align-items:center;justify-content:center;white-space:nowrap}
   .mat::before,.mat::after{content:"";position:absolute;top:-.15em;bottom:-.15em;width:.55em;border:2px solid #111}
   .mat::before{left:-.7em;border-right:0;border-radius:60% 0 0 60%/50% 0 0 50%}
   .mat::after{right:-.7em;border-left:0;border-radius:0 60% 60% 0/0 50% 50% 0}
@@ -66,6 +94,7 @@
   .mat .caja-roja i{position:absolute;left:50%;top:-1.35em;transform:rotate(-40deg);transform-origin:left bottom;
     color:var(--rojo);font-style:normal;white-space:nowrap}
   .nota{color:var(--gris);font-size:.9em}
+  b.res{color:var(--rojo)}
   .katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden}
   table.res{border-collapse:collapse;margin:6px auto 8px}
   table.res th,table.res td{padding:5px 16px;text-align:center}
@@ -79,12 +108,13 @@
   <span class="tit">Discusión de sistemas con parámetro</span>
   <nav class="pestanas" id="pestanas" aria-label="Ejercicios"></nav>
 </div>
-<main><div id="escena" aria-live="polite"></div></main>
+<div id="libro"><div id="pista"></div><div id="lomo"></div></div>
+<div id="stage" style="position:absolute;left:-99999px;top:0;width:720px;visibility:hidden"></div>
 <div class="progreso">
-  <button id="btnAtras" title="Pantalla anterior (←)">‹ atrás</button>
-  <div class="tira"><i id="relleno"></i></div>
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
   <span id="contador"></span>
-  <span>clic en cualquier parte para avanzar</span>
 </div>
 
 <script>
@@ -95,7 +125,9 @@
    --------------------------------------------------------------------- */
 function mat(rows, opts = {}) {
   const nr = rows.length, nc = rows[0].length;
-  let h = '<span class="mat" style="--nc:' + nc + ';--nr:' + nr + '">';
+  const largo = Math.max(...rows.map(r => Math.max(...r.map(c => String(c).replace(/\\[a-zA-Z]+|[{}\s]/g, '').length))));
+  const ancho = Math.max(2.5, 1.0 + 0.55 * largo);
+  let h = '<span class="mat" style="--nc:' + nc + ';--nr:' + nr + ';--w:' + ancho.toFixed(2) + 'em">';
   rows.forEach(r => r.forEach(c => { h += '<span class="c">$' + c + '$</span>'; }));
   if (opts.bar != null) h += '<span class="bar" style="--k:' + opts.bar + '"></span>';
   if (opts.box) {
@@ -146,7 +178,7 @@ function pasosSCI(o) {
       html: ec(f("A'="), mat(o.Ap, {bar: 3, box: o.boxAp})) +
             '<p>El menor marcado es distinto de cero, luego $' + rg("A'") + '\\geq2$. ' +
             "Como $|A|=0$, solo falta calcular los otros tres menores de orden 3 de $A'$:</p>" +
-            '$$' + o.menores.map(m => detTex(m) + '=0').join('\\qquad') + '$$' +
+            '<div class="fila-menores">' + o.menores.map(m => '<span class="sub">$\\displaystyle ' + detTex(m) + '=0$</span>').join('') + '</div>' +
             '<p>Todos los menores de orden 3 son nulos.</p>$$' + rg("A'") + '=2$$' },
     { nueva: true, titulo: "Otra manera de ver que $" + rg("A'") + "=2$", html: o.comb },
     { caja: 'Conclusión', html: o.concl }
@@ -239,7 +271,7 @@ const EJERCICIOS = [
         html: String.raw`
           <p>Si $a\neq1$ y $a\neq-2$, entonces $\operatorname{rg}(A)=\operatorname{rg}(A')=3$
           (el determinante de $A$ no es nulo y $A'$ solo tiene 3 filas), por lo tanto el sistema es
-          <b>compatible determinado</b>.</p>`
+          <b class="res">compatible determinado</b>.</p>`
       },
 
       /* ---------------- a = 1 ---------------- */
@@ -264,9 +296,11 @@ const EJERCICIOS = [
           ec(f("A'="), mat([['1','0','1','1'],['1','1','1','1'],['1','-1','1','1']], {bar: 3, box: [0,0,1,1]})) +
           '<p>El menor marcado es distinto de cero, luego $\\operatorname{rg}(A\')\\geq2$. ' +
           'Como $|A|=0$, solo falta calcular los otros tres menores de orden 3 de $A\'$:</p>' +
-          '$$\\begin{vmatrix} 0&1&1\\\\ 1&1&1\\\\ -1&1&1 \\end{vmatrix}=0\\qquad' +
-          '\\begin{vmatrix} 1&1&1\\\\ 1&1&1\\\\ 1&1&1 \\end{vmatrix}=0\\qquad' +
-          '\\begin{vmatrix} 1&0&1\\\\ 1&1&1\\\\ 1&-1&1 \\end{vmatrix}=0$$' +
+          '<div class="fila-menores">' +
+          '<span class="sub">$\\displaystyle\\begin{vmatrix} 0&1&1\\\\ 1&1&1\\\\ -1&1&1 \\end{vmatrix}=0$</span>' +
+          '<span class="sub">$\\displaystyle\\begin{vmatrix} 1&1&1\\\\ 1&1&1\\\\ 1&1&1 \\end{vmatrix}=0$</span>' +
+          '<span class="sub">$\\displaystyle\\begin{vmatrix} 1&0&1\\\\ 1&1&1\\\\ 1&-1&1 \\end{vmatrix}=0$</span>' +
+          '</div>' +
           '<p>Todos los menores de orden 3 son nulos.</p>' +
           "$$\\operatorname{rg}(A')=2$$"
       },
@@ -284,7 +318,7 @@ const EJERCICIOS = [
         caja: "Conclusión",
         html: String.raw`
           $$\operatorname{rg}(A)=\operatorname{rg}(A')=2<3=\text{n.º de incógnitas}$$
-          <p><b>El sistema es compatible indeterminado cuando $a=1$.</b></p>`
+          <p><b class="res">El sistema es compatible indeterminado cuando $a=1$.</b></p>`
       },
 
       /* ---------------- a = -2 ---------------- */
@@ -316,7 +350,7 @@ const EJERCICIOS = [
         caja: "Conclusión",
         html: String.raw`
           $$\operatorname{rg}(A)\neq\operatorname{rg}(A')$$
-          <p><b>El sistema es incompatible cuando $a=-2$.</b></p>`
+          <p><b class="res">El sistema es incompatible cuando $a=-2$.</b></p>`
       },
       {
         nueva: true,
@@ -355,7 +389,7 @@ const EJERCICIOS = [
           $$k=0\quad\text{y}\quad k=5$$`,
         concl: String.raw`<p>Si $k\neq0$ y $k\neq5$, entonces $\operatorname{rg}(A)=\operatorname{rg}(A')=3$
           (el determinante de $A$ no es nulo y $A'$ solo tiene 3 filas), por lo tanto el sistema es
-          <b>compatible determinado</b> (una única solución).</p>`
+          <b class="res">compatible determinado</b> (una única solución).</p>`
       }),
       pasosSCI({
         etiqueta: 'k = 0', valor: 'k=0',
@@ -374,18 +408,18 @@ const EJERCICIOS = [
           y como hay un menor de orden 2 distinto de cero, $\operatorname{rg}(A')=2$.</p>`,
         concl: String.raw`
           $$\operatorname{rg}(A)=\operatorname{rg}(A')=2<3=\text{n.º de incógnitas}$$
-          <p><b>El sistema es compatible indeterminado (infinitas soluciones) cuando $k=0$.</b></p>`
+          <p><b class="res">El sistema es compatible indeterminado (infinitas soluciones) cuando $k=0$.</b></p>`
       }),
       pasosSI({
         etiqueta: 'k = 5', valor: 'k=5',
         A: [['1','-3','5'],['0','5','0'],['1','-3','5']],
         Ap: [['1','-3','5','0'],['0','5','0','-10'],['1','-3','5','10']],
-        boxA: [0,1,0,1], boxAp: [0,2,1,3],
+        boxA: [0,0,1,1], boxAp: [0,1,2,3],
         menorA: [['1','-3'],['0','5']], valMenorA: '5',
         menor3: [['-3','5','0'],['5','0','-10'],['-3','5','10']], valMenor3: '-250',
         concl: String.raw`
           $$\operatorname{rg}(A)\neq\operatorname{rg}(A')$$
-          <p><b>El sistema es incompatible (no tiene solución) cuando $k=5$.</b></p>`
+          <p><b class="res">El sistema es incompatible (no tiene solución) cuando $k=5$.</b></p>`
       }),
       [{
         nueva: true, caja: "Resumen",
@@ -424,7 +458,7 @@ const EJERCICIOS = [
           $$m=2\quad\text{y}\quad m=5$$`,
         concl: String.raw`<p>Si $m\neq2$ y $m\neq5$, entonces $\operatorname{rg}(A)=\operatorname{rg}(A')=3$
           (el determinante de $A$ no es nulo y $A'$ solo tiene 3 filas), por lo tanto el sistema es
-          <b>compatible determinado</b>: tiene una única solución.</p>`
+          <b class="res">compatible determinado</b>: tiene una única solución.</p>`
       }),
       pasosSI({
         etiqueta: 'm = 2', valor: 'm=2',
@@ -436,7 +470,7 @@ const EJERCICIOS = [
         columnas: '1, 2 y 4',
         concl: String.raw`
           $$\operatorname{rg}(A)=2\neq3=\operatorname{rg}(A')$$
-          <p><b>El sistema es incompatible (no tiene solución) cuando $m=2$.</b></p>`
+          <p><b class="res">El sistema es incompatible (no tiene solución) cuando $m=2$.</b></p>`
       }),
       pasosSCI({
         etiqueta: 'm = 5', valor: 'm=5',
@@ -455,7 +489,7 @@ const EJERCICIOS = [
           y como hay un menor de orden 2 distinto de cero, $\operatorname{rg}(A')=2$.</p>`,
         concl: String.raw`
           $$\operatorname{rg}(A)=\operatorname{rg}(A')=2<3=\text{n.º de incógnitas}$$
-          <p><b>El sistema es compatible indeterminado (infinitas soluciones) cuando $m=5$.</b></p>`
+          <p><b class="res">El sistema es compatible indeterminado (infinitas soluciones) cuando $m=5$.</b></p>`
       }),
       [{
         nueva: true, caja: "Resumen",
@@ -492,7 +526,7 @@ const EJERCICIOS = [
           $$m=-1\quad\text{y}\quad m=2$$`,
         concl: String.raw`<p>Si $m\neq-1$ y $m\neq2$, entonces $\operatorname{rg}(A)=\operatorname{rg}(A')=3$
           (el determinante de $A$ no es nulo y $A'$ solo tiene 3 filas), por lo tanto el sistema es
-          <b>compatible determinado</b> (una única solución).</p>`
+          <b class="res">compatible determinado</b> (una única solución).</p>`
       }),
       pasosSI({
         etiqueta: "m = \u22121", valor: "m=-1",
@@ -503,7 +537,7 @@ const EJERCICIOS = [
         menor3: [['7', '5', '0'], ['-1', '1', '3'], ['1', '1', '-2']], valMenor3: "-30",
         concl: String.raw`
           $$\operatorname{rg}(A)=2\neq3=\operatorname{rg}(A')$$
-          <p><b>El sistema es incompatible (no tiene solución) cuando $m = -1$.</b></p>`
+          <p><b class="res">El sistema es incompatible (no tiene solución) cuando $m = -1$.</b></p>`
       }),
       pasosSCI({
         etiqueta: "m = 2", valor: "m=2",
@@ -520,7 +554,7 @@ const EJERCICIOS = [
           y como hay un menor de orden 2 distinto de cero, $\operatorname{rg}(A')=2$.</p>`,
         concl: String.raw`
           $$\operatorname{rg}(A)=\operatorname{rg}(A')=2<3=\text{n.º de incógnitas}$$
-          <p><b>El sistema es compatible indeterminado (infinitas soluciones) cuando $m = 2$.</b></p>`
+          <p><b class="res">El sistema es compatible indeterminado (infinitas soluciones) cuando $m = 2$.</b></p>`
       }),
       [{
         nueva: true, caja: "Resumen",
@@ -558,7 +592,7 @@ const EJERCICIOS = [
           $$a=-1$$`,
         concl: String.raw`<p>Si $a\neq-1$, entonces $\operatorname{rg}(A)=\operatorname{rg}(A')=3$
           (el determinante de $A$ no es nulo y $A'$ solo tiene 3 filas), por lo tanto el sistema es
-          <b>compatible determinado</b> (una única solución).</p>`
+          <b class="res">compatible determinado</b> (una única solución).</p>`
       }),
       pasosSCI({
         etiqueta: "a = \u22121", valor: "a=-1",
@@ -575,7 +609,7 @@ const EJERCICIOS = [
           y como hay un menor de orden 2 distinto de cero, $\operatorname{rg}(A')=2$.</p>`,
         concl: String.raw`
           $$\operatorname{rg}(A)=\operatorname{rg}(A')=2<3=\text{n.º de incógnitas}$$
-          <p><b>El sistema es compatible indeterminado (infinitas soluciones) cuando $a = -1$.</b></p>`
+          <p><b class="res">El sistema es compatible indeterminado (infinitas soluciones) cuando $a = -1$.</b></p>`
       }),
       [{
         nueva: true, caja: "Resumen",
@@ -612,7 +646,7 @@ const EJERCICIOS = [
           $$m=0\quad\text{y}\quad m=1$$`,
         concl: String.raw`<p>Si $m\neq0$ y $m\neq1$, entonces $\operatorname{rg}(A)=\operatorname{rg}(A')=3$
           (el determinante de $A$ no es nulo y $A'$ solo tiene 3 filas), por lo tanto el sistema es
-          <b>compatible determinado</b> (una única solución).</p>`
+          <b class="res">compatible determinado</b> (una única solución).</p>`
       }),
       pasosSI({
         etiqueta: "m = 0", valor: "m=0",
@@ -623,7 +657,7 @@ const EJERCICIOS = [
         menor3: [['1', '0', '2'], ['0', '1', '0'], ['1', '0', '0']], valMenor3: "-2",
         concl: String.raw`
           $$\operatorname{rg}(A)=2\neq3=\operatorname{rg}(A')$$
-          <p><b>El sistema es incompatible (no tiene solución) cuando $m = 0$.</b></p>`
+          <p><b class="res">El sistema es incompatible (no tiene solución) cuando $m = 0$.</b></p>`
       }),
       pasosSCI({
         etiqueta: "m = 1", valor: "m=1",
@@ -639,7 +673,7 @@ const EJERCICIOS = [
           y como hay un menor de orden 2 distinto de cero, $\operatorname{rg}(A')=2$.</p>`,
         concl: String.raw`
           $$\operatorname{rg}(A)=\operatorname{rg}(A')=2<3=\text{n.º de incógnitas}$$
-          <p><b>El sistema es compatible indeterminado (infinitas soluciones) cuando $m = 1$.</b></p>`
+          <p><b class="res">El sistema es compatible indeterminado (infinitas soluciones) cuando $m = 1$.</b></p>`
       }),
       [{
         nueva: true, caja: "Resumen",
@@ -677,7 +711,7 @@ const EJERCICIOS = [
           $$a=-2\quad\text{y}\quad a=-3$$`,
         concl: String.raw`<p>Si $a\neq-2$ y $a\neq-3$, entonces $\operatorname{rg}(A)=\operatorname{rg}(A')=3$
           (el determinante de $A$ no es nulo y $A'$ solo tiene 3 filas), por lo tanto el sistema es
-          <b>compatible determinado</b> (una única solución).</p>`
+          <b class="res">compatible determinado</b> (una única solución).</p>`
       }),
       pasosSI({
         etiqueta: "a = \u22122", valor: "a=-2",
@@ -688,7 +722,7 @@ const EJERCICIOS = [
         menor3: [['2', '3', '4'], ['1', '0', '0'], ['0', '0', '1']], valMenor3: "-3",
         concl: String.raw`
           $$\operatorname{rg}(A)=2\neq3=\operatorname{rg}(A')$$
-          <p><b>El sistema es incompatible (no tiene solución) cuando $a = -2$.</b></p>`
+          <p><b class="res">El sistema es incompatible (no tiene solución) cuando $a = -2$.</b></p>`
       }),
       pasosSCI({
         etiqueta: "a = \u22123", valor: "a=-3",
@@ -704,7 +738,7 @@ const EJERCICIOS = [
           y como hay un menor de orden 2 distinto de cero, $\operatorname{rg}(A')=2$.</p>`,
         concl: String.raw`
           $$\operatorname{rg}(A)=\operatorname{rg}(A')=2<3=\text{n.º de incógnitas}$$
-          <p><b>El sistema es compatible indeterminado (infinitas soluciones) cuando $a = -3$.</b></p>`
+          <p><b class="res">El sistema es compatible indeterminado (infinitas soluciones) cuando $a = -3$.</b></p>`
       }),
       [{
         nueva: true, caja: "Resumen",
@@ -742,7 +776,7 @@ const EJERCICIOS = [
           $$k=0\quad\text{y}\quad k=5$$`,
         concl: String.raw`<p>Si $k\neq0$ y $k\neq5$, entonces $\operatorname{rg}(A)=\operatorname{rg}(A')=3$
           (el determinante de $A$ no es nulo y $A'$ solo tiene 3 filas), por lo tanto el sistema es
-          <b>compatible determinado</b> (una única solución).</p>`
+          <b class="res">compatible determinado</b> (una única solución).</p>`
       }),
       pasosSCI({
         etiqueta: "k = 0", valor: "k=0",
@@ -758,7 +792,7 @@ const EJERCICIOS = [
           y como hay un menor de orden 2 distinto de cero, $\operatorname{rg}(A')=2$.</p>`,
         concl: String.raw`
           $$\operatorname{rg}(A)=\operatorname{rg}(A')=2<3=\text{n.º de incógnitas}$$
-          <p><b>El sistema es compatible indeterminado (infinitas soluciones) cuando $k = 0$.</b></p>`
+          <p><b class="res">El sistema es compatible indeterminado (infinitas soluciones) cuando $k = 0$.</b></p>`
       }),
       pasosSI({
         etiqueta: "k = 5", valor: "k=5",
@@ -769,7 +803,7 @@ const EJERCICIOS = [
         menor3: [['-3', '5', '-10'], ['5', '5', '5'], ['-3', '5', '10']], valMenor3: "-800",
         concl: String.raw`
           $$\operatorname{rg}(A)=2\neq3=\operatorname{rg}(A')$$
-          <p><b>El sistema es incompatible (no tiene solución) cuando $k = 5$.</b></p>`
+          <p><b class="res">El sistema es incompatible (no tiene solución) cuando $k = 5$.</b></p>`
       }),
       [{
         nueva: true, caja: "Resumen",
@@ -807,7 +841,7 @@ const EJERCICIOS = [
           $$m=2\quad\text{y}\quad m=5$$`,
         concl: String.raw`<p>Si $m\neq2$ y $m\neq5$, entonces $\operatorname{rg}(A)=\operatorname{rg}(A')=3$
           (el determinante de $A$ no es nulo y $A'$ solo tiene 3 filas), por lo tanto el sistema es
-          <b>compatible determinado</b> (una única solución).</p>`
+          <b class="res">compatible determinado</b> (una única solución).</p>`
       }),
       pasosSI({
         etiqueta: "m = 2", valor: "m=2",
@@ -819,7 +853,7 @@ const EJERCICIOS = [
         columnas: "1, 3 y 4",
         concl: String.raw`
           $$\operatorname{rg}(A)=2\neq3=\operatorname{rg}(A')$$
-          <p><b>El sistema es incompatible (no tiene solución) cuando $m = 2$.</b></p>`
+          <p><b class="res">El sistema es incompatible (no tiene solución) cuando $m = 2$.</b></p>`
       }),
       pasosSCI({
         etiqueta: "m = 5", valor: "m=5",
@@ -836,7 +870,7 @@ const EJERCICIOS = [
           y como hay un menor de orden 2 distinto de cero, $\operatorname{rg}(A')=2$.</p>`,
         concl: String.raw`
           $$\operatorname{rg}(A)=\operatorname{rg}(A')=2<3=\text{n.º de incógnitas}$$
-          <p><b>El sistema es compatible indeterminado (infinitas soluciones) cuando $m = 5$.</b></p>`
+          <p><b class="res">El sistema es compatible indeterminado (infinitas soluciones) cuando $m = 5$.</b></p>`
       }),
       [{
         nueva: true, caja: "Resumen",
@@ -877,7 +911,7 @@ const EJERCICIOS = [
           $$m=-1\quad\text{y}\quad m=1$$`,
         concl: String.raw`<p>Si $m\neq-1$ y $m\neq1$, entonces $\operatorname{rg}(A)=\operatorname{rg}(A')=3$
           (el determinante de $A$ no es nulo y $A'$ solo tiene 3 filas), por lo tanto el sistema es
-          <b>compatible determinado</b> (una única solución).</p>`
+          <b class="res">compatible determinado</b> (una única solución).</p>`
       }),
       pasosSCI({
         etiqueta: "m = \u22121", valor: "m=-1",
@@ -894,7 +928,7 @@ const EJERCICIOS = [
           y como hay un menor de orden 2 distinto de cero, $\operatorname{rg}(A')=2$.</p>`,
         concl: String.raw`
           $$\operatorname{rg}(A)=\operatorname{rg}(A')=2<3=\text{n.º de incógnitas}$$
-          <p><b>El sistema es compatible indeterminado (infinitas soluciones) cuando $m = -1$.</b></p>`
+          <p><b class="res">El sistema es compatible indeterminado (infinitas soluciones) cuando $m = -1$.</b></p>`
       }),
       pasosSI({
         etiqueta: "m = 1", valor: "m=1",
@@ -905,7 +939,7 @@ const EJERCICIOS = [
         menor3: [['1', '-1', '1'], ['-1', '2', '1'], ['-1', '0', '-1']], valMenor3: "2",
         concl: String.raw`
           $$\operatorname{rg}(A)=2\neq3=\operatorname{rg}(A')$$
-          <p><b>El sistema es incompatible (no tiene solución) cuando $m = 1$.</b></p>`
+          <p><b class="res">El sistema es incompatible (no tiene solución) cuando $m = 1$.</b></p>`
       }),
       [{
         nueva: true, caja: "Resumen",
@@ -945,7 +979,7 @@ const EJERCICIOS = [
           $$m=-2\quad\text{y}\quad m=1$$`,
         concl: String.raw`<p>Si $m\neq-2$ y $m\neq1$, entonces $\operatorname{rg}(A)=\operatorname{rg}(A')=3$
           (el determinante de $A$ no es nulo y $A'$ solo tiene 3 filas), por lo tanto el sistema es
-          <b>compatible determinado</b> (una única solución).</p>`
+          <b class="res">compatible determinado</b> (una única solución).</p>`
       }),
       pasosSI({
         etiqueta: "m = \u22122", valor: "m=-2",
@@ -956,7 +990,7 @@ const EJERCICIOS = [
         menor3: [['1', '1', '1'], ['-2', '1', '-2'], ['1', '-2', '4']], valMenor3: "9",
         concl: String.raw`
           $$\operatorname{rg}(A)=2\neq3=\operatorname{rg}(A')$$
-          <p><b>El sistema es incompatible (no tiene solución) cuando $m = -2$.</b></p>`
+          <p><b class="res">El sistema es incompatible (no tiene solución) cuando $m = -2$.</b></p>`
       }),
       pasosRango1({
         etiqueta: "m = 1", valor: "m=1",
@@ -966,7 +1000,7 @@ const EJERCICIOS = [
         elem: "1", rel: "F_2=F_1,\\ F_3=F_1", iguales: true,
         concl: String.raw`
           $$\operatorname{rg}(A)=\operatorname{rg}(A')=1<3=\text{n.º de incógnitas}$$
-          <p><b>El sistema es compatible indeterminado (infinitas soluciones) cuando $m = 1$.</b></p>`
+          <p><b class="res">El sistema es compatible indeterminado (infinitas soluciones) cuando $m = 1$.</b></p>`
       }),
       [{
         nueva: true, caja: "Resumen",
@@ -991,91 +1025,274 @@ const OPCIONES_MATE = {
   throwOnError: false
 };
 const $ = id => document.getElementById(id);
-let actual = 0;   // ejercicio activo
-let idx = 0;      // pantalla activa (0 = enunciado)
-
 function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
 
-/* agrupa los pasos en pantallas según la marca `nueva` */
-function agrupar(pasos) {
-  const g = [];
-  pasos.forEach((p, i) => { if (i === 0 || p.nueva) g.push([]); g[g.length - 1].push(p); });
-  return g;
+/* ---------------------------------------------------------------------
+   MOTOR DEL LIBRO
+   - Cada ejercicio se trocea en "unidades" (un párrafo, una fórmula, una
+     matriz...). Cada clic escribe la siguiente unidad.
+   - Las unidades se reparten en páginas de tamaño fijo (como un libro).
+     Cada valor crítico ("Si m = ...") empieza en página nueva.
+   - Se ven dos páginas. Cuando se llena la de la derecha, pasa a ser la
+     de la izquierda y aparece una página nueva a la derecha.
+   --------------------------------------------------------------------- */
+const LW = 800;                     // ancho lógico de una página (px)
+let actual = 0;                     // ejercicio activo
+let s = 0;                          // unidades escritas
+let G = {};                         // geometría
+let libro = null;                   // {unidades, paginas}
+let Lprev = 0;
+
+function geometria() {
+  const W = $("libro").clientWidth, H = $("libro").clientHeight;
+  const Sw = W / 2, k = (Sw - 20) / LW;
+  G = { W, H, Sw, k, LH: (H - 20) / k };
 }
-EJERCICIOS.forEach(e => { e.pantallas = agrupar(e.pasos); });
-const total = () => EJERCICIOS[actual].pantallas.length + 1;
+
+/* trocea un ejercicio en secciones y unidades (se hace una sola vez) */
+function extraer(e) {
+  if (e._sec) return e._sec;
+  const stage = $("stage"), secs = [];
+  const add = (tipo, cab, html, salto, mismo) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    stage.appendChild(d);
+    mate(d);
+    const unidades = [];
+    d.childNodes.forEach(n => {
+      if (n.nodeType === 1) unidades.push(n);
+      else if (n.nodeType === 3 && n.textContent.trim()) {
+        const sp = document.createElement("span"); sp.textContent = n.textContent; unidades.push(sp);
+      }
+    });
+    let cabHTML = null;
+    if (cab) { const c = document.createElement("div"); c.innerHTML = cab; mate(c); cabHTML = c.innerHTML; }
+    secs.push({ tipo, cabHTML, unidades, salto: !!salto, mismo: !!mismo });
+  };
+  add("titulo", null, "<h1>" + e.titulo + "</h1>");
+  add("enun", null, e.enunciado, false, true);      // título y enunciado salen juntos con un clic
+  e.pasos.forEach(p => add(p.caja ? "caja" : "paso", p.caja || p.titulo, p.html, p.caja && /^Si /.test(p.caja)));
+  stage.innerHTML = "";
+  /* un "tic" = un clic. Cada sección es un bloque; dentro de una fila de menores
+     (.fila-menores) cada .sub sale con su propio clic */
+  let base = 0;
+  secs.forEach(sc => {
+    let cur = sc.mismo ? base : base + 1, nuevo = false;
+    sc.unidades = sc.unidades.map(n => {
+      if (nuevo) { cur++; nuevo = false; }
+      const o = { n, t: cur, subs: [] };
+      if (n.classList && n.classList.contains("fila-menores")) {
+        n.querySelectorAll(".sub").forEach(sb => { cur++; o.subs.push({ n: sb, t: cur }); });
+        nuevo = true;
+      }
+      return o;
+    });
+    base = cur;
+  });
+  e._T = base;
+  e._sec = secs;
+  return secs;
+}
+
+function crearCont(sc, sigue) {
+  const c = document.createElement("div");
+  c.className = "cont";
+  if (sc.tipo === "caja") {
+    c.classList.add("caja");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", '<span class="titulo">' + sc.cabHTML + "</span>");
+  } else if (sc.tipo === "paso") {
+    c.classList.add("paso");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", "<h4>" + sc.cabHTML + "</h4>");
+  } else if (sc.tipo === "enun") {
+    c.classList.add("caja", "enunciado");
+  }
+  if (sigue) c.classList.add("sigue");
+  return c;
+}
+
+/* una fórmula más ancha que la página se reduce hasta caber */
+function ajustar(u) {
+  if (u.classList && u.classList.contains("fila-menores")) {
+    u.style.zoom = "";
+    if (u.scrollWidth > u.clientWidth + 2) u.style.zoom = String(Math.max(.55, u.clientWidth / u.scrollWidth * .97));
+  }
+  u.querySelectorAll(".katex-display").forEach(d => {
+    const k = d.firstElementChild;
+    if (!k) return;
+    k.style.zoom = "";
+    if (d.scrollWidth > d.clientWidth + 2) k.style.zoom = String(Math.max(.55, d.clientWidth / d.scrollWidth * .98));
+  });
+}
+
+/* reparte las unidades en páginas del tamaño actual */
+function paginar(secs, T) {
+  secs.T = T;
+  const pista = $("pista");
+  pista.innerHTML = "";
+  const paginas = [], unidades = [];
+  const nueva = () => {
+    const hoja = document.createElement("div");
+    hoja.className = "hoja";
+    hoja.style.cssText = "left:" + (paginas.length * G.Sw) + "px;width:" + G.Sw + "px;height:" + G.H + "px";
+    const pag = document.createElement("div");
+    pag.className = "pag";
+    pag.style.cssText = "width:" + LW + "px;height:" + G.LH + "px;transform:scale(" + G.k + ")";
+    const cu = document.createElement("div");
+    cu.className = "cuerpo";
+    cu.style.height = (G.LH - 34 - 56) + "px";
+    const num = document.createElement("div");
+    num.className = "num"; num.textContent = paginas.length + 1;
+    pag.append(cu, num); hoja.appendChild(pag); pista.appendChild(hoja);
+    const o = { hoja, cu };
+    paginas.push(o);
+    return o;
+  };
+  let pg = nueva();
+  const desborda = () => pg.cu.scrollHeight > pg.cu.clientHeight + 1;
+  secs.forEach(sc => {
+    if (sc.salto && pg.cu.children.length) pg = nueva();
+    let cont = crearCont(sc, false), puestas = 0;
+    pg.cu.appendChild(cont);
+    /* un bloque (lo que sale con un clic) nunca se parte entre dos páginas */
+    const bloques = [];
+    sc.unidades.forEach(un => {
+      const ult = bloques[bloques.length - 1];
+      if (ult && ult[0].t === un.t) ult.push(un); else bloques.push([un]);
+    });
+    bloques.forEach(bl => {
+      bl.forEach(un => {
+        un.n.classList.add("u"); un.n.classList.remove("on");
+        un.subs.forEach(sb => { sb.n.classList.add("u"); sb.n.classList.remove("on"); });
+        cont.appendChild(un.n);
+      });
+      bl.forEach(un => ajustar(un.n));
+      if (desborda()) {
+        bl.forEach(un => cont.removeChild(un.n));
+        if (!puestas) pg.cu.removeChild(cont);
+        if (pg.cu.children.length) pg = nueva();     // página nueva solo si la actual ya tiene algo
+        cont = crearCont(sc, puestas > 0);
+        pg.cu.appendChild(cont);
+        bl.forEach(un => cont.appendChild(un.n));
+        bl.forEach(un => ajustar(un.n));
+      }
+      puestas += bl.length;
+      const pi = paginas.indexOf(pg);
+      bl.forEach(un => {
+        unidades.push({ u: un.n, cont, pag: pi, t: un.t, on: false });
+        un.subs.forEach(sb => unidades.push({ u: sb.n, cont, pag: pi, t: sb.t, on: false }));
+      });
+    });
+  });
+  libro = { unidades, paginas, T: secs.T };
+}
+
+/* pone al día lo que se ve según s */
+function aplicar(anim) {
+  const U = libro.unidades;
+  s = Math.max(0, Math.min(s, libro.T));
+  const conts = new Map();
+  U.forEach((o, i) => {
+    const on = o.t <= s;
+    if (on !== o.on) {
+      o.on = on;
+      if (on) { o.u.classList.remove("rapido"); o.u.classList.add("on"); }
+      else { o.u.classList.add("rapido"); o.u.classList.remove("on"); }
+    }
+    if (on) conts.set(o.cont, true); else if (!conts.has(o.cont)) conts.set(o.cont, false);
+  });
+  conts.forEach((v, c) => {
+    if (v) { c.classList.remove("rapido"); c.classList.add("on"); }
+    else { c.classList.add("rapido"); c.classList.remove("on"); }
+  });
+  let p = 0;
+  U.forEach(o => { if (o.t <= s) p = Math.max(p, o.pag); });
+  const L = Math.max(p - 1, 0);
+  const pista = $("pista");
+  pista.classList.toggle("anim", !!anim);
+  pista.style.transform = "translateX(" + (-L * G.Sw) + "px)";
+  if (anim && L > Lprev) {
+    const h = libro.paginas[p].hoja;
+    h.classList.remove("gira"); void h.offsetWidth; h.classList.add("gira");
+    setTimeout(() => h.classList.remove("gira"), 1000);
+  }
+  Lprev = L;
+  const n = libro.T;
+  $("contador").textContent = EJERCICIOS[actual].titulo + " · " + s + " / " + n;
+  $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
+  $("btnAtras").disabled = (actual === 0 && s === 0);
+  $("btnAdelante").disabled = (actual === EJERCICIOS.length - 1 && s === n);
+}
 
 function pintarPestanas() {
   const nav = $("pestanas");
   nav.innerHTML = "";
   EJERCICIOS.forEach((e, i) => {
     const b = document.createElement("button");
-    b.textContent = e.titulo;
+    b.textContent = e.titulo.replace("Ejercicio ", "Ej. ");
     b.setAttribute("aria-selected", i === actual);
-    b.onclick = () => { actual = i; idx = 0; pintar(); };
+    b.onclick = ev => { ev.stopPropagation(); cargar(i, false); };
     nav.appendChild(b);
   });
-  nav.style.display = EJERCICIOS.length > 1 ? "flex" : "none";
+  const sel = nav.querySelector('[aria-selected="true"]');
+  if (sel) sel.scrollIntoView({ inline: "center", block: "nearest" });
 }
 
-function pintar() {
-  pintarPestanas();
+function construir() {
+  geometria();
   const e = EJERCICIOS[actual];
-  const wrap = document.createElement("div");
-  wrap.className = "pantalla";
-  if (idx === 0) {
-    wrap.innerHTML = '<h1>Discusión de sistemas de ecuaciones lineales dependientes de un parámetro</h1>' +
-                     '<section class="caja enunciado">' + e.enunciado + '</section>';
-  } else {
-    e.pantallas[idx - 1].forEach(p => {
-      const s = document.createElement("section");
-      if (p.caja) {
-        s.className = "caja";
-        s.innerHTML = '<span class="titulo">' + p.caja + '</span>' + p.html;
-      } else {
-        s.className = "paso";
-        s.innerHTML = '<h4>' + p.titulo + '</h4>' + p.html;
-      }
-      wrap.appendChild(s);
-    });
-  }
-  $("escena").innerHTML = "";
-  $("escena").appendChild(wrap);
-  mate(wrap);
-  window.scrollTo(0, 0);
-  const n = total();
-  $("contador").textContent = (idx + 1) + " / " + n;
-  $("relleno").style.width = ((idx + 1) / n * 100) + "%";
-  $("btnAtras").disabled = idx === 0 && actual === 0;
+  const secs = extraer(e);
+  paginar(secs, e._T);
+}
+
+async function cargar(i, alFinal) {
+  const lib = $("libro");
+  lib.classList.add("fuera");
+  await new Promise(r => setTimeout(r, 200));
+  actual = i;
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  construir();
+  s = alFinal ? libro.T : 0;
+  Lprev = 0;
+  pintarPestanas();
+  aplicar(false);
+  lib.classList.remove("fuera");
 }
 
 function avanzar() {
-  if (idx < total() - 1) idx++;
-  else if (actual < EJERCICIOS.length - 1) { actual++; idx = 0; }
-  else return;
-  pintar();
+  if (s < libro.T) { s++; aplicar(true); }
+  else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
 }
 function retroceder() {
-  if (idx > 0) idx--;
-  else if (actual > 0) { actual--; idx = total() - 1; }
-  else return;
-  pintar();
+  if (s > 0) { s--; aplicar(true); }
+  else if (actual > 0) cargar(actual - 1, true);
 }
 
-/* clic en cualquier parte = siguiente pantalla (salvo botones o texto seleccionado) */
-document.addEventListener("click", ev => {
-  if (ev.target.closest("button")) return;
+/* clic: tercio izquierdo = atrás; resto = adelante */
+$("libro").addEventListener("click", ev => {
   if (String(window.getSelection())) return;
-  avanzar();
+  if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
 });
-$("btnAtras").onclick = retroceder;
+$("btnAtras").onclick = ev => { ev.stopPropagation(); retroceder(); };
+$("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
+$("tira").onclick = ev => {
+  ev.stopPropagation();
+  const r = $("tira").getBoundingClientRect();
+  s = Math.round((ev.clientX - r.left) / r.width * libro.T);
+  aplicar(true);
+};
 document.addEventListener("keydown", ev => {
   if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
   else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
-  else if (ev.key === "Home") { idx = 0; pintar(); }
+  else if (ev.key === "Home") { s = 0; aplicar(true); }
+  else if (ev.key === "End") { s = libro.T; aplicar(true); }
+});
+let tRes = null;
+window.addEventListener("resize", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); Lprev = 0; aplicar(false); } }, 150);
 });
 
-window.addEventListener("load", pintar);
+window.addEventListener("load", () => cargar(0, false));
 </script>
 </body>
 </html>
