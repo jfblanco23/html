@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ecuaciones exponenciales</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#006666; --turq:#006666; --res:#05472A; --gris:#666;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;color:var(--texto);cursor:pointer;
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:20px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+  html,body{overflow:hidden}
+  body{background:#fff}
+
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:0 14px;display:flex;gap:14px;align-items:center;font-size:.85rem;color:var(--gris)}
+  .barra-sup .tit{font-weight:bold;color:var(--turq);white-space:nowrap}
+  .pestanas{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #333;color:#333}
+  .pestanas button[aria-selected="true"]{background:#333;color:#fff}
+
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:.85rem;color:var(--gris)}
+  .progreso .tira{flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .nav{font:inherit;font-size:1.5rem;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:9.5em;text-align:right;white-space:nowrap}
+
+  #libro{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:hidden;background:#fff;transition:opacity .25s ease}
+  #libro.fuera{opacity:0}
+  #pista{position:absolute;left:0;top:0;height:100%;will-change:transform}
+  #pista.anim{transition:transform .9s cubic-bezier(.65,.05,.25,1)}
+  .hoja{position:absolute;top:0;padding:6px 8px}
+  .pag{position:relative;background:#fff;transform-origin:0 0;padding:30px 40px 0}
+  .pag .cuerpo{display:flow-root;overflow:hidden}
+  .pag .num{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#bbb;font-size:.8rem}
+  #lomo{position:absolute;left:50%;top:14px;bottom:14px;width:0;border-left:1px solid #c9c9c9;pointer-events:none;z-index:2}
+  .hoja.gira .pag{animation:gira .9s ease both}
+  @keyframes gira{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#pista.anim{transition:none}.hoja.gira .pag{animation:none}}
+
+  .cont{opacity:0;transition:opacity .35s ease}
+  .cont.on{opacity:1}
+  .u{opacity:0;clip-path:inset(-40px 100% -40px -40px);transition:opacity .25s ease,clip-path .85s ease}
+  span.u{display:block}
+  .u.on{opacity:1;clip-path:inset(-40px -40px -40px -40px)}
+  .u.rapido,.cont.rapido{transition:none}
+  .cont.sigue{margin-top:0;padding-top:14px;border-top-left-radius:0;border-top-right-radius:0}
+  .fila-menores{display:flex;justify-content:space-around;align-items:center;gap:.4em;margin:.8em 0}
+  .fila-menores .sub{display:block}
+  .fila-menores.col{flex-direction:column;align-items:center;gap:.1em;margin:.4em 0}
+  h1{margin:0 0 6px;font-size:2.1rem;line-height:1.2;color:var(--turq)}
+  h4{margin:16px 0 6px;font-size:1.18rem}
+
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:20px 20px 10px;margin:26px 0 14px}
+  .caja>.titulo{position:absolute;top:-13px;left:12px;background:var(--verde-titulo);color:#fff;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.92rem}
+  .caja.enunciado{color:var(--azul);margin-top:6px;padding-top:12px}
+  .caja p{margin:.3em 0 .5em}
+  .paso{margin:6px 0 10px}
+
+  .ec{display:flex;align-items:center;justify-content:center;gap:.5em;margin:.6em 0;flex-wrap:wrap}
+  .instr{color:var(--azul);border:1.5px solid #E6C200;border-radius:14px;padding:6px 16px;margin:10px 0;text-align:center}
+  .nota{color:var(--gris);font-size:.9em}
+  b.res{color:var(--res)}
+  .tq{color:var(--turq)}
+  .katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden}
+  table.res{border-collapse:collapse;margin:6px auto 8px}
+  table.res th,table.res td{padding:5px 14px;text-align:center}
+  table.res th{border-bottom:1.5px solid #111}
+  table.res td:not(:last-child),table.res th:not(:last-child){border-right:1px solid #111}
+  .rj{color:#cc0000}
+  .pp,.regla,.fin{text-align:center}
+  .pp .katex-display,.regla .katex-display,.fin .katex-display{margin:.3em 0}
+  .regla{position:relative;margin:24px 0 10px;border:2.5px solid #E6A800;background:#FFF9E6;border-radius:10px;padding:10px 14px 4px}
+  .regla::before{content:"Propiedad";position:absolute;top:-13px;left:12px;background:#FFC107;color:#4a3900;
+    font-weight:bold;font-size:.8rem;padding:0 10px;border-radius:5px}
+  .fin{border:2px solid var(--res);background:#E5FFE5;border-radius:10px;margin:8px 0 16px;padding:4px 10px}
+</style>
+</head>
+<body>
+<div class="barra-sup">
+  <span class="tit">Ecuaciones exponenciales</span>
+  <nav class="pestanas" id="pestanas" aria-label="Secciones"></nav>
+</div>
+<div id="libro"><div id="pista"></div><div id="lomo"></div></div>
+<div id="stage" style="position:absolute;left:-99999px;top:0;width:720px;visibility:hidden"></div>
+<div class="progreso">
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
+  <span id="contador"></span>
+</div>
+
+<script>
+/* ---------------- ayudantes ---------------- */
+const f = s => '<span>$' + s + '$</span>';
+const sub = s => '<span class="sub">$\\displaystyle ' + s + '$</span>';
+/* t y sus expresiones en turquesa; exponentes que se igualan, recuadrados en ámbar */
+const T = s => String.raw`{\color{#006666}{${s}}}`;
+const EXP = s => String.raw`{\color{#d49a00}{\boxed{${s}}}}`;
+
+/* Deshacer el cambio con la misma base: a^x = a^k  =>  x = ... */
+function deshacer(base, k, sol) {
+  const kk = String(k);
+  return '<p>Deshacemos el cambio escribiendo el valor de $t$ como potencia de la <b>misma base</b>:</p>' +
+    '$$' + base + '^{' + EXP('x') + '}=' + base + '^{' + EXP(kk) + '}\\;\\Longrightarrow\\;' + sol + '$$';
+}
+
+
+/* ---- propiedades: colores, recuadro de regla y pasos ---- */
+const RC = x => String.raw`{\color{#cc0000}{${x}}}`;   /* número que queda fuera: rojo */
+const TB = T, RB = RC;                                  /* partes de la regla */
+const paso  = x => '<div class="pp">$$' + x + '$$</div>';
+const regla = x => '<div class="regla">$$' + x + '$$</div>';
+const fin   = x => '<div class="fin">$$' + x + '$$</div>';
+const grupo = (...p) => p.join('');
+
+/* =====================================================================
+   CONTENIDO
+   ===================================================================== */
+const EJERCICIOS = [
+
+  /* ===================== MÉTODO ===================== */
+  {
+    titulo: "Método",
+    enunciado: String.raw`<p><b>Ecuaciones exponenciales: cambio de variable</b></p>
+      <p>Cuando la incógnita aparece en varios exponentes con la <b>misma base</b> (o bases que son potencias de una misma), un cambio de variable la convierte en una ecuación polinómica.</p>
+      $$t=a^{x}$$`,
+    pasos: [
+      { titulo: "1. Expresar todas las potencias en función de $a^x$",
+        html: String.raw`<p>Con las propiedades de las potencias, escribimos cada término como un múltiplo o una potencia de $a^x$. Si las bases son distintas pero son potencias de una misma base (como $4=2^2$ o $8=2^3$), las reducimos a esa base.</p>` },
+      { titulo: "2. Cambio de variable",
+        html: String.raw`<p>Llamamos $t=a^x$. La ecuación se convierte en una ecuación polinómica (o racional) en $t$.</p>` },
+      { titulo: "3. Resolver en $t$ y deshacer el cambio",
+        html: String.raw`<p>Resolvemos la ecuación en $t$ y, para cada solución, resolvemos $a^x=t$. Atención a la condición:</p>
+          $$t=a^{x}>0$$
+          <p class="nota">Cualquier solución con $t\leq0$ se descarta, porque una potencia de base positiva nunca es negativa ni cero.</p>` },
+      { caja: "Idea clave",
+        html: String.raw`<p>Para deshacer el cambio, igualamos las bases y luego los exponentes:</p>
+          $$a^{x}=a^{k}\;\Longrightarrow\;x=k$$` }
+    ]
+  },
+
+  /* ===================== PROPIEDADES ===================== */
+  {
+    titulo: "Propiedades",
+    enunciado: String.raw`<p><b>Cómo escribir cada potencia en función de $t$</b></p>
+      <p>Con el cambio</p>$$t=2^{x}$$
+      <p>transformamos, paso a paso, las potencias que aparecen en las ecuaciones. Cada propiedad sigue siempre el mismo recorrido: <b>potencia → regla → aplicación → resultado en $t$</b>.</p>`,
+    pasos: [
+      { caja: "Código de colores",
+        html: String.raw`<p><b class="tq">Turquesa</b>: la parte con $x$, que acabará siendo $t$.</p>
+          <p><b class="rj">Rojo</b>: el número que queda fuera, multiplicando o dividiendo.</p>
+          <p>El <b>recuadro ámbar</b> indica la propiedad de las potencias que vamos a usar:</p>` +
+          grupo(regla(String.raw`a^{${T('m')}+${RC('n')}}=${TB('a^{m}')}\cdot${RB('a^{n}')}`)) },
+
+      { titulo: "Propiedad 1: suma en el exponente",
+        html: grupo(
+          paso(String.raw`2^{${T('x')}+${RC('1')}}`),
+          regla(String.raw`a^{${T('m')}+${RC('n')}}=${TB('a^{m}')}\cdot${RB('a^{n}')}`),
+          paso(String.raw`2^{x+1}=${TB('2^{x}')}\cdot${RB('2')}`),
+          fin(String.raw`2^{x+1}=${RC('2')}${T('t')}`)
+        ) },
+
+      { titulo: "Propiedad 2: resta en el exponente",
+        html: grupo(
+          paso(String.raw`2^{${T('x')}-${RC('1')}}`),
+          regla(String.raw`a^{${T('m')}-${RC('n')}}=\dfrac{${TB('a^{m}')}}{${RB('a^{n}')}}`),
+          paso(String.raw`2^{x-1}=\dfrac{${TB('2^{x}')}}{${RB('2')}}`),
+          fin(String.raw`2^{x-1}=\dfrac{${T('t')}}{${RC('2')}}`)
+        ) },
+
+      { titulo: "Propiedad 3: el exponente con $x$ va detrás de la resta",
+        html: grupo(
+          paso(String.raw`2^{${RC('1')}-${T('x')}}`),
+          regla(String.raw`a^{${RC('m')}-${T('n')}}=\dfrac{${RB('a^{m}')}}{${TB('a^{n}')}}`),
+          paso(String.raw`2^{1-x}=\dfrac{${RB('2^{1}')}}{${TB('2^{x}')}}`),
+          fin(String.raw`2^{1-x}=\dfrac{${RC('2')}}{${T('t')}}`)
+        ) + String.raw`<p class="nota">Caso particular: $2^{-x}=\dfrac{1}{2^{x}}=\dfrac{1}{t}$.</p>` },
+
+      { titulo: "Propiedad 4: exponente doble",
+        html: grupo(
+          paso(String.raw`2^{${RC('2')}${T('x')}}`),
+          regla(String.raw`a^{${T('m')}\cdot${RC('n')}}=\left(${TB('a^{m}')}\right)^{${RC('n')}}`),
+          paso(String.raw`2^{2x}=\left(${TB('2^{x}')}\right)^{${RC('2')}}`),
+          fin(String.raw`2^{2x}=${T('t')}^{${RC('2')}}`)
+        ) },
+
+      { titulo: "Propiedad 5: otra base que es potencia de 2",
+        html: grupo(
+          paso(String.raw`${RC('4')}^{x}`),
+          regla(String.raw`\text{Misma base: }${RC('4')}=${RC('2^{2}')}`),
+          paso(String.raw`4^{x}=\left(${RC('2^{2}')}\right)^{x}=2^{2x}`),
+          regla(String.raw`a^{${T('m')}\cdot${RC('n')}}=\left(${TB('a^{m}')}\right)^{${RC('n')}}`),
+          paso(String.raw`2^{2x}=\left(${TB('2^{x}')}\right)^{${RC('2')}}`),
+          fin(String.raw`4^{x}=${T('t')}^{${RC('2')}}`)
+        ) },
+
+      { titulo: "Propiedad 6: exponente combinado",
+        html: grupo(
+          paso(String.raw`2^{${T('2x')}-${RC('3')}}`),
+          regla(String.raw`a^{${T('m')}-${RC('n')}}=\dfrac{${TB('a^{m}')}}{${RB('a^{n}')}}`),
+          paso(String.raw`2^{2x-3}=\dfrac{${TB('2^{2x}')}}{${RB('2^{3}')}}`),
+          paso(String.raw`=\dfrac{${TB(String.raw`\left(2^{x}\right)^{2}`)}}{${RB('8')}}`),
+          fin(String.raw`2^{2x-3}=\dfrac{${T('t^{2}')}}{${RC('8')}}`)
+        ) },
+
+      { titulo: "Propiedad 7: todo junto",
+        html: grupo(
+          paso(String.raw`${RC('4')}^{${T('x')}+${RC('1')}}`),
+          regla(String.raw`\text{Misma base: }${RC('4')}=${RC('2^{2}')}`),
+          paso(String.raw`4^{x+1}=\left(2^{2}\right)^{x+1}=2^{2x+2}`),
+          regla(String.raw`a^{${T('m')}+${RC('n')}}=${TB('a^{m}')}\cdot${RB('a^{n}')}`),
+          paso(String.raw`2^{2x+2}=${TB('2^{2x}')}\cdot${RB('2^{2}')}=${TB(String.raw`\left(2^{x}\right)^{2}`)}\cdot${RB('4')}`),
+          fin(String.raw`4^{x+1}=${RC('4')}${T('t^{2}')}`)
+        ) },
+
+      { caja: "Receta",
+        html: String.raw`<p><b>1.</b> Escribe todas las bases como potencias de la misma base.</p>
+          <p><b>2.</b> Separa el exponente en una parte con $x$ (<b class="tq">turquesa</b>) y un número (<b class="rj">rojo</b>), con la regla de suma o resta.</p>
+          <p><b>3.</b> La parte turquesa, $2^{x}$, es $t$; la roja se queda como número.</p>` },
+
+      { caja: "Resumen",
+        html: String.raw`<table class="res">
+          <tr><th>Potencia</th><th>En función de $t=2^x$</th></tr>
+          <tr><td>$2^{x+1}$</td><td>$${RC('2')}${T('t')}$</td></tr>
+          <tr><td>$2^{x-1}$</td><td>$\dfrac{${T('t')}}{${RC('2')}}$</td></tr>
+          <tr><td>$2^{1-x}$</td><td>$\dfrac{${RC('2')}}{${T('t')}}$</td></tr>
+          <tr><td>$2^{2x}$ y $4^{x}$</td><td>$${T('t^{2}')}$</td></tr>
+          <tr><td>$2^{2x-3}$</td><td>$\dfrac{${T('t^{2}')}}{${RC('8')}}$</td></tr>
+          <tr><td>$4^{x+1}$</td><td>$${RC('4')}${T('t^{2}')}$</td></tr>
+        </table>` }
+    ]
+  },
+
+  /* ===================== E1 ===================== */
+  {
+    titulo: "Ejercicio 1",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$3^{2x}-2\cdot3^{x+1}+9=0$$`,
+    pasos: [
+      { titulo: "Paso 1: todo en función de $3^x$",
+        html: String.raw`<p>Hacemos el cambio $t=3^x$:</p>
+          $$3^{2x}=\left(3^{x}\right)^{2}=` + T('t^{2}') + String.raw`\qquad 3^{x+1}=3^{x}\cdot3=` + T('3t') + String.raw`$$` },
+      { titulo: "Paso 2: ecuación en $t$",
+        html: String.raw`$$t^{2}-2\cdot3t+9=0\;\Rightarrow\;t^{2}-6t+9=0$$` },
+      { titulo: "Paso 3: resolvemos",
+        html: String.raw`$$t^{2}-6t+9=(t-3)^{2}=0\;\Rightarrow\;t=3\ \text{(raíz doble)}$$
+          <p>Cumple $t>0$.</p>` },
+      { titulo: "Paso 4: deshacemos el cambio", html: deshacer('3', 1, 'x=1') },
+      { caja: "Solución", html: String.raw`$$x=1$$` },
+      { titulo: "Comprobación",
+        html: String.raw`$$3^{2}-2\cdot3^{2}+9=9-18+9=0\ \checkmark$$` }
+    ]
+  },
+
+  /* ===================== E2 ===================== */
+  {
+    titulo: "Ejercicio 2",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$2^{x}+2^{1-x}=3$$`,
+    pasos: [
+      { titulo: "Paso 1: todo en función de $2^x$",
+        html: String.raw`<p>Hacemos el cambio $t=2^x$:</p>
+          $$2^{1-x}=\frac{2^{1}}{2^{x}}=` + T(String.raw`\frac{2}{t}`) + String.raw`$$` },
+      { titulo: "Paso 2: ecuación en $t$",
+        html: String.raw`$$t+\frac{2}{t}=3$$
+          <p>Multiplicamos por $t$ (que es distinto de cero):</p>
+          $$t^{2}+2=3t\;\Rightarrow\;t^{2}-3t+2=0$$` },
+      { titulo: "Paso 3: resolvemos",
+        html: String.raw`$$t=\frac{3\pm\sqrt{9-8}}{2}=\frac{3\pm1}{2}\;\Rightarrow\;t=2\ \text{ y }\ t=1$$
+          <p>Las dos cumplen $t>0$.</p>` },
+      { titulo: "Paso 4: deshacemos el cambio", html: deshacer('2', 0, 'x=0') + '<p class="nota">Para $t=1$.</p>' },
+      { titulo: "Y para $t=2$", html: deshacer('2', 1, 'x=1') },
+      { caja: "Solución", html: String.raw`$$x=0\qquad\text{y}\qquad x=1$$` },
+      { titulo: "Comprobación",
+        html: String.raw`$$x=0:\ 2^{0}+2^{1}=1+2=3\ \checkmark\qquad x=1:\ 2^{1}+2^{0}=2+1=3\ \checkmark$$` }
+    ]
+  },
+
+  /* ===================== E3 ===================== */
+  {
+    titulo: "Ejercicio 3",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$2^{x+1}+2^{x-1}=\frac{5}{2}$$`,
+    pasos: [
+      { titulo: "Paso 1: todo en función de $2^x$",
+        html: String.raw`<p>Hacemos el cambio $t=2^x$:</p>
+          $$2^{x+1}=` + T('2t') + String.raw`\qquad 2^{x-1}=` + T(String.raw`\frac{t}{2}`) + String.raw`$$` },
+      { titulo: "Paso 2: ecuación en $t$",
+        html: String.raw`$$2t+\frac{t}{2}=\frac{5}{2}\;\Rightarrow\;\frac{4t+t}{2}=\frac{5}{2}\;\Rightarrow\;\frac{5t}{2}=\frac{5}{2}$$` },
+      { titulo: "Paso 3: resolvemos",
+        html: String.raw`$$t=1$$<p>Cumple $t>0$. Es de primer grado: solo hay una solución.</p>` },
+      { titulo: "Paso 4: deshacemos el cambio", html: deshacer('2', 0, 'x=0') },
+      { caja: "Solución", html: String.raw`$$x=0$$` },
+      { titulo: "Comprobación",
+        html: String.raw`$$2^{1}+2^{-1}=2+\frac12=\frac52\ \checkmark$$` }
+    ]
+  },
+
+  /* ===================== E4 ===================== */
+  {
+    titulo: "Ejercicio 4",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$2^{2x}-5\cdot2^{x}+4=0$$`,
+    pasos: [
+      { titulo: "Paso 1: todo en función de $2^x$",
+        html: String.raw`<p>Hacemos el cambio $t=2^x$:</p>
+          $$2^{2x}=\left(2^{x}\right)^{2}=` + T('t^{2}') + String.raw`$$` },
+      { titulo: "Paso 2: ecuación en $t$", html: String.raw`$$t^{2}-5t+4=0$$` },
+      { titulo: "Paso 3: resolvemos",
+        html: String.raw`$$t=\frac{5\pm\sqrt{25-16}}{2}=\frac{5\pm3}{2}\;\Rightarrow\;t=4\ \text{ y }\ t=1$$
+          <p>Las dos cumplen $t>0$.</p>` },
+      { titulo: "Paso 4: deshacemos el cambio (para $t=1$)", html: deshacer('2', 0, 'x=0') },
+      { titulo: "Y para $t=4$", html: deshacer('2', 2, 'x=2') + '<p class="nota">Porque $4=2^{2}$.</p>' },
+      { caja: "Solución", html: String.raw`$$x=0\qquad\text{y}\qquad x=2$$` },
+      { titulo: "Comprobación",
+        html: String.raw`$$x=0:\ 1-5+4=0\ \checkmark\qquad x=2:\ 16-20+4=0\ \checkmark$$` }
+    ]
+  },
+
+  /* ===================== E5 ===================== */
+  {
+    titulo: "Ejercicio 5",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$9^{x}-3^{x}-6=0$$`,
+    pasos: [
+      { titulo: "Paso 1: reducimos a la misma base",
+        html: String.raw`<p>Como $9=3^2$:</p>
+          $$9^{x}=\left(3^{2}\right)^{x}=3^{2x}=\left(3^{x}\right)^{2}$$
+          <p>Hacemos el cambio $t=3^x$, con lo que $9^x=` + T('t^{2}') + String.raw`$.</p>` },
+      { titulo: "Paso 2: ecuación en $t$", html: String.raw`$$t^{2}-t-6=0$$` },
+      { titulo: "Paso 3: resolvemos",
+        html: String.raw`$$t=\frac{1\pm\sqrt{1+24}}{2}=\frac{1\pm5}{2}\;\Rightarrow\;t=3\ \text{ y }\ t=-2$$
+          <p>Como $t=3^x>0$, descartamos $t=-2$.</p>` },
+      { titulo: "Paso 4: deshacemos el cambio (solo $t=3$)", html: deshacer('3', 1, 'x=1') },
+      { caja: "Solución", html: String.raw`$$x=1$$` },
+      { titulo: "Comprobación",
+        html: String.raw`$$9-3-6=0\ \checkmark$$` }
+    ]
+  },
+
+  /* ===================== E6 ===================== */
+  {
+    titulo: "Ejercicio 6",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$8^{1+x}+2^{3x-1}=\frac{17}{16}$$`,
+    pasos: [
+      { titulo: "Paso 1: reducimos a la base 2",
+        html: String.raw`<p>Como $8=2^3$:</p>
+          $$8^{1+x}=2^{3(1+x)}=2^{3+3x}=2^{3}\cdot\left(2^{x}\right)^{3}$$` },
+      { titulo: "Paso 2: cambio de variable $t=2^x$",
+        html: String.raw`$$8^{1+x}=` + T('8t^{3}') + String.raw`\qquad 2^{3x-1}=\frac{\left(2^{x}\right)^{3}}{2}=` + T(String.raw`\frac{t^{3}}{2}`) + String.raw`$$` },
+      { titulo: "Paso 3: ecuación en $t$",
+        html: String.raw`$$8t^{3}+\frac{t^{3}}{2}=\frac{17}{16}\;\Rightarrow\;\frac{17}{2}\,t^{3}=\frac{17}{16}$$` },
+      { titulo: "Paso 4: resolvemos",
+        html: String.raw`$$t^{3}=\frac{1}{8}\;\Rightarrow\;t=\frac{1}{2}$$<p>Cumple $t>0$.</p>` },
+      { titulo: "Paso 5: deshacemos el cambio",
+        html: deshacer('2', -1, 'x=-1') + String.raw`<p class="nota">Porque $\dfrac12=2^{-1}$.</p>` },
+      { caja: "Solución", html: String.raw`$$x=-1$$` },
+      { titulo: "Comprobación",
+        html: String.raw`$$8^{0}+2^{-4}=1+\frac{1}{16}=\frac{17}{16}\ \checkmark$$` }
+    ]
+  },
+
+  /* ===================== E7 ===================== */
+  {
+    titulo: "Ejercicio 7",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$7^{1+2x}-50\cdot7^{x}+7=0$$`,
+    pasos: [
+      { titulo: "Paso 1: todo en función de $7^x$",
+        html: String.raw`<p>Hacemos el cambio $t=7^x$:</p>
+          $$7^{1+2x}=7\cdot\left(7^{x}\right)^{2}=` + T('7t^{2}') + String.raw`$$` },
+      { titulo: "Paso 2: ecuación en $t$", html: String.raw`$$7t^{2}-50t+7=0$$` },
+      { titulo: "Paso 3: resolvemos",
+        html: String.raw`$$t=\frac{50\pm\sqrt{2500-196}}{14}=\frac{50\pm\sqrt{2304}}{14}=\frac{50\pm48}{14}$$
+          $$t=\frac{98}{14}=7\qquad\text{y}\qquad t=\frac{2}{14}=\frac{1}{7}$$
+          <p>Las dos cumplen $t>0$.</p>` },
+      { titulo: "Paso 4: deshacemos el cambio (para $t=7$)", html: deshacer('7', 1, 'x=1') },
+      { titulo: "Y para $t=\\frac17$", html: deshacer('7', -1, 'x=-1') + String.raw`<p class="nota">Porque $\dfrac17=7^{-1}$.</p>` },
+      { caja: "Solución", html: String.raw`$$x=1\qquad\text{y}\qquad x=-1$$` },
+      { titulo: "Comprobación",
+        html: String.raw`$$x=1:\ 7^{3}-50\cdot7+7=343-350+7=0\ \checkmark$$
+          $$x=-1:\ 7^{-1}-50\cdot7^{-1}+7=\frac{1-50}{7}+7=-7+7=0\ \checkmark$$` }
+    ]
+  },
+
+  /* ===================== E8 ===================== */
+  {
+    titulo: "Ejercicio 8",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$2^{x/2}+2^{x}=6$$`,
+    pasos: [
+      { titulo: "Paso 1: elegimos el cambio",
+        html: String.raw`<p>Hay dos exponentes: $\tfrac{x}{2}$ y $x$. El más pequeño es $\tfrac{x}{2}$, así que hacemos $t=2^{x/2}$:</p>
+          $$2^{x}=\left(2^{x/2}\right)^{2}=` + T('t^{2}') + String.raw`$$` },
+      { titulo: "Paso 2: ecuación en $t$",
+        html: String.raw`$$t+t^{2}=6\;\Rightarrow\;t^{2}+t-6=0\;\Rightarrow\;(t+3)(t-2)=0$$` },
+      { titulo: "Paso 3: resolvemos",
+        html: String.raw`$$t=-3\qquad\text{y}\qquad t=2$$
+          <p>Como $t=2^{x/2}>0$, descartamos $t=-3$.</p>` },
+      { titulo: "Paso 4: deshacemos el cambio (solo $t=2$)",
+        html: deshacer('2', 1, String.raw`\frac{x}{2}=1\;\Rightarrow\;x=2`).replace('2^{' + EXP('x') + '}', '2^{' + EXP(String.raw`\tfrac{x}{2}`) + '}') },
+      { caja: "Solución", html: String.raw`$$x=2$$` },
+      { titulo: "Comprobación",
+        html: String.raw`$$2^{2/2}+2^{2}=2+4=6\ \checkmark$$` }
+    ]
+  },
+
+  /* ===================== RESUMEN ===================== */
+  {
+    titulo: "Resumen",
+    enunciado: String.raw`<p><b>Resultados — Ecuaciones exponenciales</b></p>`,
+    pasos: [
+      { caja: "Soluciones",
+        html: '<div class="fila-menores col">' +
+          sub(String.raw`3^{2x}-2\cdot3^{x+1}+9=0\;\Rightarrow\;x=1`) +
+          sub(String.raw`2^{x}+2^{1-x}=3\;\Rightarrow\;x=0,\ x=1`) +
+          sub(String.raw`2^{x+1}+2^{x-1}=\tfrac52\;\Rightarrow\;x=0`) +
+          sub(String.raw`2^{2x}-5\cdot2^{x}+4=0\;\Rightarrow\;x=0,\ x=2`) +
+          sub(String.raw`9^{x}-3^{x}-6=0\;\Rightarrow\;x=1`) +
+          sub(String.raw`8^{1+x}+2^{3x-1}=\tfrac{17}{16}\;\Rightarrow\;x=-1`) +
+          sub(String.raw`7^{1+2x}-50\cdot7^{x}+7=0\;\Rightarrow\;x=1,\ x=-1`) +
+          sub(String.raw`2^{x/2}+2^{x}=6\;\Rightarrow\;x=2`) +
+          '</div>' }
+    ]
+  }
+];
+
+/* ===================================================================== */
+const OPCIONES_MATE = {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "$",  right: "$",  display: false}
+  ],
+  throwOnError: false
+};
+const $ = id => document.getElementById(id);
+function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
+
+/* ---------------- MOTOR DEL LIBRO (igual que ejercicios_matrices) ---------------- */
+const LW = 800;
+let actual = 0;
+let s = 0;
+let G = {};
+let libro = null;
+let Lprev = 0;
+
+function geometria() {
+  const W = $("libro").clientWidth, H = $("libro").clientHeight;
+  const Sw = W / 2, k = (Sw - 20) / LW;
+  G = { W, H, Sw, k, LH: (H - 20) / k };
+}
+
+function extraer(e) {
+  if (e._sec) return e._sec;
+  const stage = $("stage"), secs = [];
+  const add = (tipo, cab, html, salto, mismo) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    stage.appendChild(d);
+    mate(d);
+    const unidades = [];
+    d.childNodes.forEach(n => {
+      if (n.nodeType === 1) unidades.push(n);
+      else if (n.nodeType === 3 && n.textContent.trim()) {
+        const sp = document.createElement("span"); sp.textContent = n.textContent; unidades.push(sp);
+      }
+    });
+    let cabHTML = null;
+    if (cab) { const c = document.createElement("div"); c.innerHTML = cab; mate(c); cabHTML = c.innerHTML; }
+    secs.push({ tipo, cabHTML, unidades, salto: !!salto, mismo: !!mismo });
+  };
+  add("titulo", null, "<h1>" + e.titulo + "</h1>");
+  add("enun", null, e.enunciado, false, true);
+  e.pasos.forEach(p => add(p.caja ? "caja" : "paso", p.caja || p.titulo, p.html, p.caja && /^Si /.test(p.caja)));
+  stage.innerHTML = "";
+  let base = 0;
+  secs.forEach(sc => {
+    let cur = sc.mismo ? base : base + 1, nuevo = false;
+    sc.unidades = sc.unidades.map(n => {
+      if (nuevo) { cur++; nuevo = false; }
+      const o = { n, t: cur, subs: [] };
+      if (n.classList && n.classList.contains("fila-menores")) {
+        n.querySelectorAll(".sub").forEach(sb => { cur++; o.subs.push({ n: sb, t: cur }); });
+        nuevo = true;
+      }
+      return o;
+    });
+    base = cur;
+  });
+  e._T = base;
+  e._sec = secs;
+  return secs;
+}
+
+function crearCont(sc, sigue) {
+  const c = document.createElement("div");
+  c.className = "cont";
+  if (sc.tipo === "caja") {
+    c.classList.add("caja");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", '<span class="titulo">' + sc.cabHTML + "</span>");
+  } else if (sc.tipo === "paso") {
+    c.classList.add("paso");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", "<h4>" + sc.cabHTML + "</h4>");
+  } else if (sc.tipo === "enun") {
+    c.classList.add("caja", "enunciado");
+  }
+  if (sigue) c.classList.add("sigue");
+  return c;
+}
+
+function ajustar(u) {
+  if (u.classList && u.classList.contains("fila-menores")) {
+    u.style.zoom = "";
+    if (u.scrollWidth > u.clientWidth + 2) u.style.zoom = String(Math.max(.55, u.clientWidth / u.scrollWidth * .97));
+  }
+  u.querySelectorAll(".katex-display").forEach(d => {
+    const k = d.firstElementChild;
+    if (!k) return;
+    k.style.zoom = "";
+    if (d.scrollWidth > d.clientWidth + 2) k.style.zoom = String(Math.max(.55, d.clientWidth / d.scrollWidth * .98));
+  });
+}
+
+function paginar(secs, T) {
+  secs.T = T;
+  const pista = $("pista");
+  pista.innerHTML = "";
+  const paginas = [], unidades = [];
+  const nueva = () => {
+    const hoja = document.createElement("div");
+    hoja.className = "hoja";
+    hoja.style.cssText = "left:" + (paginas.length * G.Sw) + "px;width:" + G.Sw + "px;height:" + G.H + "px";
+    const pag = document.createElement("div");
+    pag.className = "pag";
+    pag.style.cssText = "width:" + LW + "px;height:" + G.LH + "px;transform:scale(" + G.k + ")";
+    const cu = document.createElement("div");
+    cu.className = "cuerpo";
+    cu.style.height = (G.LH - 34 - 56) + "px";
+    const num = document.createElement("div");
+    num.className = "num"; num.textContent = paginas.length + 1;
+    pag.append(cu, num); hoja.appendChild(pag); pista.appendChild(hoja);
+    const o = { hoja, cu };
+    paginas.push(o);
+    return o;
+  };
+  let pg = nueva();
+  const desborda = () => pg.cu.scrollHeight > pg.cu.clientHeight + 1;
+  secs.forEach(sc => {
+    if (sc.salto && pg.cu.children.length) pg = nueva();
+    let cont = crearCont(sc, false), puestas = 0;
+    pg.cu.appendChild(cont);
+    const bloques = [];
+    sc.unidades.forEach(un => {
+      const ult = bloques[bloques.length - 1];
+      if (ult && ult[0].t === un.t) ult.push(un); else bloques.push([un]);
+    });
+    bloques.forEach(bl => {
+      bl.forEach(un => {
+        un.n.classList.add("u"); un.n.classList.remove("on");
+        un.subs.forEach(sb => { sb.n.classList.add("u"); sb.n.classList.remove("on"); });
+        cont.appendChild(un.n);
+      });
+      bl.forEach(un => ajustar(un.n));
+      if (desborda()) {
+        bl.forEach(un => cont.removeChild(un.n));
+        if (!puestas) pg.cu.removeChild(cont);
+        if (pg.cu.children.length) pg = nueva();
+        cont = crearCont(sc, puestas > 0);
+        pg.cu.appendChild(cont);
+        bl.forEach(un => cont.appendChild(un.n));
+        bl.forEach(un => ajustar(un.n));
+      }
+      puestas += bl.length;
+      const pi = paginas.indexOf(pg);
+      bl.forEach(un => {
+        unidades.push({ u: un.n, cont, pag: pi, t: un.t, on: false });
+        un.subs.forEach(sb => unidades.push({ u: sb.n, cont, pag: pi, t: sb.t, on: false }));
+      });
+    });
+  });
+  libro = { unidades, paginas, T: secs.T };
+}
+
+function aplicar(anim) {
+  const U = libro.unidades;
+  s = Math.max(0, Math.min(s, libro.T));
+  const conts = new Map();
+  U.forEach(o => {
+    const on = o.t <= s;
+    if (on !== o.on) {
+      o.on = on;
+      if (on) { o.u.classList.remove("rapido"); o.u.classList.add("on"); }
+      else { o.u.classList.add("rapido"); o.u.classList.remove("on"); }
+    }
+    if (on) conts.set(o.cont, true); else if (!conts.has(o.cont)) conts.set(o.cont, false);
+  });
+  conts.forEach((v, c) => {
+    if (v) { c.classList.remove("rapido"); c.classList.add("on"); }
+    else { c.classList.add("rapido"); c.classList.remove("on"); }
+  });
+  let p = 0;
+  U.forEach(o => { if (o.t <= s) p = Math.max(p, o.pag); });
+  const L = Math.max(p - 1, 0);
+  const pista = $("pista");
+  pista.classList.toggle("anim", !!anim);
+  pista.style.transform = "translateX(" + (-L * G.Sw) + "px)";
+  if (anim && L > Lprev) {
+    const h = libro.paginas[p].hoja;
+    h.classList.remove("gira"); void h.offsetWidth; h.classList.add("gira");
+    setTimeout(() => h.classList.remove("gira"), 1000);
+  }
+  Lprev = L;
+  const n = libro.T;
+  $("contador").textContent = EJERCICIOS[actual].titulo + " · " + s + " / " + n;
+  $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
+  $("btnAtras").disabled = (actual === 0 && s <= 1);
+  $("btnAdelante").disabled = (actual === EJERCICIOS.length - 1 && s === n);
+}
+
+function pintarPestanas() {
+  const nav = $("pestanas");
+  nav.innerHTML = "";
+  EJERCICIOS.forEach((e, i) => {
+    const b = document.createElement("button");
+    b.textContent = e.titulo.replace("Ejercicio ", "Ej. ");
+    b.setAttribute("aria-selected", i === actual);
+    b.onclick = ev => { ev.stopPropagation(); cargar(i, false); };
+    nav.appendChild(b);
+  });
+  const sel = nav.querySelector('[aria-selected="true"]');
+  if (sel) sel.scrollIntoView({ inline: "center", block: "nearest" });
+}
+
+function construir() {
+  geometria();
+  const e = EJERCICIOS[actual];
+  const secs = extraer(e);
+  paginar(secs, e._T);
+}
+
+async function cargar(i, alFinal) {
+  const lib = $("libro");
+  lib.classList.add("fuera");
+  await new Promise(r => setTimeout(r, 200));
+  actual = i;
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  construir();
+  s = alFinal ? libro.T : 1;
+  Lprev = 0;
+  pintarPestanas();
+  aplicar(false);
+  lib.classList.remove("fuera");
+}
+
+function avanzar() {
+  if (s < libro.T) { s++; aplicar(true); }
+  else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
+}
+function retroceder() {
+  if (s > 1) { s--; aplicar(true); }
+  else if (actual > 0) cargar(actual - 1, true);
+}
+
+$("libro").addEventListener("click", ev => {
+  if (String(window.getSelection())) return;
+  if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
+});
+$("btnAtras").onclick = ev => { ev.stopPropagation(); retroceder(); };
+$("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
+$("tira").onclick = ev => {
+  ev.stopPropagation();
+  const r = $("tira").getBoundingClientRect();
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * libro.T));
+  aplicar(true);
+};
+document.addEventListener("keydown", ev => {
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
+  else if (ev.key === "Home") { s = 1; aplicar(true); }
+  else if (ev.key === "End") { s = libro.T; aplicar(true); }
+});
+let tRes = null;
+window.addEventListener("resize", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); Lprev = 0; aplicar(false); } }, 150);
+});
+
+window.addEventListener("load", () => cargar(0, false));
+</script>
+</body>
+</html>
