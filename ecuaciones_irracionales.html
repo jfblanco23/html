@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ecuaciones irracionales</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#006666; --turq:#006666; --res:#05472A; --gris:#666;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;color:var(--texto);cursor:pointer;
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:20px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+  html,body{overflow:hidden}
+  body{background:#fff}
+
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:0 14px;display:flex;gap:14px;align-items:center;font-size:.85rem;color:var(--gris)}
+  .barra-sup .tit{font-weight:bold;color:var(--turq);white-space:nowrap}
+  .pestanas{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #333;color:#333}
+  .pestanas button[aria-selected="true"]{background:#333;color:#fff}
+
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:.85rem;color:var(--gris)}
+  .progreso .tira{flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .nav{font:inherit;font-size:1.5rem;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:9.5em;text-align:right;white-space:nowrap}
+
+  #libro{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:hidden;background:#fff;transition:opacity .25s ease}
+  #libro.fuera{opacity:0}
+  #pista{position:absolute;left:0;top:0;height:100%;will-change:transform}
+  #pista.anim{transition:transform .9s cubic-bezier(.65,.05,.25,1)}
+  .hoja{position:absolute;top:0;padding:6px 8px}
+  .pag{position:relative;background:#fff;transform-origin:0 0;padding:30px 40px 0}
+  .pag .cuerpo{display:flow-root;overflow:hidden}
+  .pag .num{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#bbb;font-size:.8rem}
+  #lomo{position:absolute;left:50%;top:14px;bottom:14px;width:0;border-left:1px solid #c9c9c9;pointer-events:none;z-index:2}
+  .hoja.gira .pag{animation:gira .9s ease both}
+  @keyframes gira{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#pista.anim{transition:none}.hoja.gira .pag{animation:none}}
+
+  .cont{opacity:0;transition:opacity .35s ease}
+  .cont.on{opacity:1}
+  .u{opacity:0;clip-path:inset(-40px 100% -40px -40px);transition:opacity .25s ease,clip-path .85s ease}
+  span.u{display:block}
+  .u.on{opacity:1;clip-path:inset(-40px -40px -40px -40px)}
+  .u.rapido,.cont.rapido{transition:none}
+  .cont.sigue{margin-top:0;padding-top:14px;border-top-left-radius:0;border-top-right-radius:0}
+  .fila-menores{display:flex;justify-content:space-around;align-items:center;gap:.4em;margin:.8em 0}
+  .fila-menores .sub{display:block}
+  .fila-menores.col{flex-direction:column;align-items:center;gap:.1em;margin:.4em 0}
+  h1{margin:0 0 6px;font-size:2.1rem;line-height:1.2;color:var(--turq)}
+  h4{margin:16px 0 6px;font-size:1.18rem}
+
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:20px 20px 10px;margin:26px 0 14px}
+  .caja>.titulo{position:absolute;top:-13px;left:12px;background:var(--verde-titulo);color:#fff;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.92rem}
+  .caja.enunciado{color:var(--azul);margin-top:6px;padding-top:12px}
+  .caja p{margin:.3em 0 .5em}
+  .paso{margin:6px 0 10px}
+
+  .ec{display:flex;align-items:center;justify-content:center;gap:.5em;margin:.6em 0;flex-wrap:wrap}
+  .instr{color:var(--azul);border:1.5px solid #E6C200;border-radius:14px;padding:6px 16px;margin:10px 0;text-align:center}
+  .nota{color:var(--gris);font-size:.9em}
+  b.res{color:var(--res)}
+  .tq{color:var(--turq)}
+  .katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden}
+  table.res{border-collapse:collapse;margin:6px auto 8px}
+  table.res th,table.res td{padding:5px 14px;text-align:center}
+  table.res th{border-bottom:1.5px solid #111}
+  table.res td:not(:last-child),table.res th:not(:last-child){border-right:1px solid #111}
+  .rj{color:#cc0000}
+  .pp,.regla,.fin{text-align:center}
+  .pp .katex-display,.regla .katex-display,.fin .katex-display{margin:.3em 0}
+  .regla{position:relative;margin:24px 0 10px;border:2.5px solid #E6A800;background:#FFF9E6;border-radius:10px;padding:10px 14px 4px}
+  .regla::before{content:attr(data-et);position:absolute;top:-13px;left:12px;background:#FFC107;color:#4a3900;
+    font-weight:bold;font-size:.8rem;padding:0 10px;border-radius:5px}
+  .fin{border:2px solid var(--res);background:#E5FFE5;border-radius:10px;margin:8px 0 16px;padding:4px 10px}
+  .fila-menores.area{display:grid;grid-template-columns:var(--c1) var(--c2);grid-template-rows:var(--c1) var(--c2);
+    gap:0;justify-content:center;margin:1em auto}
+  .fila-menores.area .sub{display:flex;align-items:center;justify-content:center;border:2px solid #fff;overflow:hidden}
+  .fila-menores.area.peq .sub{font-size:.8em}
+  .sub.celda.ct{background:#CDEBEB}.sub.celda.cr{background:#F8D4D4}.sub.celda.cb{background:#CFE3F4}
+  .fila-menores.col .sub.regla,.fila-menores.col .sub.fin{align-self:stretch}
+  .progreso .otra{font:inherit;font-size:.95rem;padding:6px 16px;border-radius:10px;cursor:pointer;white-space:nowrap;
+    border:2px solid #d49a00;background:#FFF9E6;color:#4a3900;font-weight:bold}
+  .progreso .otra:active{background:#FFC107}
+  .progreso .otra[hidden]{display:none}
+</style>
+</head>
+<body>
+<div class="barra-sup">
+  <span class="tit">Ecuaciones irracionales</span>
+  <nav class="pestanas" id="pestanas" aria-label="Secciones"></nav>
+</div>
+<div id="libro"><div id="pista"></div><div id="lomo"></div></div>
+<div id="stage" style="position:absolute;left:-99999px;top:0;width:720px;visibility:hidden"></div>
+<div class="progreso">
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
+  <button class="otra" id="btnOtra" hidden>Otra forma</button>
+  <span id="contador"></span>
+</div>
+
+<script>
+/* ---------------- ayudantes ---------------- */
+/* resaltados como en la pizarra: 1.er término amarillo, 2.º azul claro, doble producto verde */
+const HY = x => String.raw`\colorbox{#FFF176}{$${x}$}`;
+const HC = x => String.raw`\colorbox{#8FEFFF}{$${x}$}`;
+const HG = x => String.raw`\colorbox{#8DF06A}{$${x}$}`;
+/* raíz y cuadrado que se anulan: tachado en rojo */
+const RJ = '#cc0000';
+const RS = r => String.raw`\mathrlap{\color{${RJ}}\sqrt{\phantom{${r}}}}\mathrlap{\color{${RJ}}\cancel{\sqrt{\vphantom{I}\kern.12em}}}\hphantom{\sqrt{\vphantom{I}\kern.12em}}${r}`;
+/* (coef·√r)²: primero coef²·(√r)² y solo después se tacha el signo de la raíz y el exponente */
+const CANX = (x, c = true) => { const m = x.match(/^(.*?)\\sqrt\{([\s\S]*)\}$/);
+  const pre = m[1] ? m[1] + '^{2}' : '';
+  const base = c ? RS(m[2]) : String.raw`\sqrt{${m[2]}}`;
+  const ex = c ? String.raw`\color{${RJ}}\cancel{2}` : '2';
+  return String.raw`${pre}\left(${base}\right)^{${ex}}`; };
+const conCoef = x => /^[^\\]/.test(x) && /\\sqrt/.test(x) && !/^\\sqrt/.test(x);
+
+/* cada .sub de una fila-menores sale con su propio clic */
+const paso  = x => '<span class="sub pp">$$' + x + '$$</span>';
+const fin   = x => '<span class="sub fin">$$' + x + '$$</span>';
+const grupo = (...p) => '<div class="fila-menores col">' + p.join('') + '</div>';
+const P = t => '<p>' + t + '</p>';
+const nota = t => '<p class="nota">' + t + '</p>';
+const SOL = t => ({ caja: "Solución", html: t });
+
+/* cuadrado de un número o una letra sin paréntesis; el resto, entre paréntesis */
+const simple = s => /^(\d+|[a-z])$/.test(s);
+const sq2 = s => simple(s) ? s + '^{2}' : String.raw`\left(${s}\right)^{2}`;
+
+/* lados de la ecuación que se eleva al cuadrado */
+const rad = (inner, res) => ({ k: 'rad', sq: CANX(inner), sq0: conCoef(inner) ? CANX(inner, false) : null, sqp: sq2(inner), res });
+const num = (inner, res) => ({ k: 'num', sq: sq2(inner), res });
+const bin = (B, op, C, B2, dbl, C2, bRad, cRad) => ({
+  k: 'bin',
+  sq: String.raw`\left(${HY(B)}${op}${HC(C)}\right)^{2}`,
+  exp: HY(bRad ? CANX(B) : sq2(B)) + op + HG(String.raw`2(${B})(${C})`) + '+' + HC(cRad ? CANX(C) : sq2(C)),
+  exp00: (bRad && conCoef(B)) || (cRad && conCoef(C))
+    ? HY(sq2(B)) + op + HG(String.raw`2(${B})(${C})`) + '+' + HC(sq2(C)) : null,
+  exp0: (bRad && conCoef(B)) || (cRad && conCoef(C))
+    ? HY(bRad ? CANX(B, false) : sq2(B)) + op + HG(String.raw`2(${B})(${C})`) + '+' + HC(cRad ? CANX(C, false) : sq2(C)) : null,
+  res: B2 + op + dbl + '+' + C2
+});
+
+/* eleva al cuadrado los dos miembros, un clic por línea:
+   1) los dos miembros al cuadrado (con lo que se anula tachado)
+   2) el desarrollo con los resaltados
+   3) el resultado simplificado */
+function cuadrados(L, R) {
+  const lin = [];
+  if (L.sq0 || R.sq0) {
+    lin.push(paso(`${L.sqp || L.sq}=${R.sqp || R.sq}`));
+    lin.push(paso(`${L.sq0 || L.sq}=${R.sq0 || R.sq}`));
+  }
+  lin.push(paso(`${L.sq}=${R.sq}`));
+  if (L.k !== 'bin' && R.k !== 'bin') return grupo(...lin, paso(`${L.res}=${R.res}`));
+  const e = L.k === 'bin' ? L : R;
+  const mk = ex => L.k === 'bin' ? paso(`${ex}=${R.res}`) : paso(`${L.res}=${ex}`);
+  if (e.exp00) lin.push(mk(e.exp00));
+  if (e.exp0) lin.push(mk(e.exp0));
+  lin.push(mk(e.exp));
+  return grupo(...lin, paso(`${L.res}=${R.res}`));
+}
+const T2 = 'Elevamos al cuadrado los dos miembros';
+
+/* =====================================================================
+   CONTENIDO  (pasos = aislando una raíz;  alt = "otra forma")
+   ===================================================================== */
+const EJERCICIOS = [
+
+  /* ===================== E1 ===================== */
+  {
+    titulo: "Ejercicio 1",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$\sqrt{x+7}=x+1$$`,
+    pasos: [
+      { titulo: T2,
+        html: cuadrados(rad(String.raw`\sqrt{x+7}`, 'x+7'), bin('x', '+', '1', 'x^{2}', '2x', '1')) },
+      { titulo: "Ecuación de segundo grado",
+        html: grupo(
+          paso(String.raw`x^{2}+x-6=0`),
+          paso(String.raw`x=\frac{-1\pm\sqrt{1+24}}{2}=\frac{-1\pm5}{2}`),
+          fin(String.raw`x=2\qquad\text{y}\qquad x=-3`)) },
+      { titulo: "Comprobación",
+        html: grupo(
+          paso(String.raw`x=2:\ \sqrt{9}=3=2+1\ \checkmark`),
+          paso(String.raw`x=-3:\ \sqrt{4}=2\neq-3+1=-2\ \times`)) },
+      SOL(String.raw`$$x=2$$`)
+    ]
+  },
+
+  /* ===================== E2 ===================== */
+  {
+    titulo: "Ejercicio 2",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$\sqrt{5x+1}-1=x$$`,
+    pasos: [
+      { titulo: "Aislamos la raíz",
+        html: grupo(paso(String.raw`\sqrt{5x+1}=x+1`)) },
+      { titulo: T2,
+        html: cuadrados(rad(String.raw`\sqrt{5x+1}`, '5x+1'), bin('x', '+', '1', 'x^{2}', '2x', '1')) },
+      { titulo: "Resolvemos",
+        html: grupo(
+          paso(String.raw`x^{2}-3x=0\;\Rightarrow\;x(x-3)=0`),
+          fin(String.raw`x=0\qquad\text{y}\qquad x=3`)) },
+      { titulo: "Comprobación",
+        html: grupo(
+          paso(String.raw`x=0:\ \sqrt{1}-1=0\ \checkmark`),
+          paso(String.raw`x=3:\ \sqrt{16}-1=3\ \checkmark`)) },
+      SOL(String.raw`$$x=0\qquad\text{y}\qquad x=3$$`)
+    ]
+  },
+
+  /* ===================== E3 ===================== */
+  {
+    titulo: "Ejercicio 3",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$\sqrt{x-1}+\sqrt{x+4}=5$$`,
+    pasos: [
+      { titulo: "Aislamos una raíz",
+        html: grupo(paso(String.raw`\sqrt{x-1}=5-\sqrt{x+4}`)) },
+      { titulo: T2,
+        html: cuadrados(rad(String.raw`\sqrt{x-1}`, 'x-1'),
+          bin('5', '-', String.raw`\sqrt{x+4}`, '25', String.raw`10\sqrt{x+4}`, 'x+4', false, true)) },
+      { titulo: "Reducimos",
+        html: grupo(paso(String.raw`10\sqrt{x+4}=30`), paso(String.raw`\sqrt{x+4}=3`)) },
+      { titulo: "Elevamos otra vez al cuadrado",
+        html: cuadrados(rad(String.raw`\sqrt{x+4}`, 'x+4'), num('3', '9')) +
+          grupo(fin(String.raw`x=5`)) },
+      { titulo: "Comprobación",
+        html: grupo(paso(String.raw`\sqrt{5-1}+\sqrt{5+4}=2+3=5\ \checkmark`)) },
+      SOL(String.raw`$$x=5$$`)
+    ],
+    alt: [
+      { titulo: T2,
+        html: cuadrados(bin(String.raw`\sqrt{x-1}`, '+', String.raw`\sqrt{x+4}`, 'x-1', String.raw`2\sqrt{(x-1)(x+4)}`, 'x+4', true, true),
+          num('5', '25')) },
+      { titulo: "Reducimos y aislamos la raíz que queda",
+        html: grupo(
+          paso(String.raw`2x+3+2\sqrt{x^{2}+3x-4}=25`),
+          paso(String.raw`2\sqrt{x^{2}+3x-4}=22-2x`),
+          paso(String.raw`\sqrt{x^{2}+3x-4}=11-x`)) },
+      { titulo: "Elevamos otra vez al cuadrado",
+        html: cuadrados(rad(String.raw`\sqrt{x^{2}+3x-4}`, 'x^{2}+3x-4'), bin('11', '-', 'x', '121', '22x', 'x^{2}', false, false)) +
+          grupo(paso(String.raw`25x=125`), fin(String.raw`x=5`)) },
+      { titulo: "Comprobación",
+        html: grupo(paso(String.raw`\sqrt{5-1}+\sqrt{5+4}=2+3=5\ \checkmark`)) },
+      SOL(String.raw`$$x=5$$`)
+    ]
+  },
+
+  /* ===================== E4 ===================== */
+  {
+    titulo: "Ejercicio 4",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$\sqrt{x-2}+\sqrt{x+3}=1$$`,
+    pasos: [
+      { titulo: "Aislamos una raíz",
+        html: grupo(paso(String.raw`\sqrt{x-2}=1-\sqrt{x+3}`)) },
+      { titulo: T2,
+        html: cuadrados(rad(String.raw`\sqrt{x-2}`, 'x-2'),
+          bin('1', '-', String.raw`\sqrt{x+3}`, '1', String.raw`2\sqrt{x+3}`, 'x+3', false, true)) },
+      { titulo: "Reducimos",
+        html: grupo(paso(String.raw`2\sqrt{x+3}=6`), paso(String.raw`\sqrt{x+3}=3`)) },
+      { titulo: "Elevamos otra vez al cuadrado",
+        html: cuadrados(rad(String.raw`\sqrt{x+3}`, 'x+3'), num('3', '9')) +
+          grupo(fin(String.raw`x=6`)) },
+      { titulo: "Comprobación",
+        html: grupo(paso(String.raw`x=6:\ \sqrt{4}+\sqrt{9}=2+3=5\neq1\ \times`)) },
+      SOL(String.raw`<p><b class="res">Sin solución.</b></p>`)
+    ],
+    alt: [
+      { titulo: T2,
+        html: cuadrados(bin(String.raw`\sqrt{x-2}`, '+', String.raw`\sqrt{x+3}`, 'x-2', String.raw`2\sqrt{(x-2)(x+3)}`, 'x+3', true, true),
+          num('1', '1')) },
+      { titulo: "Reducimos y aislamos la raíz que queda",
+        html: grupo(
+          paso(String.raw`2x+1+2\sqrt{x^{2}+x-6}=1`),
+          paso(String.raw`2\sqrt{x^{2}+x-6}=-2x`),
+          paso(String.raw`\sqrt{x^{2}+x-6}=-x`)) },
+      { titulo: "Elevamos otra vez al cuadrado",
+        html: cuadrados(rad(String.raw`\sqrt{x^{2}+x-6}`, 'x^{2}+x-6'), num('-x', 'x^{2}')) +
+          grupo(paso(String.raw`x=6`)) },
+      { titulo: "Comprobación",
+        html: grupo(paso(String.raw`x=6:\ \sqrt{4}+\sqrt{9}=2+3=5\neq1\ \times`)) },
+      SOL(String.raw`<p><b class="res">Sin solución.</b></p>`)
+    ]
+  },
+
+  /* ===================== E5 ===================== */
+  {
+    titulo: "Ejercicio 5",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$x-2=\sqrt{x^{2}-8}$$`,
+    pasos: [
+      { titulo: T2,
+        html: cuadrados(bin('x', '-', '2', 'x^{2}', '4x', '4'), rad(String.raw`\sqrt{x^{2}-8}`, 'x^{2}-8')) },
+      { titulo: "Resolvemos",
+        html: grupo(paso(String.raw`-4x=-12`), fin(String.raw`x=3`)) +
+          nota('Se anula el término $x^{2}$: la ecuación es de primer grado.') },
+      { titulo: "Comprobación",
+        html: grupo(paso(String.raw`3-2=1=\sqrt{9-8}\ \checkmark`)) },
+      SOL(String.raw`$$x=3$$`)
+    ]
+  },
+
+  /* ===================== E6 ===================== */
+  {
+    titulo: "Ejercicio 6",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$\sqrt{x+3}+\sqrt{x-1}=4$$`,
+    pasos: [
+      { titulo: "Aislamos una raíz",
+        html: grupo(paso(String.raw`\sqrt{x+3}=4-\sqrt{x-1}`)) },
+      { titulo: T2,
+        html: cuadrados(rad(String.raw`\sqrt{x+3}`, 'x+3'),
+          bin('4', '-', String.raw`\sqrt{x-1}`, '16', String.raw`8\sqrt{x-1}`, 'x-1', false, true)) },
+      { titulo: "Reducimos",
+        html: grupo(paso(String.raw`8\sqrt{x-1}=12`), paso(String.raw`\sqrt{x-1}=\dfrac{3}{2}`)) },
+      { titulo: "Elevamos otra vez al cuadrado",
+        html: cuadrados(rad(String.raw`\sqrt{x-1}`, 'x-1'), num(String.raw`\dfrac{3}{2}`, String.raw`\dfrac{9}{4}`)) +
+          grupo(fin(String.raw`x=\dfrac{13}{4}`)) },
+      { titulo: "Comprobación",
+        html: grupo(
+          paso(String.raw`\sqrt{\dfrac{13}{4}+3}+\sqrt{\dfrac{13}{4}-1}=\sqrt{\dfrac{25}{4}}+\sqrt{\dfrac{9}{4}}=\dfrac{5}{2}+\dfrac{3}{2}=4\ \checkmark`)) },
+      SOL(String.raw`$$x=\frac{13}{4}$$`)
+    ],
+    alt: [
+      { titulo: T2,
+        html: cuadrados(bin(String.raw`\sqrt{x+3}`, '+', String.raw`\sqrt{x-1}`, 'x+3', String.raw`2\sqrt{(x+3)(x-1)}`, 'x-1', true, true),
+          num('4', '16')) },
+      { titulo: "Reducimos y aislamos la raíz que queda",
+        html: grupo(
+          paso(String.raw`2x+2+2\sqrt{x^{2}+2x-3}=16`),
+          paso(String.raw`2\sqrt{x^{2}+2x-3}=14-2x`),
+          paso(String.raw`\sqrt{x^{2}+2x-3}=7-x`)) },
+      { titulo: "Elevamos otra vez al cuadrado",
+        html: cuadrados(rad(String.raw`\sqrt{x^{2}+2x-3}`, 'x^{2}+2x-3'), bin('7', '-', 'x', '49', '14x', 'x^{2}', false, false)) +
+          grupo(paso(String.raw`16x=52`), fin(String.raw`x=\dfrac{13}{4}`)) },
+      { titulo: "Comprobación",
+        html: grupo(
+          paso(String.raw`\sqrt{\dfrac{13}{4}+3}+\sqrt{\dfrac{13}{4}-1}=\sqrt{\dfrac{25}{4}}+\sqrt{\dfrac{9}{4}}=\dfrac{5}{2}+\dfrac{3}{2}=4\ \checkmark`)) },
+      SOL(String.raw`$$x=\frac{13}{4}$$`)
+    ]
+  },
+
+  /* ===================== E7 ===================== */
+  {
+    titulo: "Ejercicio 7",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$\sqrt{2x+5}-\sqrt{x+1}=2$$`,
+    pasos: [
+      { titulo: "Aislamos una raíz",
+        html: grupo(paso(String.raw`\sqrt{2x+5}=2+\sqrt{x+1}`)) },
+      { titulo: T2,
+        html: cuadrados(rad(String.raw`\sqrt{2x+5}`, '2x+5'),
+          bin('2', '+', String.raw`\sqrt{x+1}`, '4', String.raw`4\sqrt{x+1}`, 'x+1', false, true)) },
+      { titulo: "Reducimos",
+        html: grupo(paso(String.raw`x=4\sqrt{x+1}`)) },
+      { titulo: "Elevamos otra vez al cuadrado",
+        html: cuadrados(num('x', 'x^{2}'), rad(String.raw`4\sqrt{x+1}`, '16(x+1)')) +
+          grupo(
+            paso(String.raw`x^{2}-16x-16=0`),
+            paso(String.raw`x=\frac{16\pm\sqrt{256+64}}{2}=\frac{16\pm8\sqrt{5}}{2}`),
+            fin(String.raw`x=8+4\sqrt{5}\qquad x=8-4\sqrt{5}`)) },
+      { titulo: "Comprobación",
+        html: grupo(
+          paso(String.raw`x=8+4\sqrt{5}:\ (4+\sqrt{5})-(2+\sqrt{5})=2\ \checkmark`),
+          paso(String.raw`x=8-4\sqrt{5}:\ (4-\sqrt{5})-(\sqrt{5}-2)=6-2\sqrt{5}\approx1{,}53\neq2\ \times`)) },
+      SOL(String.raw`$$x=8+4\sqrt{5}$$`)
+    ],
+    alt: [
+      { titulo: T2,
+        html: cuadrados(bin(String.raw`\sqrt{2x+5}`, '-', String.raw`\sqrt{x+1}`, '2x+5', String.raw`2\sqrt{(2x+5)(x+1)}`, 'x+1', true, true),
+          num('2', '4')) },
+      { titulo: "Reducimos y aislamos la raíz que queda",
+        html: grupo(
+          paso(String.raw`3x+6-2\sqrt{2x^{2}+7x+5}=4`),
+          paso(String.raw`3x+2=2\sqrt{2x^{2}+7x+5}`)) },
+      { titulo: "Elevamos otra vez al cuadrado",
+        html: cuadrados(bin('3x', '+', '2', '9x^{2}', '12x', '4'), rad(String.raw`2\sqrt{2x^{2}+7x+5}`, '4(2x^{2}+7x+5)')) +
+          grupo(
+            paso(String.raw`9x^{2}+12x+4=8x^{2}+28x+20`),
+            paso(String.raw`x^{2}-16x-16=0`),
+            paso(String.raw`x=\frac{16\pm\sqrt{256+64}}{2}=\frac{16\pm8\sqrt{5}}{2}`),
+            fin(String.raw`x=8+4\sqrt{5}\qquad x=8-4\sqrt{5}`)) },
+      { titulo: "Comprobación",
+        html: grupo(
+          paso(String.raw`x=8+4\sqrt{5}:\ (4+\sqrt{5})-(2+\sqrt{5})=2\ \checkmark`),
+          paso(String.raw`x=8-4\sqrt{5}:\ (4-\sqrt{5})-(\sqrt{5}-2)=6-2\sqrt{5}\approx1{,}53\neq2\ \times`)) },
+      SOL(String.raw`$$x=8+4\sqrt{5}$$`)
+    ]
+  },
+
+  /* ===================== E8 ===================== */
+  {
+    titulo: "Ejercicio 8",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$\sqrt{5x+1}-\sqrt{x+1}=2$$`,
+    pasos: [
+      { titulo: "Aislamos una raíz",
+        html: grupo(paso(String.raw`\sqrt{5x+1}=2+\sqrt{x+1}`)) },
+      { titulo: T2,
+        html: cuadrados(rad(String.raw`\sqrt{5x+1}`, '5x+1'),
+          bin('2', '+', String.raw`\sqrt{x+1}`, '4', String.raw`4\sqrt{x+1}`, 'x+1', false, true)) },
+      { titulo: "Reducimos",
+        html: grupo(paso(String.raw`4x-4=4\sqrt{x+1}`), paso(String.raw`x-1=\sqrt{x+1}`)) },
+      { titulo: "Elevamos otra vez al cuadrado",
+        html: cuadrados(bin('x', '-', '1', 'x^{2}', '2x', '1'), rad(String.raw`\sqrt{x+1}`, 'x+1')) +
+          grupo(
+            paso(String.raw`x^{2}-3x=0\;\Rightarrow\;x(x-3)=0`),
+            fin(String.raw`x=0\qquad\text{y}\qquad x=3`)) },
+      { titulo: "Comprobación",
+        html: grupo(
+          paso(String.raw`x=0:\ \sqrt{1}-\sqrt{1}=0\neq2\ \times`),
+          paso(String.raw`x=3:\ \sqrt{16}-\sqrt{4}=4-2=2\ \checkmark`)) },
+      SOL(String.raw`$$x=3$$`)
+    ],
+    alt: [
+      { titulo: T2,
+        html: cuadrados(bin(String.raw`\sqrt{5x+1}`, '-', String.raw`\sqrt{x+1}`, '5x+1', String.raw`2\sqrt{(5x+1)(x+1)}`, 'x+1', true, true),
+          num('2', '4')) },
+      { titulo: "Reducimos y aislamos la raíz que queda",
+        html: grupo(
+          paso(String.raw`6x+2-2\sqrt{5x^{2}+6x+1}=4`),
+          paso(String.raw`6x-2=2\sqrt{5x^{2}+6x+1}`),
+          paso(String.raw`3x-1=\sqrt{5x^{2}+6x+1}`)) },
+      { titulo: "Elevamos otra vez al cuadrado",
+        html: cuadrados(bin('3x', '-', '1', '9x^{2}', '6x', '1'), rad(String.raw`\sqrt{5x^{2}+6x+1}`, '5x^{2}+6x+1')) +
+          grupo(
+            paso(String.raw`4x^{2}-12x=0\;\Rightarrow\;4x(x-3)=0`),
+            fin(String.raw`x=0\qquad\text{y}\qquad x=3`)) },
+      { titulo: "Comprobación",
+        html: grupo(
+          paso(String.raw`x=0:\ \sqrt{1}-\sqrt{1}=0\neq2\ \times`),
+          paso(String.raw`x=3:\ \sqrt{16}-\sqrt{4}=4-2=2\ \checkmark`)) },
+      SOL(String.raw`$$x=3$$`)
+    ]
+  },
+
+  /* ===================== E9 ===================== */
+  {
+    titulo: "Ejercicio 9",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$\sqrt{x^{2}-x}+\sqrt{x^{2}+4}=2$$`,
+    pasos: [
+      { titulo: "Aislamos una raíz",
+        html: grupo(paso(String.raw`\sqrt{x^{2}-x}=2-\sqrt{x^{2}+4}`)) },
+      { titulo: T2,
+        html: cuadrados(rad(String.raw`\sqrt{x^{2}-x}`, 'x^{2}-x'),
+          bin('2', '-', String.raw`\sqrt{x^{2}+4}`, '4', String.raw`4\sqrt{x^{2}+4}`, 'x^{2}+4', false, true)) },
+      { titulo: "Reducimos y aislamos la raíz que queda",
+        html: grupo(paso(String.raw`4\sqrt{x^{2}+4}=x+8`)) },
+      { titulo: "Elevamos otra vez al cuadrado",
+        html: cuadrados(rad(String.raw`4\sqrt{x^{2}+4}`, '16(x^{2}+4)'), bin('x', '+', '8', 'x^{2}', '16x', '64')) +
+          grupo(
+            paso(String.raw`16x^{2}+64=x^{2}+16x+64`),
+            paso(String.raw`15x^{2}-16x=0\;\Rightarrow\;x(15x-16)=0`),
+            fin(String.raw`x=0\qquad\text{y}\qquad x=\dfrac{16}{15}`)) },
+      { titulo: "Comprobación",
+        html: grupo(
+          paso(String.raw`x=0:\ \sqrt{0}+\sqrt{4}=2\ \checkmark`),
+          paso(String.raw`x=\tfrac{16}{15}:\ \sqrt{\tfrac{16}{225}}+\sqrt{\tfrac{1156}{225}}=\tfrac{4}{15}+\tfrac{34}{15}=\tfrac{38}{15}\neq2\ \times`)) +
+          nota(String.raw`Se ve también de entrada: $\sqrt{x^{2}+4}\geq2$, así que $2-\sqrt{x^{2}+4}\leq0$ y solo puede ser $0$: $x=0$.`) },
+      SOL(String.raw`$$x=0$$`)
+    ],
+    alt: [
+      { titulo: T2,
+        html: cuadrados(bin(String.raw`\sqrt{x^{2}-x}`, '+', String.raw`\sqrt{x^{2}+4}`, 'x^{2}-x', String.raw`2\sqrt{(x^{2}-x)(x^{2}+4)}`, 'x^{2}+4', true, true),
+          num('2', '4')) },
+      { titulo: "Reducimos y aislamos la raíz que queda",
+        html: grupo(
+          paso(String.raw`2x^{2}-x+4+2\sqrt{(x^{2}-x)(x^{2}+4)}=4`),
+          paso(String.raw`2\sqrt{(x^{2}-x)(x^{2}+4)}=x-2x^{2}`)) },
+      { titulo: "Elevamos otra vez al cuadrado",
+        html: cuadrados(rad(String.raw`2\sqrt{(x^{2}-x)(x^{2}+4)}`, '4(x^{4}-x^{3}+4x^{2}-4x)'), bin('x', '-', '2x^{2}', 'x^{2}', '4x^{3}', '4x^{4}')) +
+          grupo(
+            paso(String.raw`4x^{4}-4x^{3}+16x^{2}-16x=4x^{4}-4x^{3}+x^{2}`),
+            paso(String.raw`15x^{2}-16x=0\;\Rightarrow\;x(15x-16)=0`),
+            fin(String.raw`x=0\qquad\text{y}\qquad x=\dfrac{16}{15}`)) },
+      { titulo: "Comprobación",
+        html: grupo(
+          paso(String.raw`x=0:\ \sqrt{0}+\sqrt{4}=2\ \checkmark`),
+          paso(String.raw`x=\tfrac{16}{15}:\ \sqrt{\tfrac{16}{225}}+\sqrt{\tfrac{1156}{225}}=\tfrac{4}{15}+\tfrac{34}{15}=\tfrac{38}{15}\neq2\ \times`)) },
+      SOL(String.raw`$$x=0$$`)
+    ]
+  },
+
+  /* ===================== E10 ===================== */
+  {
+    titulo: "Ejercicio 10",
+    enunciado: String.raw`<p>Resuelve la ecuación</p>$$\sqrt{1-4x}+2\sqrt{6-5x}=11$$`,
+    pasos: [
+      { titulo: "Aislamos una raíz",
+        html: grupo(paso(String.raw`2\sqrt{6-5x}=11-\sqrt{1-4x}`)) },
+      { titulo: T2,
+        html: cuadrados(rad(String.raw`2\sqrt{6-5x}`, '4(6-5x)'),
+          bin('11', '-', String.raw`\sqrt{1-4x}`, '121', String.raw`22\sqrt{1-4x}`, '1-4x', false, true)) },
+      { titulo: "Reducimos y aislamos la raíz que queda",
+        html: grupo(
+          paso(String.raw`24-20x=122-4x-22\sqrt{1-4x}`),
+          paso(String.raw`22\sqrt{1-4x}=98+16x`),
+          paso(String.raw`11\sqrt{1-4x}=49+8x`)) },
+      { titulo: "Elevamos otra vez al cuadrado",
+        html: cuadrados(rad(String.raw`11\sqrt{1-4x}`, '121(1-4x)'), bin('49', '+', '8x', '2401', '784x', '64x^{2}')) +
+          grupo(
+            paso(String.raw`121-484x=2401+784x+64x^{2}`),
+            paso(String.raw`64x^{2}+1268x+2280=0\;\Rightarrow\;16x^{2}+317x+570=0`),
+            paso(String.raw`x=\frac{-317\pm\sqrt{317^{2}-4\cdot16\cdot570}}{32}=\frac{-317\pm253}{32}`),
+            fin(String.raw`x=-2\qquad\text{y}\qquad x=-\dfrac{285}{16}`)) },
+      { titulo: "Comprobación",
+        html: grupo(
+          paso(String.raw`x=-2:\ \sqrt{9}+2\sqrt{16}=3+8=11\ \checkmark`),
+          paso(String.raw`x=-\tfrac{285}{16}:\ \sqrt{\tfrac{289}{4}}+2\sqrt{\tfrac{1521}{16}}=\tfrac{17}{2}+\tfrac{39}{2}=28\neq11\ \times`)) },
+      SOL(String.raw`$$x=-2$$`)
+    ],
+    alt: [
+      { titulo: T2,
+        html: cuadrados(bin(String.raw`\sqrt{1-4x}`, '+', String.raw`2\sqrt{6-5x}`, '1-4x', String.raw`4\sqrt{(1-4x)(6-5x)}`, '4(6-5x)', true, true),
+          num('11', '121')) },
+      { titulo: "Reducimos y aislamos la raíz que queda",
+        html: grupo(
+          paso(String.raw`25-24x+4\sqrt{20x^{2}-29x+6}=121`),
+          paso(String.raw`4\sqrt{20x^{2}-29x+6}=96+24x`),
+          paso(String.raw`\sqrt{20x^{2}-29x+6}=24+6x`)) },
+      { titulo: "Elevamos otra vez al cuadrado",
+        html: cuadrados(rad(String.raw`\sqrt{20x^{2}-29x+6}`, '20x^{2}-29x+6'), bin('24', '+', '6x', '576', '288x', '36x^{2}')) +
+          grupo(
+            paso(String.raw`16x^{2}+317x+570=0`),
+            paso(String.raw`x=\frac{-317\pm253}{32}`),
+            fin(String.raw`x=-2\qquad\text{y}\qquad x=-\dfrac{285}{16}`)) },
+      { titulo: "Comprobación",
+        html: grupo(
+          paso(String.raw`x=-2:\ \sqrt{9}+2\sqrt{16}=3+8=11\ \checkmark`),
+          paso(String.raw`x=-\tfrac{285}{16}:\ \sqrt{\tfrac{289}{4}}+2\sqrt{\tfrac{1521}{16}}=\tfrac{17}{2}+\tfrac{39}{2}=28\neq11\ \times`)) },
+      SOL(String.raw`$$x=-2$$`)
+    ]
+  },
+
+  /* ===================== E11: TRES RAÍCES ===================== */
+  {
+    titulo: "Ejercicio 11",
+    enunciado: String.raw`<p>Resuelve la ecuación (tres raíces)</p>$$\sqrt{x-5}+\sqrt{x+7}=\sqrt{3x+9}$$`,
+    pasos: [
+      { titulo: T2,
+        html: cuadrados(bin(String.raw`\sqrt{x-5}`, '+', String.raw`\sqrt{x+7}`, 'x-5', String.raw`2\sqrt{(x-5)(x+7)}`, 'x+7', true, true),
+          rad(String.raw`\sqrt{3x+9}`, '3x+9')) },
+      { titulo: "Reducimos y aislamos la raíz que queda",
+        html: grupo(
+          paso(String.raw`2x+2+2\sqrt{x^{2}+2x-35}=3x+9`),
+          paso(String.raw`2\sqrt{x^{2}+2x-35}=x+7`)) },
+      { titulo: "Elevamos otra vez al cuadrado",
+        html: cuadrados(rad(String.raw`2\sqrt{x^{2}+2x-35}`, '4(x^{2}+2x-35)'), bin('x', '+', '7', 'x^{2}', '14x', '49')) +
+          grupo(
+            paso(String.raw`4x^{2}+8x-140=x^{2}+14x+49`),
+            paso(String.raw`3x^{2}-6x-189=0\;\Rightarrow\;x^{2}-2x-63=0`),
+            paso(String.raw`(x-9)(x+7)=0`),
+            fin(String.raw`x=9\qquad\text{y}\qquad x=-7`)) },
+      { titulo: "Comprobación",
+        html: grupo(
+          paso(String.raw`x=9:\ \sqrt{4}+\sqrt{16}=2+4=6=\sqrt{36}\ \checkmark`),
+          paso(String.raw`x=-7:\ \sqrt{-12}\ \text{no es un número real}\ \times`)) },
+      SOL(String.raw`$$x=9$$`)
+    ]
+  }
+];
+
+const OPCIONES_MATE = {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "$",  right: "$",  display: false}
+  ],
+  throwOnError: false
+};
+const $ = id => document.getElementById(id);
+function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
+
+/* ---------------- MOTOR DEL LIBRO (igual que ejercicios_matrices) ---------------- */
+const LW = 800;
+let actual = 0;
+let s = 0;
+let G = {};
+let libro = null;
+let Lprev = 0;
+let modo = 0;                       // 0 = aislando una raíz, 1 = otra forma
+
+function vista(i) {
+  const e = EJERCICIOS[i];
+  if (modo && e.alt) {
+    if (!e._alt) e._alt = Object.assign({}, e, { pasos: e.alt, _sec: undefined, _T: 0 });
+    return e._alt;
+  }
+  return e;
+}
+
+function pintarBoton() {
+  const b = $("btnOtra"), e = EJERCICIOS[actual];
+  b.hidden = !e.alt;
+  b.textContent = modo ? "Aislando una raíz" : "Otra forma";
+}
+
+function geometria() {
+  const W = $("libro").clientWidth, H = $("libro").clientHeight;
+  const Sw = W / 2, k = (Sw - 20) / LW;
+  G = { W, H, Sw, k, LH: (H - 20) / k };
+}
+
+function extraer(e) {
+  if (e._sec) return e._sec;
+  const stage = $("stage"), secs = [];
+  const add = (tipo, cab, html, salto, mismo) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    stage.appendChild(d);
+    mate(d);
+    const unidades = [];
+    d.childNodes.forEach(n => {
+      if (n.nodeType === 1) unidades.push(n);
+      else if (n.nodeType === 3 && n.textContent.trim()) {
+        const sp = document.createElement("span"); sp.textContent = n.textContent; unidades.push(sp);
+      }
+    });
+    let cabHTML = null;
+    if (cab) { const c = document.createElement("div"); c.innerHTML = cab; mate(c); cabHTML = c.innerHTML; }
+    secs.push({ tipo, cabHTML, unidades, salto: !!salto, mismo: !!mismo });
+  };
+  add("titulo", null, "<h1>" + e.titulo + "</h1>");
+  add("enun", null, e.enunciado, false, true);
+  e.pasos.forEach(p => add(p.caja ? "caja" : "paso", p.caja || p.titulo, p.html, p.caja && /^Si /.test(p.caja)));
+  stage.innerHTML = "";
+  let base = 0;
+  secs.forEach(sc => {
+    let cur = sc.mismo ? base : base + 1, nuevo = false;
+    sc.unidades = sc.unidades.map(n => {
+      if (nuevo) { cur++; nuevo = false; }
+      const o = { n, t: cur, subs: [] };
+      if (n.classList && n.classList.contains("fila-menores")) {
+        n.querySelectorAll(".sub").forEach(sb => { cur++; o.subs.push({ n: sb, t: cur }); });
+        nuevo = true;
+      }
+      return o;
+    });
+    base = cur;
+  });
+  e._T = base;
+  e._sec = secs;
+  return secs;
+}
+
+function crearCont(sc, sigue) {
+  const c = document.createElement("div");
+  c.className = "cont";
+  if (sc.tipo === "caja") {
+    c.classList.add("caja");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", '<span class="titulo">' + sc.cabHTML + "</span>");
+  } else if (sc.tipo === "paso") {
+    c.classList.add("paso");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", "<h4>" + sc.cabHTML + "</h4>");
+  } else if (sc.tipo === "enun") {
+    c.classList.add("caja", "enunciado");
+  }
+  if (sigue) c.classList.add("sigue");
+  return c;
+}
+
+function ajustar(u) {
+  if (u.classList && u.classList.contains("fila-menores")) {
+    u.style.zoom = "";
+    if (u.scrollWidth > u.clientWidth + 2) u.style.zoom = String(Math.max(.55, u.clientWidth / u.scrollWidth * .97));
+  }
+  u.querySelectorAll(".katex-display").forEach(d => {
+    const k = d.firstElementChild;
+    if (!k) return;
+    k.style.zoom = "";
+    if (d.scrollWidth > d.clientWidth + 2) k.style.zoom = String(Math.max(.55, d.clientWidth / d.scrollWidth * .98));
+  });
+}
+
+function paginar(secs, T) {
+  secs.T = T;
+  const pista = $("pista");
+  pista.innerHTML = "";
+  const paginas = [], unidades = [];
+  const nueva = () => {
+    const hoja = document.createElement("div");
+    hoja.className = "hoja";
+    hoja.style.cssText = "left:" + (paginas.length * G.Sw) + "px;width:" + G.Sw + "px;height:" + G.H + "px";
+    const pag = document.createElement("div");
+    pag.className = "pag";
+    pag.style.cssText = "width:" + LW + "px;height:" + G.LH + "px;transform:scale(" + G.k + ")";
+    const cu = document.createElement("div");
+    cu.className = "cuerpo";
+    cu.style.height = (G.LH - 34 - 56) + "px";
+    const num = document.createElement("div");
+    num.className = "num"; num.textContent = paginas.length + 1;
+    pag.append(cu, num); hoja.appendChild(pag); pista.appendChild(hoja);
+    const o = { hoja, cu };
+    paginas.push(o);
+    return o;
+  };
+  let pg = nueva();
+  const desborda = () => pg.cu.scrollHeight > pg.cu.clientHeight + 1;
+  secs.forEach(sc => {
+    if (sc.salto && pg.cu.children.length) pg = nueva();
+    let cont = crearCont(sc, false), puestas = 0;
+    pg.cu.appendChild(cont);
+    const bloques = [];
+    sc.unidades.forEach(un => {
+      const ult = bloques[bloques.length - 1];
+      if (ult && ult[0].t === un.t) ult.push(un); else bloques.push([un]);
+    });
+    bloques.forEach(bl => {
+      bl.forEach(un => {
+        un.n.classList.add("u"); un.n.classList.remove("on");
+        un.subs.forEach(sb => { sb.n.classList.add("u"); sb.n.classList.remove("on"); });
+        cont.appendChild(un.n);
+      });
+      bl.forEach(un => ajustar(un.n));
+      if (desborda()) {
+        bl.forEach(un => cont.removeChild(un.n));
+        if (!puestas) pg.cu.removeChild(cont);
+        if (pg.cu.children.length) pg = nueva();
+        cont = crearCont(sc, puestas > 0);
+        pg.cu.appendChild(cont);
+        bl.forEach(un => cont.appendChild(un.n));
+        bl.forEach(un => ajustar(un.n));
+      }
+      puestas += bl.length;
+      const pi = paginas.indexOf(pg);
+      bl.forEach(un => {
+        unidades.push({ u: un.n, cont, pag: pi, t: un.t, on: false });
+        un.subs.forEach(sb => unidades.push({ u: sb.n, cont, pag: pi, t: sb.t, on: false }));
+      });
+    });
+  });
+  libro = { unidades, paginas, T: secs.T };
+}
+
+function aplicar(anim) {
+  const U = libro.unidades;
+  s = Math.max(0, Math.min(s, libro.T));
+  const conts = new Map();
+  U.forEach(o => {
+    const on = o.t <= s;
+    if (on !== o.on) {
+      o.on = on;
+      if (on) { o.u.classList.remove("rapido"); o.u.classList.add("on"); }
+      else { o.u.classList.add("rapido"); o.u.classList.remove("on"); }
+    }
+    if (on) conts.set(o.cont, true); else if (!conts.has(o.cont)) conts.set(o.cont, false);
+  });
+  conts.forEach((v, c) => {
+    if (v) { c.classList.remove("rapido"); c.classList.add("on"); }
+    else { c.classList.add("rapido"); c.classList.remove("on"); }
+  });
+  let p = 0;
+  U.forEach(o => { if (o.t <= s) p = Math.max(p, o.pag); });
+  const L = Math.max(p - 1, 0);
+  const pista = $("pista");
+  pista.classList.toggle("anim", !!anim);
+  pista.style.transform = "translateX(" + (-L * G.Sw) + "px)";
+  if (anim && L > Lprev) {
+    const h = libro.paginas[p].hoja;
+    h.classList.remove("gira"); void h.offsetWidth; h.classList.add("gira");
+    setTimeout(() => h.classList.remove("gira"), 1000);
+  }
+  Lprev = L;
+  const n = libro.T;
+  $("contador").textContent = EJERCICIOS[actual].titulo + (modo && EJERCICIOS[actual].alt ? " (otra forma)" : "") + " · " + s + " / " + n;
+  $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
+  $("btnAtras").disabled = (actual === 0 && s <= 1);
+  $("btnAdelante").disabled = (actual === EJERCICIOS.length - 1 && s === n);
+}
+
+function pintarPestanas() {
+  const nav = $("pestanas");
+  nav.innerHTML = "";
+  EJERCICIOS.forEach((e, i) => {
+    const b = document.createElement("button");
+    b.textContent = e.titulo.replace("Ejercicio ", "Ej. ");
+    b.setAttribute("aria-selected", i === actual);
+    b.onclick = ev => { ev.stopPropagation(); cargar(i, false); };
+    nav.appendChild(b);
+  });
+  const sel = nav.querySelector('[aria-selected="true"]');
+  if (sel) sel.scrollIntoView({ inline: "center", block: "nearest" });
+  pintarBoton();
+}
+
+function construir() {
+  geometria();
+  const e = vista(actual);
+  const secs = extraer(e);
+  paginar(secs, e._T);
+}
+
+async function cargar(i, alFinal) {
+  const lib = $("libro");
+  lib.classList.add("fuera");
+  await new Promise(r => setTimeout(r, 200));
+  if (i !== actual) modo = 0;
+  actual = i;
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  construir();
+  s = alFinal ? libro.T : 1;
+  Lprev = 0;
+  pintarPestanas();
+  aplicar(false);
+  lib.classList.remove("fuera");
+}
+
+function avanzar() {
+  if (s < libro.T) { s++; aplicar(true); }
+  else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
+}
+function retroceder() {
+  if (s > 1) { s--; aplicar(true); }
+  else if (actual > 0) cargar(actual - 1, true);
+}
+
+$("libro").addEventListener("click", ev => {
+  if (String(window.getSelection())) return;
+  if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
+});
+$("btnOtra").onclick = ev => { ev.stopPropagation(); modo = modo ? 0 : 1; cargar(actual, false); };
+$("btnAtras").onclick = ev => { ev.stopPropagation(); retroceder(); };
+$("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
+$("tira").onclick = ev => {
+  ev.stopPropagation();
+  const r = $("tira").getBoundingClientRect();
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * libro.T));
+  aplicar(true);
+};
+document.addEventListener("keydown", ev => {
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
+  else if (ev.key === "Home") { s = 1; aplicar(true); }
+  else if (ev.key === "End") { s = libro.T; aplicar(true); }
+});
+let tRes = null;
+window.addEventListener("resize", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); Lprev = 0; aplicar(false); } }, 150);
+});
+
+window.addEventListener("load", () => cargar(0, false));
+</script>
+</body>
+</html>
