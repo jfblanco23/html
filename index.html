@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula de Mates 23</title>
+<style>
+  :root{--fondo:#fff;--texto:#1a1a1a;--verde:#006666;--claro:#E5FFE5;--borde:#9fd9a8;--gris:#666}
+  @media (prefers-color-scheme:dark){:root{--fondo:#14181a;--texto:#e8e8e8;--verde:#4fc3c3;--claro:#173326;--borde:#2f6b4a;--gris:#9aa}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fondo);color:var(--texto);font:18px/1.5 Georgia,"Times New Roman",serif}
+  .pagina{max-width:900px;margin:0 auto;padding:36px 16px 56px}
+  h1{color:var(--verde);font-size:2.2rem;margin:0 0 4px}
+  .sub{color:var(--gris);margin:0 0 28px}
+  .accesos{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:36px}
+  .accesos a{flex:1 1 220px;text-align:center;padding:14px 18px;border:2px solid var(--verde);border-radius:12px;
+    color:var(--verde);text-decoration:none;font-weight:bold;font-size:1.15rem;background:var(--claro)}
+  .accesos a:hover{background:var(--verde);color:#fff}
+  h2{color:var(--verde);border-bottom:2px solid var(--borde);padding-bottom:6px;margin:34px 0 14px}
+  ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+  li a{display:block;padding:11px 14px;border:1px solid var(--borde);border-radius:10px;color:var(--texto);
+    text-decoration:none;background:var(--claro)}
+  li a:hover{border-color:var(--verde);color:var(--verde)}
+  footer{margin-top:40px;color:var(--gris);font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="pagina">
+  <h1>Aula de Mates 23</h1>
+  <p class="sub">Páginas interactivas de matemáticas para Bachillerato</p>
+  <nav class="accesos">
+    <a href="#bach1">1º Bachillerato</a>
+    <a href="#bach2">2º Bachillerato</a>
+  </nav>
+  <section id="bach1">
+    <h2>1º Bachillerato</h2>
+    <ul>
+      <li><a href="1bachillerato/ecuaciones_irracionales.html">Ecuaciones irracionales</a></li>
+      <li><a href="1bachillerato/ecuaciones_exponenciales2.html">Ecuaciones exponenciales</a></li>
+      <li><a href="1bachillerato/radicales.html">Radicales</a></li>
+      <li><a href="1bachillerato/radicales_cubicos.html">Radicales cúbicos</a></li>
+      <li><a href="1bachillerato/funciones-a-trozos.html">Funciones a trozos</a></li>
+      <li><a href="1bachillerato/prolemas-ecuaciones.html">Problemas de ecuaciones</a></li>
+      <li><a href="1bachillerato/ejercicios_primeraparte.html">Ejercicios (primera parte)</a></li>
+    </ul>
+  </section>
+  <section id="bach2">
+    <h2>2º Bachillerato</h2>
+    <ul>
+      <li><a href="2bachillerato/limites.html">Límites</a></li>
+      <li><a href="2bachillerato/continuidad.html">Continuidad</a></li>
+      <li><a href="2bachillerato/bolzano_th.html">Teorema de Bolzano</a></li>
+      <li><a href="2bachillerato/derivabilidad3.html">Derivabilidad</a></li>
+      <li><a href="2bachillerato/rolle.html">Teorema de Rolle</a></li>
+      <li><a href="2bachillerato/optimizacion.html">Optimización</a></li>
+      <li><a href="2bachillerato/matriz.html">Matrices</a></li>
+      <li><a href="2bachillerato/ejercicios_matrices.html">Ejercicios de matrices</a></li>
+      <li><a href="2bachillerato/propiedades_determinantes.html">Propiedades de los determinantes</a></li>
+      <li><a href="2bachillerato/propiedades_dete.html">Propiedades de los determinantes (otra versión)</a></li>
+      <li><a href="2bachillerato/discusion_sistemas.html">Discusión de sistemas</a></li>
+      <li><a href="2bachillerato/discusion_sistemas2.html">Discusión de sistemas (2)</a></li>
+      <li><a href="2bachillerato/ejercicios_sistemas_parametro.html">Sistemas con parámetro</a></li>
+      <li><a href="2bachillerato/parametros.html">Parámetros</a></li>
+      <li><a href="2bachillerato/total2.html">Total 2</a></li>
+    </ul>
+  </section>
+  <footer>Cada página avanza haciendo clic o con las flechas.</footer>
+</div>
+</body>
+</html>
