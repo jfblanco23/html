@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logaritmos: propiedades y ejercicios paso a paso</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#1414E6; --rojo:#E01E1E; --gris:#666;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;color:var(--texto);cursor:pointer;
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:20px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+
+  html,body{overflow:hidden}
+  body{background:#fff}
+
+  /* barra superior */
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:0 14px;display:flex;gap:14px;align-items:center;font-size:.85rem;color:var(--gris)}
+  .barra-sup .tit{font-weight:bold;color:#333;white-space:nowrap}
+  .pestanas{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #333;color:#333}
+  .pestanas button[aria-selected="true"]{background:#333;color:#fff}
+
+  /* barra inferior: botones grandes (pizarra digital) y progreso */
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:.85rem;color:var(--gris)}
+  .progreso .tira{flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .nav{font:inherit;font-size:1.5rem;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:12em;text-align:right;white-space:nowrap}
+
+  /* el libro: dos páginas, separadas solo por una línea fina */
+  #libro{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:hidden;background:#fff;transition:opacity .25s ease}
+  #libro.fuera{opacity:0}
+  #pista{position:absolute;left:0;top:0;height:100%;will-change:transform}
+  #pista.anim{transition:transform .9s cubic-bezier(.65,.05,.25,1)}
+  .hoja{position:absolute;top:0;padding:6px 8px}
+  .pag{position:relative;background:#fff;transform-origin:0 0;padding:30px 40px 0}
+  .pag .cuerpo{display:flow-root;overflow:hidden}
+  .pag .num{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#bbb;font-size:.8rem}
+  #lomo{position:absolute;left:50%;top:14px;bottom:14px;width:0;border-left:1px solid #c9c9c9;pointer-events:none;z-index:2}
+  .hoja.gira .pag{animation:gira .9s ease both}
+  @keyframes gira{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#pista.anim{transition:none}.hoja.gira .pag{animation:none}}
+
+  /* lo que se va escribiendo */
+  .cont{opacity:0;transition:opacity .35s ease}
+  .cont.on{opacity:1}
+  .u{opacity:0;clip-path:inset(-40px 100% -40px -40px);transition:opacity .25s ease,clip-path .85s ease}
+  span.u{display:block}
+  .u.on{opacity:1;clip-path:inset(-40px -40px -40px -40px)}
+  .u.rapido,.cont.rapido{transition:none}
+  .cont.sigue{margin-top:0;padding-top:14px;border-top-left-radius:0;border-top-right-radius:0}
+  h1{margin:0 0 6px;font-size:2.1rem;line-height:1.2}
+  h4{margin:16px 0 6px;font-size:1.18rem}
+
+  /* cajas verdes del modelo */
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:20px 20px 10px;margin:26px 0 14px}
+  .caja>.titulo{position:absolute;top:-13px;left:12px;background:var(--verde-titulo);color:#fff;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.92rem}
+  .caja.enunciado{color:var(--azul);margin-top:6px;padding-top:12px}
+  .caja p{margin:.3em 0 .5em}
+  .paso{margin:6px 0 10px}
+
+  .nota{color:var(--gris);font-size:.9em}
+  .katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden}
+</style>
+</head>
+<body>
+<div class="barra-sup">
+  <span class="tit">Logaritmos</span>
+  <nav class="pestanas" id="pestanas" aria-label="Contenido"></nav>
+</div>
+<div id="libro"><div id="pista"></div><div id="lomo"></div></div>
+<div id="stage" style="position:absolute;left:-99999px;top:0;width:720px;visibility:hidden"></div>
+<div class="progreso">
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
+  <span id="contador"></span>
+</div>
+
+<script>
+/* ---------------------------------------------------------------------
+   Utilidades de LaTeX
+   --------------------------------------------------------------------- */
+const dsp = x => '$$' + x + '$$';
+const inl = x => '$' + x + '$';
+const p = t => '<p>' + t + '</p>';
+const az = x => '\\color{#1414E6}{' + x + '}';         // lo que se transforma, en azul
+const paso = (titulo, ...partes) => ({ titulo, html: partes.join('') });
+
+/* enunciados de las propiedades que se aplican; l = 'log', 'ln' o 'log_2' */
+const R = {
+  prod: l => inl(az('\\' + l + ' a+\\' + l + ' b') + '=' + az('\\' + l + '(ab)')),
+  coc:  l => inl(az('\\' + l + ' a-\\' + l + ' b') + '=' + az('\\' + l + '\\frac{a}{b}')),
+  pot:  l => inl(az('n\\' + l + ' a') + '=' + az('\\' + l + '(a^n)'))
+};
+
+/* =====================================================================
+   CONTENIDO
+   ===================================================================== */
+const PROPS = [
+  { t: 'Logaritmo del producto',   f: '\\log_b(x\\cdot y)=\\log_b(x)+\\log_b(y)',
+    d: 'El logaritmo de un producto es igual a la suma de los logaritmos.' },
+  { t: 'Logaritmo del cociente',   f: '\\log_b\\left(\\frac{x}{y}\\right)=\\log_b(x)-\\log_b(y)',
+    d: 'El logaritmo de un cociente es igual a la resta de los logaritmos.' },
+  { t: 'Logaritmo de una potencia', f: '\\log_b(x^n)=n\\cdot\\log_b(x)',
+    d: 'El logaritmo de una potencia es igual al exponente multiplicado por el logaritmo de la base de la potencia.' },
+  { t: 'Cambio de base',           f: '\\log_b(x)=\\frac{\\log_a(x)}{\\log_a(b)}',
+    d: 'Permite cambiar la base de un logaritmo usando otra base.' },
+  { t: 'Logaritmo de la base',     f: '\\log_b(b)=1',
+    d: 'El logaritmo de la base en sí misma siempre es 1.' },
+  { t: 'Logaritmo de 1',           f: '\\log_b(1)=0',
+    d: 'El logaritmo de 1 en cualquier base siempre es 0.' },
+  { t: 'Propiedad inversa',        f: 'b^{\\log_b(x)}=x',
+    d: 'La exponenciación y el logaritmo son operaciones inversas.' }
+];
+
+/* ej(nº, ecuación, pasos, comprobación, soluciones, frase que introduce las soluciones) */
+const ej = (n, eq, pasos, comp, sol, fin) => ({
+  tab: 'Ej. ' + n, titulo: 'Ejercicio ' + n,
+  enunciado: p('Resuelve la siguiente ecuación logarítmica:') + dsp(eq),
+  pasos: pasos.concat([{ caja: 'Soluciones',
+    html: p(comp) + p(fin || 'Por tanto, la solución es:') + dsp('\\color{#E01E1E}{' + sol + '}') }])
+});
+
+const EJERCICIOS = [
+  { tab: 'Propiedades', titulo: 'Propiedades de los logaritmos',
+    enunciado: p('Haz clic para ir descubriendo las propiedades. En todas ellas ' + inl('b>0') + ', ' + inl('b\\neq1') +
+                 ' y los argumentos de los logaritmos son positivos.'),
+    pasos: PROPS.map((q, i) => ({ caja: (i + 1) + ' · ' + q.t, html: dsp(q.f) + p(q.d) })) },
+
+  ej(1, '\\log x+\\log(x+3)=2\\log(x+1)', [
+    paso('Aplicamos la propiedad del producto',
+      p(R.prod('log')),
+      dsp(az('\\log x+\\log(x+3)') + '=2\\log(x+1)'),
+      dsp(az('\\log[x(x+3)]') + '=2\\log(x+1)')),
+    paso('Aplicamos la propiedad de la potencia',
+      p(R.pot('log')),
+      dsp('\\log[x(x+3)]=' + az('2\\log(x+1)')),
+      dsp('\\log[x(x+3)]=' + az('\\log[(x+1)^2]'))),
+    paso('Igualamos los argumentos',
+      dsp('x(x+3)=(x+1)^2')),
+    paso('Desarrollamos y simplificamos',
+      dsp('x^2+3x=x^2+2x+1'), dsp('3x=2x+1'), dsp('x=1'))
+  ], 'Los argumentos tienen que ser positivos: ' + inl('x>0') + ', ' + inl('x+3>0') + ' y ' + inl('x+1>0') +
+     '. Con ' + inl('x=1') + ' lo son todos, así que la solución es válida.', 'x=1'),
+
+  ej(2, '\\log(x+1)-\\log(x-2)=2-\\log5', [
+    paso('Aplicamos la propiedad del cociente',
+      p(R.coc('log')),
+      dsp(az('\\log(x+1)-\\log(x-2)') + '=2-\\log5'),
+      dsp(az('\\log\\left(\\frac{x+1}{x-2}\\right)') + '=2-\\log5')),
+    paso('Pasamos ' + inl('\\log5') + ' al primer miembro',
+      dsp('\\log\\left(\\frac{x+1}{x-2}\\right)+\\log5=2')),
+    paso('Aplicamos la propiedad del producto',
+      p('Escribimos ' + inl(az('2') + '=' + az('\\log100')) + ' y aplicamos ' + R.prod('log') + ':'),
+      dsp(az('\\log\\left(\\frac{x+1}{x-2}\\right)+\\log5') + '=\\log100'),
+      dsp(az('\\log\\left(\\frac{5(x+1)}{x-2}\\right)') + '=\\log100')),
+    paso('Igualamos los argumentos y resolvemos',
+      dsp('\\frac{5(x+1)}{x-2}=100'), dsp('5(x+1)=100(x-2)'), dsp('5x+5=100x-200'),
+      dsp('205=95x'), dsp('x=\\frac{205}{95}=\\frac{41}{19}'))
+  ], 'Hace falta ' + inl('x+1>0') + ' y ' + inl('x-2>0') + ', es decir, ' + inl('x>2') +
+     '. Como ' + inl('\\frac{41}{19}>2') + ', la solución es válida.', 'x=\\frac{41}{19}'),
+
+  ej(3, '\\frac{\\log(2x^2+1)}{\\log(x+1)}=2', [
+    paso('Multiplicamos por el denominador',
+      p('Multiplicamos ambos miembros por ' + inl('\\log(x+1)') + ':'),
+      dsp('\\log(2x^2+1)=2\\log(x+1)')),
+    paso('Aplicamos la propiedad de la potencia',
+      p(R.pot('log')),
+      dsp('\\log(2x^2+1)=' + az('2\\log(x+1)')),
+      dsp('\\log(2x^2+1)=' + az('\\log[(x+1)^2]'))),
+    paso('Igualamos los argumentos',
+      dsp('2x^2+1=(x+1)^2'), dsp('2x^2+1=x^2+2x+1'), dsp('x^2-2x=0')),
+    paso('Resolvemos la ecuación',
+      dsp('x(x-2)=0'), dsp('x=0\\text{ (no válida)},\\quad x=2'))
+  ], 'El denominador ' + inl('\\log(x+1)') + ' no puede valer ' + inl('0') + '. Con ' + inl('x=0') +
+     ' vale ' + inl('\\log1=0') + ', así que ' + inl('x=0') + ' no es válida. Con ' + inl('x=2') + ': ' +
+     inl('\\frac{\\log9}{\\log3}=2') + ', que sí cumple la ecuación.', 'x=2'),
+
+  ej(4, '\\log_2(x+1)+3=\\log_2(9x+4)', [
+    paso('Convertimos el 3 en un logaritmo',
+      p('Como ' + inl('2^3=8') + ', tenemos ' + inl(az('3') + '=' + az('\\log_28')) + ':'),
+      dsp('\\log_2(x+1)+' + az('3') + '=\\log_2(9x+4)'),
+      dsp('\\log_2(x+1)+' + az('\\log_28') + '=\\log_2(9x+4)')),
+    paso('Aplicamos la propiedad del producto',
+      p(R.prod('log_2')),
+      dsp(az('\\log_2(x+1)+\\log_28') + '=\\log_2(9x+4)'),
+      dsp(az('\\log_2[8(x+1)]') + '=\\log_2(9x+4)')),
+    paso('Igualamos los argumentos',
+      dsp('8(x+1)=9x+4'), dsp('8x+8=9x+4')),
+    paso('Despejamos',
+      dsp('4=9x-8x'), dsp('x=4'))
+  ], 'Con ' + inl('x=4') + ': ' + inl('x+1=5>0') + ' y ' + inl('9x+4=40>0') + '. La solución es válida.', 'x=4'),
+
+  ej(5, '2\\ln x+\\ln(x^2+2)=\\ln3', [
+    paso('Aplicamos la propiedad de la potencia',
+      p(R.pot('ln')),
+      dsp(az('2\\ln x') + '+\\ln(x^2+2)=\\ln3'),
+      dsp(az('\\ln(x^2)') + '+\\ln(x^2+2)=\\ln3')),
+    paso('Aplicamos la propiedad del producto',
+      p(R.prod('ln')),
+      dsp(az('\\ln(x^2)+\\ln(x^2+2)') + '=\\ln3'),
+      dsp(az('\\ln[x^2(x^2+2)]') + '=\\ln3')),
+    paso('Igualamos los argumentos',
+      dsp('x^2(x^2+2)=3'), dsp('x^4+2x^2-3=0')),
+    paso('Hacemos el cambio ' + inl('u=x^2'),
+      dsp('u^2+2u-3=0'), dsp('(u+3)(u-1)=0'),
+      p(inl('u=-3') + ' no vale, porque ' + inl('u=x^2\\ge0') + '. Con ' + inl('u=1') + ':'),
+      dsp('x^2=1\\;\\Rightarrow\\;x=\\pm1'))
+  ], 'Para que exista ' + inl('\\ln x') + ' hace falta ' + inl('x>0') + ': ' + inl('x=-1') + ' no es válida y ' +
+     inl('x=1') + ' sí.', 'x=1'),
+
+  ej(6, '\\log x=1+\\log(x-3)', [
+    paso('Convertimos el 1 en un logaritmo',
+      p('Escribimos ' + inl(az('1') + '=' + az('\\log10')) + ':'),
+      dsp('\\log x=' + az('1') + '+\\log(x-3)'),
+      dsp('\\log x=' + az('\\log10') + '+\\log(x-3)')),
+    paso('Aplicamos la propiedad del producto',
+      p(R.prod('log')),
+      dsp('\\log x=' + az('\\log10+\\log(x-3)')),
+      dsp('\\log x=' + az('\\log[10(x-3)]'))),
+    paso('Igualamos los argumentos',
+      dsp('x=10(x-3)'), dsp('x=10x-30')),
+    paso('Despejamos',
+      dsp('9x=30'), dsp('x=\\frac{10}{3}'))
+  ], 'Hace falta ' + inl('x>0') + ' y ' + inl('x-3>0') + ', es decir, ' + inl('x>3') +
+     '. Como ' + inl('\\frac{10}{3}>3') + ', la solución es válida.', 'x=\\frac{10}{3}'),
+
+  ej(7, '\\log2+\\log(11-x^2)=2\\log(5-x)', [
+    paso('Aplicamos las propiedades del producto y de la potencia',
+      p(R.prod('log') + ' y ' + R.pot('log') + ':'),
+      dsp(az('\\log2+\\log(11-x^2)') + '=' + az('2\\log(5-x)')),
+      dsp(az('\\log[2(11-x^2)]') + '=' + az('\\log[(5-x)^2]'))),
+    paso('Igualamos los argumentos',
+      dsp('2(11-x^2)=(5-x)^2')),
+    paso('Desarrollamos y ordenamos',
+      dsp('22-2x^2=25-10x+x^2'), dsp('3x^2-10x+3=0')),
+    paso('Aplicamos la fórmula de la ecuación de segundo grado',
+      dsp('x=\\frac{10\\pm\\sqrt{10^2-4\\cdot3\\cdot3}}{2\\cdot3}=\\frac{10\\pm\\sqrt{64}}{6}=\\frac{10\\pm8}{6}'),
+      dsp('x_1=3,\\quad x_2=\\frac13'))
+  ], 'Hace falta ' + inl('11-x^2>0') + ' y ' + inl('5-x>0') + '. Con ' + inl('x=3') + ': ' + inl('11-9=2>0') +
+     ' y ' + inl('5-3=2>0') + '. Con ' + inl('x=\\frac13') + ': ' + inl('11-\\frac19>0') + ' y ' + inl('5-\\frac13>0') +
+     '. Las dos soluciones son válidas.', 'x=3,\\quad x=\\frac13', 'Por tanto, las soluciones son:'),
+
+  ej(8, '\\log x=1+\\log(33-x)', [
+    paso('Convertimos el 1 en un logaritmo',
+      p('Escribimos ' + inl(az('1') + '=' + az('\\log10')) + ':'),
+      dsp('\\log x=' + az('1') + '+\\log(33-x)'),
+      dsp('\\log x=' + az('\\log10') + '+\\log(33-x)')),
+    paso('Aplicamos la propiedad del producto',
+      p(R.prod('log')),
+      dsp('\\log x=' + az('\\log10+\\log(33-x)')),
+      dsp('\\log x=' + az('\\log[10(33-x)]'))),
+    paso('Igualamos los argumentos',
+      dsp('x=10(33-x)'), dsp('x=330-10x')),
+    paso('Despejamos',
+      dsp('11x=330'), dsp('x=30'))
+  ], 'Hace falta ' + inl('x>0') + ' y ' + inl('33-x>0') + ', es decir, ' + inl('0\\lt x\\lt 33') +
+     '. Como ' + inl('30') + ' está en ese intervalo, la solución es válida.', 'x=30'),
+
+  ej(9, '2\\log x=3+\\log\\frac{x}{10}', [
+    paso('Convertimos el 3 y aplicamos la propiedad de la potencia',
+      p('Escribimos ' + inl(az('3') + '=' + az('\\log1000')) + ' y aplicamos ' + R.pot('log') + ':'),
+      dsp(az('2\\log x') + '=' + az('3') + '+\\log\\frac{x}{10}'),
+      dsp(az('\\log(x^2)') + '=' + az('\\log1000') + '+\\log\\frac{x}{10}')),
+    paso('Aplicamos la propiedad del producto',
+      p(R.prod('log')),
+      dsp('\\log(x^2)=' + az('\\log1000+\\log\\frac{x}{10}')),
+      dsp('\\log(x^2)=' + az('\\log(100x)'))),
+    paso('Igualamos los argumentos',
+      dsp('x^2=100x'), dsp('x^2-100x=0'), dsp('x(x-100)=0')),
+    paso('Resolvemos la ecuación',
+      dsp('x=0\\text{ (no válida)},\\quad x=100'))
+  ], 'Para que exista ' + inl('\\log x') + ' hace falta ' + inl('x>0') + ': ' + inl('x=0') + ' no es válida y ' +
+     inl('x=100') + ' sí.', 'x=100'),
+
+  ej(10, '2\\log x=\\log\\frac{x}{2}-1', [
+    paso('Convertimos el −1 y aplicamos la propiedad de la potencia',
+      p('Escribimos ' + inl(az('-1') + '=' + az('\\log\\frac{1}{10}')) + ' y aplicamos ' + R.pot('log') + ':'),
+      dsp(az('2\\log x') + '=\\log\\frac{x}{2}+' + az('(-1)')),
+      dsp(az('\\log(x^2)') + '=\\log\\frac{x}{2}+' + az('\\log\\frac{1}{10}'))),
+    paso('Aplicamos la propiedad del producto',
+      p(R.prod('log')),
+      dsp('\\log(x^2)=' + az('\\log\\frac{x}{2}+\\log\\frac{1}{10}')),
+      dsp('\\log(x^2)=' + az('\\log\\left(\\frac{x}{20}\\right)'))),
+    paso('Igualamos los argumentos',
+      dsp('x^2=\\frac{x}{20}'), dsp('20x^2=x'), dsp('20x^2-x=0'), dsp('x(20x-1)=0')),
+    paso('Resolvemos la ecuación',
+      dsp('x=0\\text{ (no válida)},\\quad x=\\frac{1}{20}'))
+  ], 'Hace falta ' + inl('x>0') + ': ' + inl('x=0') + ' no es válida y ' + inl('x=\\frac{1}{20}') + ' sí.', 'x=\\frac{1}{20}'),
+
+  ej(11, '2\\log x-\\log(x+6)=3\\log2', [
+    paso('Aplicamos la propiedad de la potencia',
+      p(R.pot('log')),
+      dsp(az('2\\log x') + '-\\log(x+6)=' + az('3\\log2')),
+      dsp(az('\\log(x^2)') + '-\\log(x+6)=' + az('\\log8'))),
+    paso('Aplicamos la propiedad del cociente',
+      p(R.coc('log')),
+      dsp(az('\\log(x^2)-\\log(x+6)') + '=\\log8'),
+      dsp(az('\\log\\left(\\frac{x^2}{x+6}\\right)') + '=\\log8')),
+    paso('Igualamos los argumentos',
+      dsp('\\frac{x^2}{x+6}=8'), dsp('x^2=8x+48'), dsp('x^2-8x-48=0')),
+    paso('Aplicamos la fórmula de la ecuación de segundo grado',
+      dsp('x=\\frac{8\\pm\\sqrt{8^2+4\\cdot48}}{2}=\\frac{8\\pm16}{2}'),
+      dsp('x=12\\quad\\text{o}\\quad x=-4'))
+  ], 'Hace falta ' + inl('x>0') + ': ' + inl('x=-4') + ' no es válida y ' + inl('x=12') + ' sí.', 'x=12')
+];
+
+/* ===================================================================== */
+const OPCIONES_MATE = {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "$",  right: "$",  display: false}
+  ],
+  throwOnError: false
+};
+const $ = id => document.getElementById(id);
+function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
+
+/* ---------------------------------------------------------------------
+   MOTOR DEL LIBRO
+   - Cada ejercicio se trocea en "secciones" (un paso, una caja...). Cada
+     clic escribe la siguiente sección.
+   - Las secciones se reparten en páginas de tamaño fijo (como un libro).
+   - Se ven dos páginas. Cuando se llena la de la derecha, pasa a ser la
+     de la izquierda y aparece una página nueva a la derecha.
+   --------------------------------------------------------------------- */
+const LW = 800;                     // ancho lógico de una página (px)
+let actual = 0;                     // ejercicio activo
+let s = 0;                          // pasos escritos
+let G = {};                         // geometría
+let libro = null;                   // {unidades, paginas}
+let Lprev = 0;
+
+function geometria() {
+  const W = $("libro").clientWidth, H = $("libro").clientHeight;
+  const Sw = W / 2, k = (Sw - 20) / LW;
+  G = { W, H, Sw, k, LH: (H - 20) / k };
+}
+
+/* trocea un ejercicio en secciones y unidades */
+function extraer(e) {
+  if (e._sec) return e._sec;
+  const stage = $("stage"), secs = [];
+  const add = (tipo, cab, html, mismo) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    stage.appendChild(d);
+    mate(d);
+    const unidades = [];
+    d.childNodes.forEach(n => {
+      if (n.nodeType === 1) unidades.push(n);
+      else if (n.nodeType === 3 && n.textContent.trim()) {
+        const sp = document.createElement("span"); sp.textContent = n.textContent; unidades.push(sp);
+      }
+    });
+    let cabHTML = null;
+    if (cab) { const c = document.createElement("div"); c.innerHTML = cab; mate(c); cabHTML = c.innerHTML; }
+    secs.push({ tipo, cabHTML, unidades, mismo: !!mismo });
+  };
+  add("titulo", null, "<h1>" + e.titulo + "</h1>");
+  add("enun", null, e.enunciado, true);             // título y enunciado salen juntos con un clic
+  e.pasos.forEach(q => add(q.caja ? "caja" : "paso", q.caja || q.titulo, q.html));
+  stage.innerHTML = "";
+  /* un clic = un paso: todo lo de una sección sale a la vez */
+  let base = 0;
+  secs.forEach(sc => {
+    const t = sc.mismo ? base : base + 1;
+    sc.unidades = sc.unidades.map(n => ({ n, t, subs: [] }));
+    base = t;
+  });
+  e._T = base;
+  e._sec = secs;
+  return secs;
+}
+
+function crearCont(sc, sigue) {
+  const c = document.createElement("div");
+  c.className = "cont";
+  if (sc.tipo === "caja") {
+    c.classList.add("caja");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", '<span class="titulo">' + sc.cabHTML + "</span>");
+  } else if (sc.tipo === "paso") {
+    c.classList.add("paso");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", "<h4>" + sc.cabHTML + "</h4>");
+  } else if (sc.tipo === "enun") {
+    c.classList.add("caja", "enunciado");
+  }
+  if (sigue) c.classList.add("sigue");
+  return c;
+}
+
+/* una fórmula más ancha que la página se reduce hasta caber */
+function ajustar(u) {
+  u.querySelectorAll(".katex-display").forEach(d => {
+    const k = d.firstElementChild;
+    if (!k) return;
+    k.style.zoom = "";
+    if (d.scrollWidth > d.clientWidth + 2) k.style.zoom = String(Math.max(.55, d.clientWidth / d.scrollWidth * .98));
+  });
+}
+
+/* reparte las unidades en páginas del tamaño actual */
+function paginar(secs, T) {
+  secs.T = T;
+  const pista = $("pista");
+  pista.innerHTML = "";
+  const paginas = [], unidades = [];
+  const nueva = () => {
+    const hoja = document.createElement("div");
+    hoja.className = "hoja";
+    hoja.style.cssText = "left:" + (paginas.length * G.Sw) + "px;width:" + G.Sw + "px;height:" + G.H + "px";
+    const pag = document.createElement("div");
+    pag.className = "pag";
+    pag.style.cssText = "width:" + LW + "px;height:" + G.LH + "px;transform:scale(" + G.k + ")";
+    const cu = document.createElement("div");
+    cu.className = "cuerpo";
+    cu.style.height = (G.LH - 34 - 56) + "px";
+    const num = document.createElement("div");
+    num.className = "num"; num.textContent = paginas.length + 1;
+    pag.append(cu, num); hoja.appendChild(pag); pista.appendChild(hoja);
+    const o = { hoja, cu };
+    paginas.push(o);
+    return o;
+  };
+  let pg = nueva();
+  const desborda = () => pg.cu.scrollHeight > pg.cu.clientHeight + 1;
+  secs.forEach(sc => {
+    let cont = crearCont(sc, false), puestas = 0;
+    pg.cu.appendChild(cont);
+    /* un bloque (lo que sale con un clic) nunca se parte entre dos páginas */
+    const bloques = [];
+    sc.unidades.forEach(un => {
+      const ult = bloques[bloques.length - 1];
+      if (ult && ult[0].t === un.t) ult.push(un); else bloques.push([un]);
+    });
+    bloques.forEach(bl => {
+      bl.forEach(un => {
+        un.n.classList.add("u"); un.n.classList.remove("on");
+        cont.appendChild(un.n);
+      });
+      bl.forEach(un => ajustar(un.n));
+      if (desborda()) {
+        bl.forEach(un => cont.removeChild(un.n));
+        if (!puestas) pg.cu.removeChild(cont);
+        if (pg.cu.children.length) pg = nueva();     // página nueva solo si la actual ya tiene algo
+        cont = crearCont(sc, puestas > 0);
+        pg.cu.appendChild(cont);
+        bl.forEach(un => cont.appendChild(un.n));
+        bl.forEach(un => ajustar(un.n));
+      }
+      puestas += bl.length;
+      const pi = paginas.indexOf(pg);
+      bl.forEach(un => unidades.push({ u: un.n, cont, pag: pi, t: un.t, on: false }));
+    });
+  });
+  libro = { unidades, paginas, T: secs.T };
+}
+
+/* pone al día lo que se ve según s */
+function aplicar(anim) {
+  const U = libro.unidades;
+  s = Math.max(0, Math.min(s, libro.T));
+  const conts = new Map();
+  U.forEach(o => {
+    const on = o.t <= s;
+    if (on !== o.on) {
+      o.on = on;
+      if (on) { o.u.classList.remove("rapido"); o.u.classList.add("on"); }
+      else { o.u.classList.add("rapido"); o.u.classList.remove("on"); }
+    }
+    if (on) conts.set(o.cont, true); else if (!conts.has(o.cont)) conts.set(o.cont, false);
+  });
+  conts.forEach((v, c) => {
+    if (v) { c.classList.remove("rapido"); c.classList.add("on"); }
+    else { c.classList.add("rapido"); c.classList.remove("on"); }
+  });
+  let pgs = 0;
+  U.forEach(o => { if (o.t <= s) pgs = Math.max(pgs, o.pag); });
+  const L = Math.max(pgs - 1, 0);
+  const pista = $("pista");
+  pista.classList.toggle("anim", !!anim);
+  pista.style.transform = "translateX(" + (-L * G.Sw) + "px)";
+  if (anim && L > Lprev) {
+    const h = libro.paginas[pgs].hoja;
+    h.classList.remove("gira"); void h.offsetWidth; h.classList.add("gira");
+    setTimeout(() => h.classList.remove("gira"), 1000);
+  }
+  Lprev = L;
+  const n = libro.T;
+  $("contador").textContent = EJERCICIOS[actual].titulo + " · " + s + " / " + n;
+  $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
+  $("btnAtras").disabled = (actual === 0 && s <= 1);
+  $("btnAdelante").disabled = (actual === EJERCICIOS.length - 1 && s === n);
+}
+
+function pintarPestanas() {
+  const nav = $("pestanas");
+  nav.innerHTML = "";
+  EJERCICIOS.forEach((e, i) => {
+    const b = document.createElement("button");
+    b.textContent = e.tab;
+    b.setAttribute("aria-selected", i === actual);
+    b.onclick = ev => { ev.stopPropagation(); cargar(i, false); };
+    nav.appendChild(b);
+  });
+  const sel = nav.querySelector('[aria-selected="true"]');
+  if (sel) sel.scrollIntoView({ inline: "center", block: "nearest" });
+}
+
+function construir() {
+  geometria();
+  const e = EJERCICIOS[actual];
+  const secs = extraer(e);
+  paginar(secs, e._T);
+}
+
+async function cargar(i, alFinal) {
+  const lib = $("libro");
+  lib.classList.add("fuera");
+  await new Promise(r => setTimeout(r, 200));
+  actual = i;
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  construir();
+  s = alFinal ? libro.T : 1;          // al abrir un ejercicio ya se ve el enunciado
+  Lprev = 0;
+  pintarPestanas();
+  aplicar(false);
+  lib.classList.remove("fuera");
+}
+
+function avanzar() {
+  if (s < libro.T) { s++; aplicar(true); }
+  else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
+}
+function retroceder() {
+  if (s > 1) { s--; aplicar(true); }
+  else if (actual > 0) cargar(actual - 1, true);
+}
+
+/* clic: tercio izquierdo = atrás; resto = adelante */
+$("libro").addEventListener("click", ev => {
+  if (ev.target.closest("button")) return;
+  if (String(window.getSelection())) return;
+  if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
+});
+$("btnAtras").onclick = ev => { ev.stopPropagation(); retroceder(); };
+$("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
+$("tira").onclick = ev => {
+  ev.stopPropagation();
+  const r = $("tira").getBoundingClientRect();
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * libro.T));
+  aplicar(true);
+};
+document.addEventListener("keydown", ev => {
+  if (ev.target.closest && ev.target.closest("button") && [" ", "Enter"].includes(ev.key)) return;
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
+  else if (ev.key === "Home") { s = 1; aplicar(true); }
+  else if (ev.key === "End") { s = libro.T; aplicar(true); }
+});
+let tRes = null;
+window.addEventListener("resize", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); Lprev = 0; aplicar(false); } }, 150);
+});
+
+window.addEventListener("load", () => cargar(0, false));
+</script>
+</body>
+</html>
