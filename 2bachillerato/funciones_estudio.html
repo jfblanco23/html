@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Funciones: de los conjuntos al estudio completo</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#1414E6; --rojo:#E01E1E; --gris:#666;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;color:var(--texto);cursor:pointer;
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:20px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+  html,body{overflow:hidden}
+  body{background:#fff}
+
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:0 14px;display:flex;gap:14px;align-items:center;font-size:.85rem;color:var(--gris)}
+  .barra-sup .tit{font-weight:bold;color:#333;white-space:nowrap}
+  .pestanas{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #333;color:#333}
+  .pestanas button[aria-selected="true"]{background:#333;color:#fff}
+
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:.85rem;color:var(--gris)}
+  .progreso .tira{flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .nav{font:inherit;font-size:1.5rem;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:9.5em;text-align:right;white-space:nowrap}
+
+  #libro{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:hidden;background:#fff;transition:opacity .25s ease}
+  #libro.fuera{opacity:0}
+  #pista{position:absolute;left:0;top:0;height:100%;will-change:transform}
+  #pista.anim{transition:transform .9s cubic-bezier(.65,.05,.25,1)}
+  .hoja{position:absolute;top:0;padding:6px 8px}
+  .pag{position:relative;background:#fff;transform-origin:0 0;padding:30px 40px 0}
+  .pag .cuerpo{display:flow-root;overflow:hidden}
+  .pag .num{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#bbb;font-size:.8rem}
+  #lomo{position:absolute;left:50%;top:14px;bottom:14px;width:0;border-left:1px solid #c9c9c9;pointer-events:none;z-index:2}
+  .hoja.gira .pag{animation:gira .9s ease both}
+  @keyframes gira{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#pista.anim{transition:none}.hoja.gira .pag{animation:none}}
+
+  .cont{opacity:0;transition:opacity .35s ease}
+  .cont.on{opacity:1}
+  .u{opacity:0;clip-path:inset(-40px 100% -40px -40px);transition:opacity .25s ease,clip-path .85s ease}
+  span.u{display:block}
+  .u.on{opacity:1;clip-path:inset(-40px -40px -40px -40px)}
+  .u.rapido,.cont.rapido{transition:none}
+  .cont.sigue{margin-top:0;padding-top:14px;border-top-left-radius:0;border-top-right-radius:0}
+  .fila-menores{display:flex;justify-content:space-around;align-items:center;gap:.4em;margin:.8em 0}
+  .fila-menores .sub{display:block}
+  h1{margin:0 0 6px;font-size:2.1rem;line-height:1.2}
+  h4{margin:16px 0 6px;font-size:1.18rem}
+
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:20px 20px 10px;margin:26px 0 14px}
+  .caja>.titulo{position:absolute;top:-13px;left:12px;background:var(--verde-titulo);color:#fff;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.92rem}
+  .caja.enunciado{color:var(--azul);margin-top:6px;padding-top:12px}
+  .caja p{margin:.3em 0 .5em}
+  .paso{margin:6px 0 10px}
+  .instr{color:var(--azul);border:1.5px solid #E6C200;border-radius:14px;padding:6px 16px;margin:10px 0;text-align:center}
+  .nota{color:var(--gris);font-size:.9em}
+  b.res{color:var(--rojo)}
+  .katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden}
+  table.res{border-collapse:collapse;margin:6px auto 8px}
+  table.res th,table.res td{padding:5px 16px;text-align:center}
+  table.res th{border-bottom:1.5px solid #111}
+  table.res td:not(:last-child),table.res th:not(:last-child){border-right:1px solid #111}
+  table.res td:last-child,table.res th:last-child{text-align:left}
+  .graf,.diag{max-width:700px;margin:6px auto}
+  .graf svg,.diag svg{width:100%;height:auto;display:block}
+  .sg-cab{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-top:8px}
+  .sg-izq>div{margin:2px 0}
+  .sg-f{border:1.5px solid #E6C200;border-radius:12px;background:#FFFBEA;padding:2px 16px;margin-top:2px}
+  .fila-menores.sg-fila{display:block;margin:0}
+  .sg-capa{position:relative;width:100%;aspect-ratio:700/250}
+  .sg-capa+.sg-capa{margin-top:-35.7143%}
+  .sg-capa svg{position:absolute;left:0;top:0;width:100%;height:100%}
+  .sg-capa .l{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-size:.95em}
+</style>
+</head>
+<body>
+<div class="barra-sup">
+  <span class="tit">Funciones: de los conjuntos al estudio completo</span>
+  <nav class="pestanas" id="pestanas" aria-label="Ejercicios"></nav>
+</div>
+<div id="libro"><div id="pista"></div><div id="lomo"></div></div>
+<div id="stage" style="position:absolute;left:-99999px;top:0;width:720px;visibility:hidden"></div>
+<div class="progreso">
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
+  <span id="contador"></span>
+</div>
+
+<script>
+/* =====================================================================
+   AYUDANTES: tablas, diagramas de conjuntos (SVG) y gráficas (SVG)
+   ===================================================================== */
+const AZ='#1B6CA8', RO='#C0392B', VE='#147844', AM='#B8790A', MO='#7D3C98', OR='#D4A017';
+let SV = 0;
+const fmt = n => String(n).replace('-', '\u2212').replace('.', ',');
+
+/* tabla: filas separadas por salto de línea, celdas por ## ; la primera fila es la cabecera */
+function tabla(txt) {
+  const filas = txt.split('\n').map(l => l.trim()).filter(Boolean).map(l => l.split('##').map(c => c.trim()));
+  return '<table class="res"><tr>' + filas[0].map(c => '<th>' + c + '</th>').join('') + '</tr>' +
+    filas.slice(1).map(r => '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>').join('') + '</table>';
+}
+
+/* signos: estudio del signo de f' (k=1) o de f'' (k=2) sobre la recta real, como en el vídeo
+   o = { k, f, dom, crit (latex o null), d (latex de la derivada),
+         pts: [[latex, 'h'|'l']...]  (h = hueco, fuera del dominio; l = lleno, crítico/inflexión),
+         z: [[valor de prueba, '+'|'-'] | null ...]  (una zona más que puntos) } */
+function signos(o) {
+  const id = ++SV, k = o.k, n = o.pts.length, L = 50, W = 600, AX = 112, H = 250;
+  const xs = [L]; for (let i = 0; i < n; i++) xs.push(L + (i + 1) * W / (n + 1)); xs.push(L + W);
+  const col = s => s === '+' ? RO : AZ;
+  const pr = k === 1 ? "f'" : "f''";
+  const pc = x => (x / 700 * 100).toFixed(2) + '%', pt = y => (y / H * 100).toFixed(2) + '%';
+  const lbl = (x, y, txt, c) => `<div class="l" style="left:${pc(x)};top:${pt(y)};color:${c}">${txt}</div>`;
+  const capa = (sv, lab) => `<div class="sg-capa sub"><svg viewBox="0 0 700 ${H}" xmlns="http://www.w3.org/2000/svg">${sv}</svg>${lab}</div>`;
+  const fino = (c, i) => `<defs><marker id="sgF${id}_${i}" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto"><path d="M1,1 L9,5 L1,9" fill="none" stroke="${c}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>`;
+  const nom = k === 1 ? 'Crítico' : 'Inflexión', ning = k === 1 ? 'ninguno' : 'ninguna';
+  const R = [];
+  // 0) cabecera
+  R.push('<div class="sg-cab"><div class="sg-izq">' +
+    `<div style="color:${VE}">$\\mathrm{Dom}(f)=${o.dom}$</div>` +
+    `<div style="color:${AM}">${nom}: ${o.crit ? '$\\displaystyle ' + o.crit.replace(/\\tfrac/g, '\\frac') + '$' : ning}</div>` +
+    `<div>$\\displaystyle ${pr}(x)=${o.d}$</div></div><div class="sg-f">$\\displaystyle f(x)=${o.f}$</div></div>`);
+  // 1) la recta
+  R.push(capa(`<line x1="20" y1="${AX}" x2="680" y2="${AX}" stroke="#333" stroke-width="2"/>`,
+    lbl(L, AX + 32, '$-\\infty$', '#666') + lbl(L + W, AX + 32, '$+\\infty$', '#666')));
+  // 2) puntos críticos y asíntotas verticales (todos a la vez)
+  if (n) {
+    let sv = '', lab = '';
+    o.pts.forEach((p, i) => {
+      const x = xs[i + 1], hueco = p[1] === 'h';
+      sv += `<line x1="${x}" y1="${AX - 8}" x2="${x}" y2="${AX + 8}" stroke="#222" stroke-width="2"/>`;
+      sv += hueco ? `<circle cx="${x}" cy="${AX}" r="7" fill="#fff" stroke="${RO}" stroke-width="2.4"/>`
+                  : `<circle cx="${x}" cy="${AX}" r="6.5" fill="${AM}"/>`;
+      lab += lbl(x, AX + 34, `$\\displaystyle ${p[0].replace(/\\tfrac/g, '\\frac')}$`, hueco ? RO : AM);
+    });
+    R.push(capa(sv, lab));
+  }
+  // 3) cada zona: punto de prueba -> sustitución -> flecha (o arco)
+  o.z.forEach((z, i) => {
+    if (!z) return;
+    const a = xs[i], b = xs[i + 1], cx = (a + b) / 2, c = col(z[1]), p = 22;
+    R.push(capa(`<circle cx="${cx}" cy="${AX}" r="5" fill="#222"/>`, lbl(cx, AX + 34, `$${z[0]}$`, '#222')));
+    R.push(capa(`<line x1="${cx}" y1="${AX + 52}" x2="${cx}" y2="${AX + 64}" stroke="${c}" stroke-width="1.5" stroke-dasharray="3 3"/>`,
+      lbl(cx, AX + 84, `$${pr}(${z[0]})${z[1] === '+' ? '&gt;' : '&lt;'}0$`, c)));
+    let sv;
+    if (k === 1) {
+      const y1 = z[1] === '+' ? AX - 42 : AX - 95, y2 = z[1] === '+' ? AX - 95 : AX - 42;
+      sv = fino(c, i) + `<line x1="${a + p}" y1="${y1}" x2="${b - p}" y2="${y2}" stroke="${c}" stroke-width="2.4" stroke-linecap="round" marker-end="url(#sgF${id}_${i})"/>`;
+    } else {
+      const ya = z[1] === '+' ? AX - 92 : AX - 52, yc = z[1] === '+' ? AX - 38 : AX - 106;
+      sv = `<path d="M${a + p + 8},${ya} Q${cx},${yc} ${b - p - 8},${ya}" fill="none" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>`;
+    }
+    R.push(capa(sv, ''));
+  });
+  return R[0] + '<div class="fila-menores sg-fila">' + R.slice(1).join('') + '</div>';
+}
+
+/* diagrama de dos conjuntos con flechas */
+function diag(o) {
+  const id = 'd' + (++SV), W = 640, H = o.h || 300, cA = o.cA || 190, cB = o.cB || 450, rx = 95;
+  const cy = H / 2 + 14, ry = (H - 62) / 2;
+  const nA = o.A.length, nB = o.B.length;
+  const sep = n => Math.min(62, (2 * ry - 46) / Math.max(n - 1, 1));
+  const yA = i => cy - (nA - 1) / 2 * sep(nA) + i * sep(nA);
+  const yB = j => cy - (nB - 1) / 2 * sep(nB) + j * sep(nB);
+  const colA = o.colA || AZ, colB = o.colB || RO;
+  const cols = {}; (o.fl || []).forEach(a => { cols[a[2] || AZ] = 1; });
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" font-family="serif" font-size="16"><defs>';
+  Object.keys(cols).forEach((c, k) => {
+    s += '<marker id="' + id + 'm' + k + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 1 L10 5 L0 9 z" fill="' + c + '"/></marker>';
+  });
+  s += '</defs>';
+  s += '<ellipse cx="' + cA + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '" fill="#fff" stroke="#111" stroke-width="2.5"/>';
+  s += '<ellipse cx="' + cB + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '" fill="#fff" stroke="#111" stroke-width="2.5"/>';
+  s += '<text x="' + cA + '" y="' + (cy - ry - 8) + '" text-anchor="middle" font-weight="bold" font-size="18">' + (o.nA || '') + '</text>';
+  s += '<text x="' + cB + '" y="' + (cy - ry - 8) + '" text-anchor="middle" font-weight="bold" font-size="18">' + (o.nB || '') + '</text>';
+  const reg = (cx, ys, r, txt) => {
+    if (!r) return '';
+    const y0 = ys(r[0]), y1 = ys(r[1]), m = (y0 + y1) / 2, h = Math.abs(y1 - y0) / 2 + 24;
+    return '<ellipse cx="' + cx + '" cy="' + m + '" rx="58" ry="' + h + '" fill="' + r[2] + '" fill-opacity=".16" stroke="' + r[2] + '" stroke-width="2.5"/>' +
+           '<text x="' + cx + '" y="' + (m + h + 17) + '" text-anchor="middle" font-weight="bold" fill="' + r[2] + '" font-size="15">' + r[3] + '</text>';
+  };
+  s += reg(cA, yA, o.regA) + reg(cB, yB, o.regB);
+  (o.fl || []).forEach(a => {
+    const k = Object.keys(cols).indexOf(a[2] || AZ);
+    s += '<line x1="' + (cA + 7) + '" y1="' + yA(a[0]) + '" x2="' + (cB - 7) + '" y2="' + yB(a[1]) + '" stroke="' + (a[2] || AZ) + '" stroke-width="2.6" marker-end="url(#' + id + 'm' + k + ')"/>';
+  });
+  o.A.forEach((t, i) => {
+    const g = (o.grisA || []).includes(i);
+    s += '<circle cx="' + cA + '" cy="' + yA(i) + '" r="5.5" fill="' + (g ? '#aaa' : colA) + '"/>';
+    s += '<text x="' + (cA - 17) + '" y="' + (yA(i) + 5) + '" text-anchor="end">' + t + '</text>';
+    if ((o.cruzA || []).includes(i)) s += '<text x="' + (cA + 24) + '" y="' + (yA(i) + 6) + '" fill="' + RO + '" font-size="22" font-weight="bold">\u00d7</text>';
+  });
+  o.B.forEach((t, j) => {
+    const g = (o.grisB || []).includes(j);
+    s += '<circle cx="' + cB + '" cy="' + yB(j) + '" r="5.5" fill="' + (g ? '#aaa' : colB) + '"/>';
+    s += '<text x="' + (cB + 17) + '" y="' + (yB(j) + 5) + '">' + t + '</text>';
+    if ((o.cruzB || []).includes(j)) s += '<text x="' + (cB - 32) + '" y="' + (yB(j) + 6) + '" fill="' + RO + '" font-size="22" font-weight="bold">\u00d7</text>';
+  });
+  return '<div class="diag">' + s + '</svg></div>';
+}
+
+/* gráfica de una función:
+   f, x:[x0,x1], y:[y0,y1], tx/ty: marcas, ramas:[[xa,xb,color]], av:[x | [x,ya,yb]], ah:[y | [y,xa,xb]],
+   ao:[m,n], pts:[[x,y,color]], hue:[[x,y,color]], lab:[[x,y,texto,color,dx,dy]] */
+function graf(o) {
+  const id = 'g' + (++SV), W = 640, H = o.h || 360, ml = 46, mr = 22, mt = 16, mb = 30;
+  const [x0, x1] = o.x, [y0, y1] = o.y;
+  const X = x => ml + (x - x0) / (x1 - x0) * (W - ml - mr);
+  const Y = y => H - mb - (y - y0) / (y1 - y0) * (H - mt - mb);
+  const axY = (y0 <= 0 && y1 >= 0) ? Y(0) : H - mb, axX = (x0 <= 0 && x1 >= 0) ? X(0) : ml;
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" font-family="serif" font-size="13">';
+  s += '<defs><marker id="m' + id + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L10 5 L0 9 z" fill="#555"/></marker>' +
+       '<clipPath id="c' + id + '"><rect x="' + ml + '" y="' + mt + '" width="' + (W - ml - mr) + '" height="' + (H - mt - mb) + '"/></clipPath></defs>';
+  s += '<line x1="' + ml + '" y1="' + axY + '" x2="' + (W - mr + 10) + '" y2="' + axY + '" stroke="#555" stroke-width="1.6" marker-end="url(#m' + id + ')"/>';
+  s += '<line x1="' + axX + '" y1="' + (H - mb) + '" x2="' + axX + '" y2="' + (mt - 8) + '" stroke="#555" stroke-width="1.6" marker-end="url(#m' + id + ')"/>';
+  s += '<text x="' + (W - mr + 6) + '" y="' + (axY - 8) + '" fill="#555" font-style="italic">x</text>';
+  s += '<text x="' + (axX + 8) + '" y="' + (mt + 2) + '" fill="#555" font-style="italic">y</text>';
+  (o.tx || []).forEach(v => {
+    s += '<line x1="' + X(v) + '" y1="' + (axY - 3.5) + '" x2="' + X(v) + '" y2="' + (axY + 3.5) + '" stroke="#555"/>';
+    s += '<text x="' + X(v) + '" y="' + (axY + 18) + '" text-anchor="middle" fill="#555">' + fmt(v) + '</text>';
+  });
+  (o.ty || []).forEach(v => {
+    s += '<line x1="' + (axX - 3.5) + '" y1="' + Y(v) + '" x2="' + (axX + 3.5) + '" y2="' + Y(v) + '" stroke="#555"/>';
+    s += '<text x="' + (axX - 7) + '" y="' + (Y(v) + 4) + '" text-anchor="end" fill="#555">' + fmt(v) + '</text>';
+  });
+  s += '<g clip-path="url(#c' + id + ')">';
+  (o.av || []).forEach(a => {
+    const x = Array.isArray(a) ? a[0] : a, ya = Array.isArray(a) ? a[1] : y0, yb = Array.isArray(a) ? a[2] : y1;
+    s += '<line x1="' + X(x) + '" y1="' + Y(ya) + '" x2="' + X(x) + '" y2="' + Y(yb) + '" stroke="' + RO + '" stroke-width="2" stroke-dasharray="7 5"/>';
+  });
+  (o.ah || []).forEach(a => {
+    const y = Array.isArray(a) ? a[0] : a, xa = Array.isArray(a) ? a[1] : x0, xb = Array.isArray(a) ? a[2] : x1;
+    s += '<line x1="' + X(xa) + '" y1="' + Y(y) + '" x2="' + X(xb) + '" y2="' + Y(y) + '" stroke="' + RO + '" stroke-width="2" stroke-dasharray="7 5"/>';
+  });
+  if (o.ao) s += '<line x1="' + X(x0) + '" y1="' + Y(o.ao[0] * x0 + o.ao[1]) + '" x2="' + X(x1) + '" y2="' + Y(o.ao[0] * x1 + o.ao[1]) + '" stroke="' + AM + '" stroke-width="2.2" stroke-dasharray="7 5"/>';
+  const marg = (y1 - y0) * 0.2;
+  (o.ramas || []).forEach(r => {
+    const n = 700; let d = '', pen = false;
+    for (let i = 0; i <= n; i++) {
+      const x = r[0] + (r[1] - r[0]) * i / n, y = o.f(x);
+      if (!isFinite(y) || y < y0 - marg || y > y1 + marg) { pen = false; continue; }
+      d += (pen ? 'L' : 'M') + X(x).toFixed(1) + ' ' + Y(y).toFixed(1); pen = true;
+    }
+    if (d) s += '<path d="' + d + '" fill="none" stroke="' + r[2] + '" stroke-width="3.4" stroke-linejoin="round"/>';
+  });
+  s += '</g>';
+  (o.pts || []).forEach(p => { s += '<circle cx="' + X(p[0]) + '" cy="' + Y(p[1]) + '" r="5" fill="' + p[2] + '" stroke="#222" stroke-width="1"/>'; });
+  (o.hue || []).forEach(p => { s += '<circle cx="' + X(p[0]) + '" cy="' + Y(p[1]) + '" r="5" fill="#fff" stroke="' + p[2] + '" stroke-width="2.4"/>'; });
+  (o.lab || []).forEach(l => { s += '<text x="' + (X(l[0]) + (l[4] || 0)) + '" y="' + (Y(l[1]) + (l[5] || 0)) + '" fill="' + (l[3] || '#333') + '" font-size="13">' + l[2] + '</text>'; });
+  return '<div class="graf">' + s + '</svg></div>';
+}
+
+const P = s => '<p>' + s + '</p>';
+const E = 0.004;
+
+/* funciones para dibujar */
+const f1 = x => (x + 1) / (x - 1);
+const f2 = x => (x * x + 4) / (x * x - 9);
+const f3 = x => x * Math.log(x);
+const f4 = x => Math.exp(x) / x;
+const f5 = x => x * x / (1 + x * x);
+const f6 = x => x * Math.exp(-x * x);
+const f7 = x => 1 / (1 + Math.exp(x));
+const f8 = x => x * x / (1 + x);
+const f9 = x => Math.exp(1 / x);
+const f10 = x => Math.exp(-2 * x) * (x * x - 3 * x + 1.5);
+
+/* =====================================================================
+   CONTENIDO
+   ===================================================================== */
+const EJERCICIOS = [
+
+/* ===================== TEORÍA 1: ¿QUÉ ES UNA FUNCIÓN? ===================== */
+{
+  tab: "Función", titulo: "¿Qué es una función?",
+  enunciado: String.raw`
+    <p>Antes de estudiar funciones con derivadas, vamos a entender qué es <b>realmente</b> una función:
+    una relación entre dos conjuntos, representada con flechas.</p>`,
+  pasos: [
+    { titulo: "Dos conjuntos",
+      html: P("Tenemos un <b>conjunto de salida</b> $A$ y un <b>conjunto de llegada</b> $B$.") +
+            diag({ nA: 'Conjunto de salida', nB: 'Conjunto de llegada', A: ['1','2','3','4'], B: ['a','b','c','d'] }) },
+    { caja: "Definición",
+      html: P("A cada elemento del conjunto de salida le corresponde <b>un único</b> elemento del conjunto de llegada.") +
+            diag({ nA: 'Conjunto de salida', nB: 'Conjunto de llegada', A: ['1','2','3','4'], B: ['a','b','c','d'],
+                   fl: [[0,0],[1,1],[2,2],[3,2]] }) },
+    { titulo: "Sobre el conjunto de llegada no se exige nada",
+      html: P("Aquí $c$ recibe <b>dos</b> flechas y $d$ se queda <b>sin ninguna</b>. Las dos cosas están permitidas:") +
+            String.raw`<div class="fila-menores"><span class="sub">$c$ puede recibir varias flechas</span><span class="sub">$d$ puede quedarse sin flecha</span></div>` },
+    { titulo: "¿Cuándo NO es una función?",
+      html: P("<b>Caso 1.</b> El elemento $3$ se queda sin imagen: <b class='res'>no es función</b>.") +
+            diag({ A: ['1','2','3','4'], B: ['a','b','c','d'], fl: [[0,0],[1,1],[3,2]], cruzA: [2], h: 260 }) +
+            P("<b>Caso 2.</b> El elemento $2$ tiene dos imágenes: <b class='res'>no es función</b>.") +
+            diag({ A: ['1','2','3','4'], B: ['a','b','c','d'], fl: [[0,0],[1,1,RO],[1,3,RO],[2,2],[3,2]], h: 260 }) },
+    { caja: "Las dos reglas de oro",
+      html: tabla(String.raw`Conjunto de salida##Conjunto de llegada
+TODO elemento tiene flecha##Puede recibir varias flechas
+Cada uno, UNA SOLA flecha##Puede quedarse sin flecha`) },
+    { titulo: "Función inyectiva",
+      html: P("Elementos distintos tienen imágenes distintas: no hay dos flechas que lleguen al mismo punto.") +
+            P("<b>Sí es inyectiva:</b>") +
+            diag({ A: ['1','2','3'], B: ['a','b','c','d'], fl: [[0,0],[1,1],[2,2]], h: 250 }) +
+            P("<b class='res'>No es inyectiva:</b> $a$ recibe dos flechas.") +
+            diag({ A: ['1','2','3'], B: ['a','b','c','d'], fl: [[0,0,RO],[1,0,RO],[2,2]], h: 250 }) },
+    { titulo: "Función sobreyectiva (o exhaustiva)",
+      html: P("<b>Todo</b> elemento del conjunto de llegada recibe al menos una flecha: no sobra ninguno.") +
+            P("<b>Sí es sobreyectiva:</b>") +
+            diag({ A: ['1','2','3','4'], B: ['a','b','c'], fl: [[0,0],[1,1],[2,2],[3,2]], h: 260 }) +
+            P("<b class='res'>No es sobreyectiva:</b> a $d$ no llega ninguna flecha.") +
+            diag({ A: ['1','2','3','4'], B: ['a','b','c','d'], fl: [[0,0],[1,1],[2,2],[3,2]], cruzB: [3], h: 260 }) },
+    { titulo: "Función biyectiva",
+      html: P("Inyectiva <b>+</b> sobreyectiva = emparejamiento perfecto.") +
+            diag({ A: ['1','2','3'], B: ['a','b','c'], fl: [[0,0,OR],[1,1,OR],[2,2,OR]], h: 250 }) },
+    { caja: "Función inversa",
+      html: P("Cada uno tiene su pareja, así que se pueden <b>invertir las flechas</b>: una función es biyectiva exactamente cuando <b>existe su función inversa</b>.") },
+    { titulo: "Una biyección sorprendente",
+      html: P("¿Hay más números naturales que números pares? La función $f(n)=2n$ empareja cada natural con su par:") +
+            diag({ nA: 'ℕ', nB: 'Pares', A: ['1','2','3','4','…'], B: ['2','4','6','8','…'],
+                   fl: [[0,0,OR],[1,1,OR],[2,2,OR],[3,3,OR]], h: 310 }) +
+            P("Es biyectiva: hay <b>exactamente tantos</b> pares como números naturales. Ya se asombró con esto Galileo en 1638; Cantor lo convirtió en la base de la teoría de conjuntos infinitos.") +
+            P("<span class='nota'>Y el intervalo $[0,1]$ tiene <b>más</b> números que $\\mathbb{N}$: lo demuestra el argumento de la diagonal de Cantor (1891).</span>") },
+    { titulo: "Del conjunto al análisis de funciones",
+      html: P("Ahora los dos conjuntos son los números reales, pero <b>no todo valor de $x$ tiene imagen</b>:") +
+            diag({ nA: 'A = ℝ', nB: 'B = ℝ', A: ['x₁','x₂','x₃','x₄','x₅','x₆'], B: ['y₁','y₂','y₃','y₄','y₅','y₆'],
+                   fl: [[0,0],[1,1],[2,1]], cruzA: [3,4,5], grisA: [3,4,5],
+                   regA: [0,2,AZ,'Dominio'], regB: [0,1,OR,'Imagen'], h: 360 }) },
+    { caja: "Dominio, imagen y codominio",
+      html: tabla(String.raw`Concepto##Qué es
+Dominio##valores de $x$ donde la función <b>existe</b>
+Imagen (o recorrido)##valores de $f(x)$ que <b>realmente se alcanzan</b>
+Codominio##todo el conjunto de llegada ($\mathbb{R}$)`) +
+            String.raw`$$f:\ D\subseteq\mathbb{R}\ \longrightarrow\ \mathbb{R}$$` }
+  ]
+},
+
+/* ===================== TEORÍA 2: DOMINIO E IMAGEN ===================== */
+{
+  tab: "Dominio", titulo: "Dominio e imagen",
+  enunciado: String.raw`
+    <p>Calcula el dominio y la imagen de $f(x)=x+3$, $\ g(x)=\sqrt{x}\ $ y $\ h(x)=\dfrac{3}{x-1}$.</p>`,
+  pasos: [
+    { titulo: "Ejemplo 1: $f(x)=x+3$",
+      html: P("No hay denominadores, ni raíces, ni logaritmos: nada que pueda fallar.") +
+            graf({ f: x => x + 3, x: [-6,4], y: [-3,6], tx: [-4,-2,2], ty: [-2,2,4], ramas: [[-6,4,AZ]], h: 300 }) },
+    { caja: "Resultado",
+      html: String.raw`$$\mathrm{Dom}\,f=\mathbb{R}\qquad\mathrm{Im}\,f=\mathbb{R}$$` },
+    { titulo: "Ejemplo 2: $g(x)=\\sqrt{x}$",
+      html: P("La raíz cuadrada solo existe si el radicando es <b>no negativo</b>: $x\\geq0$.") +
+            graf({ f: Math.sqrt, x: [-4,6], y: [-2,4], tx: [-2,2,4,6], ty: [1,2,3], ramas: [[0,6,AZ]], pts: [[0,0,AZ]], h: 300 }) },
+    { caja: "Resultado",
+      html: String.raw`$$\mathrm{Dom}\,g=[\,0,+\infty)\qquad\mathrm{Im}\,g=[\,0,+\infty)$$
+        <p>La raíz nunca da un valor negativo.</p>` },
+    { titulo: "Ejemplo 3: $h(x)=\\dfrac{3}{x-1}$",
+      html: P("El denominador no puede anularse: $x-1\\neq0\\Rightarrow x\\neq1$.") +
+            graf({ f: x => 3 / (x - 1), x: [-4,6], y: [-5,5], tx: [-2,2,4,6], ty: [-4,-2,2,4],
+                   ramas: [[-4,1-E,AZ],[1+E,6,AZ]], av: [1], ah: [0], h: 320 }) },
+    { caja: "Resultado",
+      html: String.raw`$$\mathrm{Dom}\,h=\mathbb{R}-\{1\}$$
+        <p>Y la imagen: $\dfrac{3}{x-1}=0$ no tiene solución, así que el $0$ nunca se alcanza.</p>
+        $$\mathrm{Im}\,h=\mathbb{R}-\{0\}$$` },
+    { caja: "Resumen: cómo se calcula el dominio",
+      html: tabla(String.raw`Si aparece…##Condición
+un denominador##denominador $\neq0$
+una raíz de índice par##radicando $\geq0$
+un logaritmo##argumento $>0$
+polinomios, $e^x$, $\operatorname{sen}x$##sin restricción`) }
+  ]
+},
+
+/* ===================== EJERCICIO 1: (x+1)/(x-1) ===================== */
+{
+  tab: "Ej. 1", titulo: "Ejercicio 1",
+  enunciado: String.raw`
+    <p>Estudia la función</p>$$f(x)=\frac{x+1}{x-1}$$
+    <p style="margin-left:1.6em">Dominio, simetría, asíntotas, crecimiento y extremos, curvatura e inflexión.</p>`,
+  pasos: [
+    { titulo: "Dominio", html: String.raw`<p>Es un cociente: no puede anularse el denominador.</p>$$x-1=0\ \Rightarrow\ x=1$$` },
+    { caja: "Dominio", html: String.raw`$$\mathrm{Dom}(f)=\mathbb{R}-\{1\}$$` },
+    { titulo: "Simetría", html: String.raw`$$f(-x)=\frac{-x+1}{-x-1}=\frac{x-1}{x+1}$$<p>No coincide con $f(x)$ ni con $-f(x)$: <b>ni par ni impar</b>.</p>` },
+    { titulo: "Asíntota vertical (en $x=1$)",
+      html: String.raw`<p>El numerador no se anula en $x=1$, solo el denominador:</p>
+        $$\lim_{x\to1^-}\frac{x+1}{x-1}=\frac{2}{0^-}=-\infty\qquad\lim_{x\to1^+}\frac{x+1}{x-1}=\frac{2}{0^+}=+\infty$$` },
+    { titulo: "Asíntota horizontal",
+      html: String.raw`<p>Mismo grado arriba y abajo: el límite es el cociente de los coeficientes principales.</p>
+        $$\lim_{x\to\pm\infty}\frac{x+1}{x-1}=\frac11=1$$` },
+    { caja: "Asíntotas", html: String.raw`<p>A.V.: $x=1$.&nbsp;&nbsp; A.H.: $y=1$. (Con horizontal no hay oblicua.)</p>` },
+    { titulo: "Derivada",
+      html: String.raw`$$f'(x)=\frac{1\cdot(x-1)-(x+1)\cdot1}{(x-1)^2}=\frac{-2}{(x-1)^2}$$
+        <p>El numerador es la constante $-2$: <b>nunca se anula</b>, no hay puntos críticos. Y el signo es siempre negativo.</p>` },
+    { caja: "Crecimiento",
+      html: signos({k:1,f:String.raw`\frac{x+1}{x-1}`,dom:String.raw`\mathbb{R}-\{1\}`,crit:null,d:String.raw`\frac{-2}{(x-1)^2}`,pts:[[String.raw`1`,"h"]],z:[[String.raw`0`,"-"],[String.raw`2`,"-"]]}) + String.raw`<p><b class="res">Decrece en $(-\infty,1)\cup(1,+\infty)$; sin máximos ni mínimos.</b></p>` },
+    { titulo: "Segunda derivada",
+      html: String.raw`$$f''(x)=\frac{4}{(x-1)^3}$$<p>No se anula nunca: <b>no hay puntos de inflexión</b>. El signo es el de $x-1$.</p>` +
+            signos({k:2,f:String.raw`\frac{x+1}{x-1}`,dom:String.raw`\mathbb{R}-\{1\}`,crit:null,d:String.raw`\frac{4}{(x-1)^3}`,pts:[[String.raw`1`,"h"]],z:[[String.raw`0`,"-"],[String.raw`2`,"+"]]}) +
+            String.raw`<p class="nota">En $x=1$ cambia la curvatura, pero ese punto no pertenece al dominio: no es inflexión.</p>` },
+    { caja: "Gráfica",
+      html: graf({ f: f1, x: [-5,7], y: [-5,6], tx: [-4,-2,2,4,6], ty: [-4,-2,2,4],
+                   ramas: [[-5,1-E,AZ],[1+E,7,AZ]], av: [1], ah: [1],
+                   pts: [[0,-1,RO],[-1,0,RO]], lab: [[0,-1,'(0, −1)',RO,8,16],[-1,0,'(−1, 0)',RO,-52,-8]] }) }
+  ]
+},
+
+/* ===================== EJERCICIO 2: (x²+4)/(x²-9) ===================== */
+{
+  tab: "Ej. 2", titulo: "Ejercicio 2",
+  enunciado: String.raw`
+    <p>Estudia la función</p>$$f(x)=\frac{x^2+4}{x^2-9}$$
+    <p style="margin-left:1.6em">Asíntotas, intervalos de crecimiento y decrecimiento, máximos y mínimos y curvatura.</p>`,
+  pasos: [
+    { titulo: "Dominio", html: String.raw`$$x^2-9=0\ \Rightarrow\ x=\pm3$$` },
+    { caja: "Dominio", html: String.raw`$$\mathrm{Dom}(f)=\mathbb{R}-\{-3,\,3\}$$` },
+    { titulo: "Simetría", html: String.raw`$$f(-x)=\frac{(-x)^2+4}{(-x)^2-9}=f(x)$$<p><b>Función par</b>: simétrica respecto al eje $Y$. Lo que ocurra en $x=3$ se repite en $x=-3$.</p>` },
+    { titulo: "Asíntotas verticales",
+      html: String.raw`<p>El numerador vale $13>0$ en $x=\pm3$; manda el signo del denominador:</p>
+        $$\lim_{x\to3^-}f=\frac{13}{0^-}=-\infty\qquad\lim_{x\to3^+}f=\frac{13}{0^+}=+\infty$$
+        $$\lim_{x\to-3^-}f=\frac{13}{0^+}=+\infty\qquad\lim_{x\to-3^+}f=\frac{13}{0^-}=-\infty$$` },
+    { titulo: "Asíntota horizontal",
+      html: String.raw`<p>Mismo grado: cociente de coeficientes principales.</p>$$\lim_{x\to\pm\infty}\frac{x^2+4}{x^2-9}=\frac11=1$$` },
+    { caja: "Asíntotas", html: String.raw`<p>A.V.: $x=-3$ y $x=3$.&nbsp;&nbsp; A.H.: $y=1$.</p>` },
+    { titulo: "Derivada",
+      html: String.raw`$$f'(x)=\frac{2x(x^2-9)-(x^2+4)\,2x}{(x^2-9)^2}=\frac{2x^3-18x-2x^3-8x}{(x^2-9)^2}=\frac{-26x}{(x^2-9)^2}$$
+        <p>Igualamos a cero: solo se anula el numerador, $-26x=0\Rightarrow x=0$.</p>` },
+    { caja: "Crecimiento",
+      html: String.raw`<p>El denominador es siempre positivo; el signo lo pone $-26x$.</p>` +
+            signos({k:1,f:String.raw`\frac{x^2+4}{x^2-9}`,dom:String.raw`\mathbb{R}-\{-3,\,3\}`,crit:String.raw`x=0`,d:String.raw`\frac{-26x}{(x^2-9)^2}`,pts:[[String.raw`-3`,"h"],[String.raw`0`,"l"],[String.raw`3`,"h"]],z:[[String.raw`-4`,"+"],[String.raw`-1`,"+"],[String.raw`1`,"-"],[String.raw`4`,"-"]]}) +
+            String.raw`<p><b class="res">Máximo relativo en $\left(0,-\tfrac49\right)$.</b> No hay mínimo relativo.</p>` },
+    { titulo: "Segunda derivada",
+      html: String.raw`$$f''(x)=\frac{78\,(x^2+3)}{(x^2-9)^3}$$
+        <p>El numerador es siempre positivo y no hay ceros: <b>no hay inflexión</b>. El signo es el de $x^2-9$.</p>` +
+            signos({k:2,f:String.raw`\frac{x^2+4}{x^2-9}`,dom:String.raw`\mathbb{R}-\{-3,\,3\}`,crit:null,d:String.raw`\frac{78(x^2+3)}{(x^2-9)^3}`,pts:[[String.raw`-3`,"h"],[String.raw`3`,"h"]],z:[[String.raw`-4`,"+"],[String.raw`0`,"-"],[String.raw`4`,"+"]]}) },
+    { caja: "Gráfica",
+      html: graf({ f: f2, x: [-8,8], y: [-4,5], tx: [-6,-3,3,6], ty: [-4,-2,2,4],
+                   ramas: [[-8,-3-E,AZ],[-3+E,0,RO],[0,3-E,AZ],[3+E,8,AZ]], av: [-3,3], ah: [1],
+                   pts: [[0,-4/9,AM]], lab: [[0,-4/9,'(0, −4/9)',AM,8,18]] }) }
+  ]
+},
+
+/* ===================== EJERCICIO 3: x ln x ===================== */
+{
+  tab: "Ej. 3", titulo: "Ejercicio 3",
+  enunciado: String.raw`
+    <p>Estudia la función</p>$$f(x)=x\ln x$$
+    <p style="margin-left:1.6em">Dominio, asíntotas, crecimiento y extremos, curvatura e inflexión.</p>`,
+  pasos: [
+    { titulo: "Dominio", html: String.raw`<p>El logaritmo solo existe para argumentos estrictamente positivos: $x>0$.</p>` },
+    { caja: "Dominio", html: String.raw`$$\mathrm{Dom}(f)=(0,+\infty)$$` },
+    { titulo: "¿Asíntota vertical en $x=0$?",
+      html: String.raw`<p>Límite lateral por la derecha. Es una indeterminación $0\cdot(-\infty)$; la pasamos a $\frac{\infty}{\infty}$ y aplicamos L'Hôpital:</p>
+        $$\lim_{x\to0^+}x\ln x=\lim_{x\to0^+}\frac{\ln x}{1/x}=\lim_{x\to0^+}\frac{1/x}{-1/x^2}=\lim_{x\to0^+}(-x)=0$$` },
+    { caja: "Conclusión", html: String.raw`<p>El límite es <b>finito</b>: <b class="res">no hay asíntota vertical</b> en $x=0$. La curva "nace" en el origen (que no pertenece a la gráfica).</p>` },
+    { titulo: "En el infinito",
+      html: String.raw`<p>Los dos factores crecen:</p>$$\lim_{x\to+\infty}x\ln x=+\infty$$<p>No hay asíntota horizontal.</p>` },
+    { titulo: "Derivada (regla del producto)",
+      html: String.raw`$$f'(x)=1\cdot\ln x+x\cdot\frac1x=\ln x+1$$
+        $$\ln x+1=0\ \Rightarrow\ \ln x=-1\ \Rightarrow\ x=e^{-1}=\frac1e\approx0{,}37$$` },
+    { caja: "Crecimiento",
+      html: signos({k:1,f:String.raw`x\ln x`,dom:String.raw`(0,+\infty)`,crit:String.raw`x=\tfrac1e`,d:String.raw`\ln x+1`,pts:[[String.raw`0`,"h"],[String.raw`\tfrac1e`,"l"]],z:[null,[String.raw`0{,}1`,"-"],[String.raw`1`,"+"]]}) +
+            String.raw`$$f\!\left(\tfrac1e\right)=\tfrac1e\ln\tfrac1e=-\tfrac1e\approx-0{,}37$$
+            <p><b class="res">Mínimo relativo en $\left(\tfrac1e,-\tfrac1e\right)$</b> y ningún máximo.</p>` },
+    { titulo: "Curvatura",
+      html: String.raw`$$f''(x)=\frac1x$$<p>$\frac1x=0$ es imposible y en el dominio $x>0$ siempre es positiva: <b>sin inflexión</b>, siempre $\smile$ hacia arriba.</p>` + signos({k:2,f:String.raw`x\ln x`,dom:String.raw`(0,+\infty)`,crit:null,d:String.raw`\frac1x`,pts:[[String.raw`0`,"h"]],z:[null,[String.raw`1`,"+"]]}) },
+    { caja: "Gráfica",
+      html: graf({ f: f3, x: [0,3], y: [-1,3], tx: [1,2,3], ty: [-1,1,2],
+                   ramas: [[0.0003,1/Math.E,RO],[1/Math.E,3,AZ]], hue: [[0,0,RO]],
+                   pts: [[1/Math.E,-1/Math.E,AM],[1,0,AM]], lab: [[1/Math.E,-1/Math.E,'(1/e, −1/e)',AM,8,20]] }) }
+  ]
+},
+
+/* ===================== EJERCICIO 4: e^x / x ===================== */
+{
+  tab: "Ej. 4", titulo: "Ejercicio 4",
+  enunciado: String.raw`
+    <p>Estudia la función</p>$$f(x)=\frac{e^{x}}{x}$$
+    <p style="margin-left:1.6em">Dominio y asíntotas, crecimiento y extremos, curvatura e inflexión.</p>`,
+  pasos: [
+    { titulo: "Dominio", html: String.raw`<p>Cociente: el denominador no puede valer cero. El numerador $e^x$ no da ningún problema.</p>` },
+    { caja: "Dominio", html: String.raw`$$\mathrm{Dom}(f)=\mathbb{R}-\{0\}$$` },
+    { titulo: "Asíntota vertical",
+      html: String.raw`<p>Cuando $x\to0$ el numerador tiende a $e^0=1$, <b>no a cero</b>; solo manda el signo del denominador:</p>
+        $$\lim_{x\to0^-}\frac{e^x}{x}=\frac{1}{0^-}=-\infty\qquad\lim_{x\to0^+}\frac{e^x}{x}=\frac{1}{0^+}=+\infty$$` },
+    { titulo: "En el infinito",
+      html: String.raw`$$\lim_{x\to-\infty}\frac{e^x}{x}=\frac{0}{-\infty}=0\qquad\lim_{x\to+\infty}\frac{e^x}{x}\overset{L'H}{=}\lim_{x\to+\infty}\frac{e^x}{1}=+\infty$$` },
+    { caja: "Asíntotas", html: String.raw`<p>A.V.: $x=0$.&nbsp;&nbsp; A.H.: $y=0$ <b>solo en $-\infty$</b>; por la derecha no hay A.H.</p>` },
+    { titulo: "Derivada",
+      html: String.raw`$$f'(x)=\frac{e^x\cdot x-e^x\cdot1}{x^2}=\frac{e^x(x-1)}{x^2}$$
+        <p>Solo se anula $x-1=0$: punto crítico $x=1$. Atención: <b>$x=0$ también parte la recta</b>, aunque no sea crítico (no está en el dominio).</p>` },
+    { caja: "Crecimiento",
+      html: signos({k:1,f:String.raw`\frac{e^{x}}{x}`,dom:String.raw`\mathbb{R}-\{0\}`,crit:String.raw`x=1`,d:String.raw`\frac{e^x(x-1)}{x^2}`,pts:[[String.raw`0`,"h"],[String.raw`1`,"l"]],z:[[String.raw`-2`,"-"],[String.raw`0{,}5`,"-"],[String.raw`2`,"+"]]}) +
+            String.raw`<p><b class="res">Decrece en $(-\infty,0)\cup(0,1)$</b> (no se puede escribir $(-\infty,1)$: hay un agujero). <b class="res">Crece en $(1,+\infty)$.</b></p>
+            $$f(1)=e\ \Rightarrow\ \text{mínimo relativo en }(1,e)$$` },
+    { titulo: "Segunda derivada",
+      html: String.raw`$$f''(x)=\frac{e^x\,(x^2-2x+2)}{x^3}$$
+        <p>$x^2-2x+2=(x-1)^2+1\geq1>0$: no se anula. El signo es el de $x^3$, es decir, el de $x$.</p>` +
+            signos({k:2,f:String.raw`\frac{e^{x}}{x}`,dom:String.raw`\mathbb{R}-\{0\}`,crit:null,d:String.raw`\frac{e^x(x^2-2x+2)}{x^3}`,pts:[[String.raw`0`,"h"]],z:[[String.raw`-1`,"-"],[String.raw`1`,"+"]]}) },
+    { caja: "Inflexión", html: String.raw`<p><b class="res">No hay puntos de inflexión.</b> La curvatura cambia en $x=0$, pero ese punto no pertenece al dominio. Es el error clásico.</p>` },
+    { caja: "Gráfica",
+      html: graf({ f: f4, x: [-4,3], y: [-6,7], tx: [-4,-2,1,2,3], ty: [-4,-2,2,4,6],
+                   ramas: [[-4,-E,AZ],[E,1,AZ],[1,3,RO]], av: [0], ah: [[0,-4,-0.1]],
+                   pts: [[1,Math.E,AM]], lab: [[1,Math.E,'(1, e)',AM,9,-4]] }) }
+  ]
+},
+
+/* ===================== EJERCICIO 5: x²/(1+x²) ===================== */
+{
+  tab: "Ej. 5", titulo: "Ejercicio 5",
+  enunciado: String.raw`
+    <p>Estudia la función</p>$$f(x)=\frac{x^2}{1+x^2}$$
+    <p style="margin-left:1.6em">Dominio, simetría, asíntotas, crecimiento y extremos, curvatura e inflexión.</p>`,
+  pasos: [
+    { titulo: "Dominio", html: String.raw`$$1+x^2\geq1>0$$<p>El denominador no se anula nunca.</p>` },
+    { caja: "Dominio", html: String.raw`$$\mathrm{Dom}(f)=\mathbb{R}$$<p>Continua en todo $\mathbb{R}$: no hay asíntotas verticales.</p>` },
+    { titulo: "Simetría", html: String.raw`$$f(-x)=\frac{(-x)^2}{1+(-x)^2}=\frac{x^2}{1+x^2}=f(x)$$<p><b>Función par</b>: simétrica respecto al eje $Y$.</p>` },
+    { titulo: "Asíntota horizontal",
+      html: String.raw`$$\lim_{x\to\pm\infty}\frac{x^2}{1+x^2}=\lim_{x\to\pm\infty}\frac{1}{\frac1{x^2}+1}=1$$` },
+    { titulo: "El truco que explica la gráfica",
+      html: String.raw`$$\frac{x^2}{1+x^2}=\frac{1+x^2-1}{1+x^2}=1-\frac{1}{1+x^2}$$
+        <p>Como $\frac1{1+x^2}>0$, resulta $f(x)<1$ para todo $x$: la curva se acerca a $y=1$ <b>siempre por debajo</b> y nunca la toca. Además $f(x)\geq0$.</p>` },
+    { titulo: "Derivada",
+      html: String.raw`$$f'(x)=\frac{2x(1+x^2)-x^2\cdot2x}{(1+x^2)^2}=\frac{2x+2x^3-2x^3}{(1+x^2)^2}=\frac{2x}{(1+x^2)^2}$$
+        <p>Se anula solo en $x=0$.</p>` },
+    { caja: "Crecimiento",
+      html: signos({k:1,f:String.raw`\frac{x^2}{1+x^2}`,dom:String.raw`\mathbb{R}`,crit:String.raw`x=0`,d:String.raw`\frac{2x}{(1+x^2)^2}`,pts:[[String.raw`0`,"l"]],z:[[String.raw`-1`,"-"],[String.raw`1`,"+"]]}) +
+            String.raw`<p><b class="res">Mínimo en $(0,0)$</b>, y además es <b>absoluto</b> ($f\geq0$). <b class="res">Ningún máximo</b>: se acerca a $1$ sin alcanzarlo.</p>` },
+    { titulo: "Segunda derivada (regla de la cadena en el denominador)",
+      html: String.raw`$$f''(x)=\frac{2(1+x^2)^2-2x\cdot4x(1+x^2)}{(1+x^2)^4}=\frac{2(1-3x^2)}{(1+x^2)^3}$$
+        $$1-3x^2=0\ \Rightarrow\ x=\pm\frac{1}{\sqrt3}=\pm\frac{\sqrt3}{3}\approx\pm0{,}58$$
+        $$f\!\left(\pm\tfrac{\sqrt3}{3}\right)=\frac{1/3}{4/3}=\frac14$$` +
+            signos({k:2,f:String.raw`\frac{x^2}{1+x^2}`,dom:String.raw`\mathbb{R}`,crit:String.raw`x=\pm\tfrac{\sqrt3}{3}`,d:String.raw`\frac{2(1-3x^2)}{(1+x^2)^3}`,pts:[[String.raw`-\tfrac{\sqrt3}{3}`,"l"],[String.raw`\tfrac{\sqrt3}{3}`,"l"]],z:[[String.raw`-1`,"-"],[String.raw`0`,"+"],[String.raw`1`,"-"]]}) },
+    { caja: "Inflexión", html: String.raw`<p><b class="res">Dos puntos de inflexión, a la misma altura:</b> $\left(-\tfrac{\sqrt3}{3},\tfrac14\right)$ y $\left(\tfrac{\sqrt3}{3},\tfrac14\right)$.</p>` },
+    { caja: "Gráfica",
+      html: graf({ f: f5, x: [-4,4], y: [-0.2,1.3], tx: [-3,-2,-1,1,2,3], ty: [0.5,1],
+                   ramas: [[-4,0,AZ],[0,4,RO]], ah: [1],
+                   pts: [[0,0,AM],[-Math.sqrt(3)/3,0.25,MO],[Math.sqrt(3)/3,0.25,MO]],
+                   lab: [[0,0,'(0, 0)',AM,8,18],[Math.sqrt(3)/3,0.25,'y = 1/4',MO,8,22]] }) }
+  ]
+},
+
+/* ===================== EJERCICIO 6: x e^{-x²} ===================== */
+{
+  tab: "Ej. 6", titulo: "Ejercicio 6",
+  enunciado: String.raw`
+    <p>Estudia la función</p>$$f(x)=x\,e^{-x^{2}}$$
+    <p style="margin-left:1.6em">Dominio, simetría, asíntotas, crecimiento y extremos, curvatura e inflexión.</p>`,
+  pasos: [
+    { titulo: "Dominio", html: String.raw`<p>Producto de un polinomio por una exponencial, sin denominadores, raíces ni logaritmos.</p>` },
+    { caja: "Dominio", html: String.raw`$$\mathrm{Dom}(f)=\mathbb{R}$$` },
+    { titulo: "Simetría", html: String.raw`$$f(-x)=(-x)\,e^{-(-x)^2}=-x\,e^{-x^2}=-f(x)$$<p><b>Función impar</b>: simétrica respecto al origen. Basta estudiar $x>0$ y reflejar.</p>` },
+    { titulo: "En el infinito",
+      html: String.raw`$$\lim_{x\to+\infty}x\,e^{-x^2}=\lim_{x\to+\infty}\frac{x}{e^{x^2}}=0$$
+        <p>$e^{x^2}$ crece muchísimo más deprisa que $x$. Por ser impar, en $-\infty$ también da $0$.</p>` },
+    { caja: "Asíntotas", html: String.raw`<p>A.H.: $y=0$ por los dos lados. Sin asíntotas verticales.</p>` },
+    { titulo: "Derivada (producto y cadena)",
+      html: String.raw`$$\left(e^{-x^2}\right)'=-2x\,e^{-x^2}$$
+        $$f'(x)=1\cdot e^{-x^2}+x\left(-2x\,e^{-x^2}\right)=e^{-x^2}\left(1-2x^2\right)$$
+        <p>$e^{-x^2}$ nunca se anula, luego $1-2x^2=0$:</p>
+        $$x=\pm\frac{\sqrt2}{2}\approx\pm0{,}71$$` },
+    { caja: "Crecimiento",
+      html: signos({k:1,f:String.raw`x\,e^{-x^{2}}`,dom:String.raw`\mathbb{R}`,crit:String.raw`x=\pm\tfrac{\sqrt2}{2}`,d:String.raw`e^{-x^2}(1-2x^2)`,pts:[[String.raw`-\tfrac{\sqrt2}{2}`,"l"],[String.raw`\tfrac{\sqrt2}{2}`,"l"]],z:[[String.raw`-2`,"-"],[String.raw`0`,"+"],[String.raw`2`,"-"]]}) +
+            String.raw`$$f\!\left(\tfrac{\sqrt2}{2}\right)=\tfrac{\sqrt2}{2}e^{-1/2}=\frac{1}{\sqrt{2e}}\approx0{,}43$$
+            <p><b class="res">Máximo en $\left(\tfrac{\sqrt2}{2},\tfrac1{\sqrt{2e}}\right)$ y mínimo en $\left(-\tfrac{\sqrt2}{2},-\tfrac1{\sqrt{2e}}\right)$.</b></p>` },
+    { titulo: "Segunda derivada",
+      html: String.raw`$$f''(x)=-4x\,e^{-x^2}+(1-2x^2)(-2x\,e^{-x^2})=e^{-x^2}(4x^3-6x)=2x\,(2x^2-3)\,e^{-x^2}$$
+        $$2x=0\ \text{ó}\ 2x^2-3=0\ \Rightarrow\ x=0,\ \ x=\pm\frac{\sqrt6}{2}\approx\pm1{,}22$$` +
+            signos({k:2,f:String.raw`x\,e^{-x^{2}}`,dom:String.raw`\mathbb{R}`,crit:String.raw`x=0,\ x=\pm\tfrac{\sqrt6}{2}`,d:String.raw`2x(2x^2-3)e^{-x^2}`,pts:[[String.raw`-\tfrac{\sqrt6}{2}`,"l"],[String.raw`0`,"l"],[String.raw`\tfrac{\sqrt6}{2}`,"l"]],z:[[String.raw`-2`,"-"],[String.raw`-1`,"+"],[String.raw`1`,"-"],[String.raw`2`,"+"]]}) },
+    { caja: "Inflexión", html: String.raw`<p><b class="res">Tres puntos de inflexión</b>, con $f''$ cambiando de signo en los tres: $x=-\tfrac{\sqrt6}{2}$, $x=0$ y $x=\tfrac{\sqrt6}{2}$.</p>` },
+    { caja: "Gráfica",
+      html: graf({ f: f6, x: [-3.3,3.3], y: [-0.6,0.6], tx: [-3,-2,-1,1,2,3], ty: [-0.4,-0.2,0.2,0.4],
+                   ramas: [[-3.3,-Math.SQRT1_2,AZ],[-Math.SQRT1_2,Math.SQRT1_2,RO],[Math.SQRT1_2,3.3,AZ]], ah: [0],
+                   pts: [[Math.SQRT1_2,f6(Math.SQRT1_2),AM],[-Math.SQRT1_2,f6(-Math.SQRT1_2),AM],
+                         [0,0,MO],[Math.sqrt(6)/2,f6(Math.sqrt(6)/2),MO],[-Math.sqrt(6)/2,f6(-Math.sqrt(6)/2),MO]] }) }
+  ]
+},
+
+/* ===================== EJERCICIO 7: 1/(1+e^x) ===================== */
+{
+  tab: "Ej. 7", titulo: "Ejercicio 7",
+  enunciado: String.raw`
+    <p>Estudia la función</p>$$f(x)=\frac{1}{1+e^{x}}$$
+    <p style="margin-left:1.6em">Dominio, simetría, asíntotas, crecimiento y extremos, curvatura e inflexión.</p>`,
+  pasos: [
+    { titulo: "Dominio", html: String.raw`$$e^x>0\ \Rightarrow\ 1+e^x>1>0$$` },
+    { caja: "Dominio", html: String.raw`$$\mathrm{Dom}(f)=\mathbb{R}$$<p>Sin asíntotas verticales.</p>` },
+    { titulo: "Simetría",
+      html: String.raw`$$f(-x)=\frac{1}{1+e^{-x}}=\frac{e^x}{e^x+1}\neq f(x),\quad\neq-f(x)$$<p>Ni par ni impar. <b>Pero</b>:</p>
+        $$f(-x)=\frac{e^x}{1+e^x}=\frac{1+e^x-1}{1+e^x}=1-\frac{1}{1+e^x}=1-f(x)$$
+        <p>Es decir, $f(x)+f(-x)=1$: <b>simetría central respecto a $\left(0,\tfrac12\right)$</b>.</p>` },
+    { titulo: "Asíntotas horizontales (¡dos distintas!)",
+      html: String.raw`$$\lim_{x\to+\infty}\frac{1}{1+e^x}=\frac{1}{+\infty}=0\qquad\lim_{x\to-\infty}\frac{1}{1+e^x}=\frac{1}{1+0}=1$$` },
+    { caja: "Asíntotas", html: String.raw`<p>A.H.: $y=0$ en $+\infty$ (por encima) e $y=1$ en $-\infty$ (por debajo). Como $0<f(x)<1$, no las toca nunca.</p>` },
+    { titulo: "Derivada",
+      html: String.raw`$$f'(x)=\frac{0\cdot(1+e^x)-1\cdot e^x}{(1+e^x)^2}=\frac{-e^x}{(1+e^x)^2}$$
+        <p>$-e^x=0$ no tiene solución: <b>no hay puntos críticos</b>, y $f'<0$ siempre.</p>` },
+    { caja: "Crecimiento",
+      html: signos({k:1,f:String.raw`\frac{1}{1+e^{x}}`,dom:String.raw`\mathbb{R}`,crit:null,d:String.raw`\frac{-e^x}{(1+e^x)^2}`,pts:[],z:[[String.raw`0`,"-"]]}) +
+            String.raw`<p><b class="res">Decrece en todo $\mathbb{R}$.</b> Está acotada entre $0$ y $1$ y, aun así, <b>no tiene máximo ni mínimo</b>: se acerca a ellos sin alcanzarlos.</p>` },
+    { titulo: "Segunda derivada",
+      html: String.raw`$$f''(x)=\frac{e^x(e^x-1)}{(1+e^x)^3}$$
+        $$e^x-1=0\ \Rightarrow\ e^x=1\ \Rightarrow\ x=0,\qquad f(0)=\tfrac12$$` +
+            signos({k:2,f:String.raw`\frac{1}{1+e^{x}}`,dom:String.raw`\mathbb{R}`,crit:String.raw`x=0`,d:String.raw`\frac{e^x(e^x-1)}{(1+e^x)^3}`,pts:[[String.raw`0`,"l"]],z:[[String.raw`-1`,"-"],[String.raw`1`,"+"]]}) },
+    { caja: "Inflexión", html: String.raw`<p><b class="res">Punto de inflexión: $\left(0,\tfrac12\right)$</b>, justo el centro de simetría.</p>` },
+    { caja: "Gráfica",
+      html: graf({ f: f7, x: [-5,5], y: [-0.2,1.3], tx: [-4,-2,2,4], ty: [0.5,1],
+                   ramas: [[-5,0,AZ],[0,5,RO]], ah: [0,1], pts: [[0,0.5,MO]],
+                   lab: [[0,0.5,'(0, 1/2)',MO,10,22]] }) }
+  ]
+},
+
+/* ===================== EJERCICIO 8: x²/(1+x) ===================== */
+{
+  tab: "Ej. 8", titulo: "Ejercicio 8",
+  enunciado: String.raw`
+    <p>Estudia la función</p>$$f(x)=\frac{x^2}{1+x}$$
+    <p style="margin-left:1.6em">Dominio, simetría, <b>todas</b> las asíntotas, crecimiento y extremos, curvatura e inflexión.</p>`,
+  pasos: [
+    { titulo: "Dominio", html: String.raw`$$1+x=0\ \Rightarrow\ x=-1$$` },
+    { caja: "Dominio", html: String.raw`$$\mathrm{Dom}(f)=\mathbb{R}-\{-1\}$$` },
+    { titulo: "Simetría", html: String.raw`$$f(-x)=\frac{x^2}{1-x}$$<p>El cuadrado se come el signo arriba, pero abajo no: <b>ni par ni impar</b>.</p>` },
+    { titulo: "Asíntota vertical",
+      html: String.raw`<p>En $x=-1$ el numerador vale $1>0$:</p>
+        $$\lim_{x\to-1^-}\frac{x^2}{1+x}=\frac{1}{0^-}=-\infty\qquad\lim_{x\to-1^+}\frac{x^2}{1+x}=\frac{1}{0^+}=+\infty$$` },
+    { titulo: "Asíntota oblicua $y=mx+n$",
+      html: String.raw`<p>El grado del numerador es uno más que el del denominador: no hay horizontal, hay <b>oblicua</b>.</p>
+        $$m=\lim_{x\to\infty}\frac{f(x)}{x}=\lim_{x\to\infty}\frac{x^2}{x+x^2}=1$$
+        $$n=\lim_{x\to\infty}\left[f(x)-mx\right]=\lim_{x\to\infty}\left[\frac{x^2}{1+x}-x\right]=\lim_{x\to\infty}\frac{x^2-x-x^2}{1+x}=\lim_{x\to\infty}\frac{-x}{1+x}=-1$$` },
+    { caja: "Asíntotas", html: String.raw`<p>A.V.: $x=-1$.&nbsp;&nbsp; A.O.: $y=x-1$ (la misma en $+\infty$ y en $-\infty$).</p>` },
+    { titulo: "Derivada",
+      html: String.raw`$$f'(x)=\frac{2x(1+x)-x^2\cdot1}{(1+x)^2}=\frac{x^2+2x}{(1+x)^2}=\frac{x\,(x+2)}{(1+x)^2}$$
+        <p>Puntos críticos: $x=-2$ y $x=0$. A la recta hay que llevar también $x=-1$ (fuera del dominio).</p>` },
+    { caja: "Crecimiento",
+      html: signos({k:1,f:String.raw`\frac{x^2}{1+x}`,dom:String.raw`\mathbb{R}-\{-1\}`,crit:String.raw`x=-2,\ x=0`,d:String.raw`\frac{x(x+2)}{(1+x)^2}`,pts:[[String.raw`-2`,"l"],[String.raw`-1`,"h"],[String.raw`0`,"l"]],z:[[String.raw`-3`,"+"],[String.raw`-1{,}5`,"-"],[String.raw`-0{,}5`,"-"],[String.raw`1`,"+"]]}) +
+            String.raw`$$f(-2)=\frac{4}{-1}=-4\qquad f(0)=0$$
+            <p><b class="res">Máximo relativo en $(-2,-4)$ y mínimo relativo en $(0,0)$.</b> El máximo está <i>por debajo</i> del mínimo: es posible porque son relativos y están en ramas distintas.</p>` },
+    { titulo: "Segunda derivada",
+      html: String.raw`$$f''(x)=\frac{2}{(1+x)^3}$$
+        <p>El numerador es $2$: nunca se anula, <b>no hay puntos de inflexión</b>. El signo es el de $1+x$.</p>` +
+            signos({k:2,f:String.raw`\frac{x^2}{1+x}`,dom:String.raw`\mathbb{R}-\{-1\}`,crit:null,d:String.raw`\frac{2}{(1+x)^3}`,pts:[[String.raw`-1`,"h"]],z:[[String.raw`-2`,"-"],[String.raw`0`,"+"]]}) },
+    { caja: "Gráfica",
+      html: graf({ f: f8, x: [-6,4], y: [-9,5], tx: [-6,-4,-2,2,4], ty: [-8,-4,4],
+                   ramas: [[-6,-1-E,AZ],[-1+E,4,RO]], av: [-1], ao: [1,-1],
+                   pts: [[-2,-4,RO],[0,0,AZ]], lab: [[-2,-4,'(−2, −4)',RO,-66,4],[0,0,'(0, 0)',AZ,8,18]] }) }
+  ]
+},
+
+/* ===================== EJERCICIO 9: e^{1/x} ===================== */
+{
+  tab: "Ej. 9", titulo: "Ejercicio 9",
+  enunciado: String.raw`
+    <p>Estudia la función</p>$$f(x)=e^{1/x}$$
+    <p style="margin-left:1.6em">Dominio, simetría y signo, <b>todas</b> las asíntotas, crecimiento y extremos, curvatura e inflexión.</p>`,
+  pasos: [
+    { titulo: "Dominio", html: String.raw`<p>La exponencial acepta cualquier exponente; el problema está en el exponente $\frac1x$:</p>$$\frac1x\ \text{existe}\iff x\neq0$$` },
+    { caja: "Dominio", html: String.raw`$$\mathrm{Dom}(f)=\mathbb{R}-\{0\}$$` },
+    { titulo: "Simetría y signo",
+      html: String.raw`$$f(-x)=e^{-1/x}=\frac{1}{e^{1/x}}\neq f(x),\quad\neq-f(x)$$<p>Ni par ni impar.</p>
+        <p>Signo: una exponencial es siempre positiva, así que $f(x)>0$ para todo $x\neq0$. La gráfica está entera por encima del eje $X$; y tampoco corta al eje $Y$ ($x=0$ no está en el dominio).</p>` },
+    { titulo: "Asíntota vertical: ¡solo por un lado!",
+      html: String.raw`<p>Primero el exponente:</p>$$\lim_{x\to0^-}\frac1x=-\infty\qquad\lim_{x\to0^+}\frac1x=+\infty$$
+        $$\lim_{x\to0^-}e^{1/x}=e^{-\infty}=0\qquad\lim_{x\to0^+}e^{1/x}=e^{+\infty}=+\infty$$
+        <p>Por la izquierda el límite es <b>finito</b> (la rama se acerca al origen): no hay asíntota. Por la derecha sí.</p>` },
+    { titulo: "Asíntota horizontal",
+      html: String.raw`$$\lim_{x\to\pm\infty}\frac1x=0\ \Rightarrow\ \lim_{x\to\pm\infty}e^{1/x}=e^0=1$$
+        <p>Posición: si $x>0$, $\frac1x>0$ y $e^{1/x}>1$ (rama derecha por <b>encima</b>); si $x<0$, $e^{1/x}<1$ (rama izquierda por <b>debajo</b>).</p>` },
+    { caja: "Asíntotas", html: String.raw`<p>A.V.: $x=0$ <b>solo por la derecha</b>.&nbsp;&nbsp; A.H.: $y=1$ por los dos lados.</p>` },
+    { titulo: "Derivada (regla de la cadena)",
+      html: String.raw`$$\left(e^{u}\right)'=e^{u}u',\qquad u=\frac1x\ \Rightarrow\ u'=-\frac{1}{x^2}$$
+        $$f'(x)=-\frac{e^{1/x}}{x^2}$$
+        <p>$e^{1/x}=0$ es imposible: <b>no hay puntos críticos</b>. El signo lo pone el menos de delante.</p>` },
+    { caja: "Crecimiento",
+      html: signos({k:1,f:String.raw`e^{1/x}`,dom:String.raw`\mathbb{R}-\{0\}`,crit:null,d:String.raw`-\frac{e^{1/x}}{x^2}`,pts:[[String.raw`0`,"h"]],z:[[String.raw`-1`,"-"],[String.raw`1`,"-"]]}) +
+            String.raw`<p><b class="res">Decrece en $(-\infty,0)\cup(0,+\infty)$; sin máximos ni mínimos.</b></p>
+            <p class="nota">Pero no decrece en todo el dominio: $f(-1)=e^{-1}\approx0{,}37<f(1)=e\approx2{,}72$. Las ramas no se pueden comparar.</p>` },
+    { titulo: "Segunda derivada",
+      html: String.raw`$$f''(x)=\frac{2}{x^3}e^{1/x}+\frac{1}{x^4}e^{1/x}=\frac{e^{1/x}\,(1+2x)}{x^4}$$
+        $$1+2x=0\ \Rightarrow\ x=-\frac12,\qquad f\!\left(-\tfrac12\right)=e^{-2}\approx0{,}135$$` +
+            signos({k:2,f:String.raw`e^{1/x}`,dom:String.raw`\mathbb{R}-\{0\}`,crit:String.raw`x=-\tfrac12`,d:String.raw`\frac{e^{1/x}(1+2x)}{x^4}`,pts:[[String.raw`-\tfrac12`,"l"],[String.raw`0`,"h"]],z:[[String.raw`-1`,"-"],[String.raw`-0{,}25`,"+"],[String.raw`1`,"+"]]}) },
+    { caja: "Inflexión", html: String.raw`<p><b class="res">Punto de inflexión: $\left(-\tfrac12,e^{-2}\right)$.</b> En $x=0$ la curvatura <b>no</b> cambia (a los dos lados es $\smile$).</p>` },
+    { caja: "Gráfica",
+      html: graf({ f: f9, x: [-5,5], y: [-0.5,5], tx: [-4,-2,2,4], ty: [1,2,3,4],
+                   ramas: [[-5,-0.03,AZ],[0.03,5,RO]], av: [[0,0,5]], ah: [1], hue: [[0,0,AZ]],
+                   pts: [[-0.5,Math.exp(-2),MO]], lab: [[-0.5,Math.exp(-2),'(−1/2, e⁻²)',MO,-80,-10]] }) }
+  ]
+},
+
+/* ===================== EJERCICIO 10: e^{-2x}(x²-3x+3/2) ===================== */
+{
+  tab: "Ej. 10", titulo: "Ejercicio 10",
+  enunciado: String.raw`
+    <p>Sea</p>$$f(x)=e^{-2x}\left(x^2-3x+\frac32\right)$$
+    <p style="margin-left:1.6em">a)&nbsp; Calcula los intervalos de crecimiento y decrecimiento, y los máximos y mínimos.</p>
+    <p style="margin-left:1.6em">b)&nbsp; Estudia si tiene puntos de inflexión.</p>
+    <p style="margin-left:1.6em">c)&nbsp; Estudia si tiene asíntotas horizontales.</p>`,
+  pasos: [
+    { titulo: "Dominio", html: String.raw`$$f(x)=\frac{x^2-3x+\frac32}{e^{2x}}$$<p>Escrita como cociente se ve claro: $e^{2x}$ nunca vale cero.</p>` },
+    { caja: "Dominio", html: String.raw`$$\mathrm{Dom}(f)=\mathbb{R}$$<p>Continua en todo $\mathbb{R}$: no hay asíntotas verticales.</p>` },
+    { titulo: "a) Derivada",
+      html: String.raw`$$f'(x)=-2e^{-2x}\left(x^2-3x+\tfrac32\right)+e^{-2x}(2x-3)=e^{-2x}\left(-2x^2+8x-6\right)$$
+        $$f'(x)=-2\,e^{-2x}\,(x^2-4x+3)=\frac{-2(x-1)(x-3)}{e^{2x}}$$
+        <p>$e^{-2x}$ y $-2$ nunca se anulan: puntos críticos $x=1$ y $x=3$.</p>` },
+    { caja: "Crecimiento",
+      html: signos({k:1,f:String.raw`e^{-2x}\left(x^2-3x+\frac32\right)`,dom:String.raw`\mathbb{R}`,crit:String.raw`x=1,\ x=3`,d:String.raw`\frac{-2(x-1)(x-3)}{e^{2x}}`,pts:[[String.raw`1`,"l"],[String.raw`3`,"l"]],z:[[String.raw`0`,"-"],[String.raw`2`,"+"],[String.raw`4`,"-"]]}) },
+    { titulo: "Valor de los extremos",
+      html: String.raw`<p>Sustituimos en la función, no en la derivada:</p>
+        $$f(1)=\frac{1-3+\frac32}{e^2}=-\frac{1}{2e^2}\approx-0{,}068\qquad f(3)=\frac{9-9+\frac32}{e^6}=\frac{3}{2e^6}\approx0{,}0037$$
+        <p><b class="res">Mínimo relativo en $\left(1,-\tfrac{1}{2e^2}\right)$ y máximo relativo en $\left(3,\tfrac{3}{2e^6}\right)$.</b></p>
+        <p class="nota">Los dos valores son diminutos: para verlos habrá que ampliar la gráfica.</p>` },
+    { titulo: "b) Segunda derivada",
+      html: String.raw`$$f''(x)=e^{-2x}(-4x+8)-2e^{-2x}(-2x^2+8x-6)=\frac{4\,(x^2-5x+5)}{e^{2x}}$$
+        $$x^2-5x+5=0\ \Rightarrow\ x=\frac{5\pm\sqrt{5}}{2}\approx1{,}38\ ;\ 3{,}62$$` +
+            signos({k:2,f:String.raw`e^{-2x}\left(x^2-3x+\frac32\right)`,dom:String.raw`\mathbb{R}`,crit:String.raw`x=\tfrac{5\pm\sqrt5}{2}`,d:String.raw`\frac{4(x^2-5x+5)}{e^{2x}}`,pts:[[String.raw`\tfrac{5-\sqrt5}{2}`,"l"],[String.raw`\tfrac{5+\sqrt5}{2}`,"l"]],z:[[String.raw`0`,"+"],[String.raw`2`,"-"],[String.raw`4`,"+"]]}) },
+    { caja: "Inflexión", html: String.raw`<p><b class="res">Dos puntos de inflexión:</b> $x_1=\tfrac{5-\sqrt5}{2}\approx1{,}38$ y $x_2=\tfrac{5+\sqrt5}{2}\approx3{,}62$ (en los dos $f''$ cambia de signo).</p>` },
+    { titulo: "c) Asíntotas horizontales",
+      html: String.raw`$$\lim_{x\to+\infty}e^{-2x}\left(x^2-3x+\tfrac32\right)=0\qquad\lim_{x\to-\infty}e^{-2x}\left(x^2-3x+\tfrac32\right)=+\infty$$
+        <p>En $+\infty$ la exponencial decae más deprisa de lo que crece el polinomio; en $-\infty$ los dos factores tienden a $+\infty$.</p>` },
+    { caja: "Asíntotas", html: String.raw`<p>A.H.: $y=0$ <b>solo cuando $x\to+\infty$</b>. Cuando $x\to-\infty$ no hay asíntota horizontal.</p>` },
+    { titulo: "Gráfica: vista general",
+      html: P("A esta escala los extremos <b>no se aprecian</b>:") +
+            graf({ f: f10, x: [-0.45,4.9], y: [-0.55,3.3], tx: [1,2,3,4], ty: [1,2,3],
+                   ramas: [[-0.45,1,AZ],[1,3,RO],[3,4.9,AZ]], ah: [[0,1,4.9]] }) },
+    { titulo: "Ampliamos: el mínimo",
+      html: graf({ f: f10, x: [0.5,2.3], y: [-0.09,0.10], tx: [1,2], ty: [-0.05,0.05],
+                   ramas: [[0.5,1,AZ],[1,2.3,RO]],
+                   pts: [[1,f10(1),AM],[(5-Math.sqrt(5))/2,f10((5-Math.sqrt(5))/2),MO]],
+                   lab: [[1,f10(1),'mín (1, −1/(2e²))',AM,-120,18],[(5-Math.sqrt(5))/2,f10((5-Math.sqrt(5))/2),'x₁ ≈ 1,38',MO,10,18]] }) },
+    { caja: "Ampliamos más: el máximo",
+      html: P("Escala del eje $y$ mucho más ampliada:") +
+            graf({ f: f10, x: [2.2,4.9], y: [-0.0045,0.0062], tx: [3,4], ty: [-0.004,-0.002,0.002,0.004,0.006],
+                   ramas: [[2.2,3,RO],[3,4.9,AZ]],
+                   pts: [[3,f10(3),AM],[(5+Math.sqrt(5))/2,f10((5+Math.sqrt(5))/2),MO]],
+                   lab: [[3,f10(3),'máx (3, 3/(2e⁶))',AM,-60,-12],[(5+Math.sqrt(5))/2,f10((5+Math.sqrt(5))/2),'x₂ ≈ 3,62',MO,10,-8]] }) +
+            P("<span class='nota'>Es un máximo <b>relativo</b>, no absoluto: a la izquierda la función alcanza valores mucho mayores.</span>") }
+  ]
+}
+
+];
+
+/* ===================================================================== */
+const OPCIONES_MATE = {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "$",  right: "$",  display: false}
+  ],
+  throwOnError: false
+};
+const $ = id => document.getElementById(id);
+function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
+
+/* ---------------------------------------------------------------------
+   MOTOR DEL LIBRO (el mismo que el de los sistemas con parámetro)
+   --------------------------------------------------------------------- */
+const LW = 800;
+let actual = 0;
+let s = 0;
+let G = {};
+let libro = null;
+let Lprev = 0;
+
+function geometria() {
+  const W = $("libro").clientWidth, H = $("libro").clientHeight;
+  const Sw = W / 2, k = (Sw - 20) / LW;
+  G = { W, H, Sw, k, LH: (H - 20) / k };
+}
+
+function extraer(e) {
+  if (e._sec) return e._sec;
+  const stage = $("stage"), secs = [];
+  const add = (tipo, cab, html, salto, mismo) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    stage.appendChild(d);
+    mate(d);
+    const unidades = [];
+    d.childNodes.forEach(n => {
+      if (n.nodeType === 1) unidades.push(n);
+      else if (n.nodeType === 3 && n.textContent.trim()) {
+        const sp = document.createElement("span"); sp.textContent = n.textContent; unidades.push(sp);
+      }
+    });
+    let cabHTML = null;
+    if (cab) { const c = document.createElement("div"); c.innerHTML = cab; mate(c); cabHTML = c.innerHTML; }
+    secs.push({ tipo, cabHTML, unidades, salto: !!salto, mismo: !!mismo });
+  };
+  add("titulo", null, "<h1>" + e.titulo + "</h1>");
+  add("enun", null, e.enunciado, false, true);
+  e.pasos.forEach(p => add(p.caja ? "caja" : "paso", p.caja || p.titulo, p.html, p.caja && /^Si /.test(p.caja)));
+  stage.innerHTML = "";
+  let base = 0;
+  secs.forEach(sc => {
+    let cur = sc.mismo ? base : base + 1, nuevo = false;
+    sc.unidades = sc.unidades.map(n => {
+      if (nuevo) { cur++; nuevo = false; }
+      const o = { n, t: cur, subs: [] };
+      if (n.classList && n.classList.contains("fila-menores")) {
+        n.querySelectorAll(".sub").forEach(sb => { cur++; o.subs.push({ n: sb, t: cur }); });
+        nuevo = true;
+      }
+      return o;
+    });
+    base = cur;
+  });
+  e._T = base;
+  e._sec = secs;
+  return secs;
+}
+
+function crearCont(sc, sigue) {
+  const c = document.createElement("div");
+  c.className = "cont";
+  if (sc.tipo === "caja") {
+    c.classList.add("caja");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", '<span class="titulo">' + sc.cabHTML + "</span>");
+  } else if (sc.tipo === "paso") {
+    c.classList.add("paso");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", "<h4>" + sc.cabHTML + "</h4>");
+  } else if (sc.tipo === "enun") {
+    c.classList.add("caja", "enunciado");
+  }
+  if (sigue) c.classList.add("sigue");
+  return c;
+}
+
+function ajustar(u) {
+  if (u.classList && u.classList.contains("fila-menores")) {
+    u.style.zoom = "";
+    if (u.scrollWidth > u.clientWidth + 2) u.style.zoom = String(Math.max(.55, u.clientWidth / u.scrollWidth * .97));
+  }
+  u.querySelectorAll(".katex-display").forEach(d => {
+    const k = d.firstElementChild;
+    if (!k) return;
+    k.style.zoom = "";
+    if (d.scrollWidth > d.clientWidth + 2) k.style.zoom = String(Math.max(.55, d.clientWidth / d.scrollWidth * .98));
+  });
+}
+
+function paginar(secs, T) {
+  secs.T = T;
+  const pista = $("pista");
+  pista.innerHTML = "";
+  const paginas = [], unidades = [];
+  const nueva = () => {
+    const hoja = document.createElement("div");
+    hoja.className = "hoja";
+    hoja.style.cssText = "left:" + (paginas.length * G.Sw) + "px;width:" + G.Sw + "px;height:" + G.H + "px";
+    const pag = document.createElement("div");
+    pag.className = "pag";
+    pag.style.cssText = "width:" + LW + "px;height:" + G.LH + "px;transform:scale(" + G.k + ")";
+    const cu = document.createElement("div");
+    cu.className = "cuerpo";
+    cu.style.height = (G.LH - 34 - 56) + "px";
+    const num = document.createElement("div");
+    num.className = "num"; num.textContent = paginas.length + 1;
+    pag.append(cu, num); hoja.appendChild(pag); pista.appendChild(hoja);
+    const o = { hoja, cu };
+    paginas.push(o);
+    return o;
+  };
+  let pg = nueva();
+  const desborda = () => pg.cu.scrollHeight > pg.cu.clientHeight + 1;
+  secs.forEach(sc => {
+    if (sc.salto && pg.cu.children.length) pg = nueva();
+    let cont = crearCont(sc, false), puestas = 0;
+    pg.cu.appendChild(cont);
+    const bloques = [];
+    sc.unidades.forEach(un => {
+      const ult = bloques[bloques.length - 1];
+      if (ult && ult[0].t === un.t) ult.push(un); else bloques.push([un]);
+    });
+    bloques.forEach(bl => {
+      bl.forEach(un => {
+        un.n.classList.add("u"); un.n.classList.remove("on");
+        un.subs.forEach(sb => { sb.n.classList.add("u"); sb.n.classList.remove("on"); });
+        cont.appendChild(un.n);
+      });
+      bl.forEach(un => ajustar(un.n));
+      if (desborda()) {
+        bl.forEach(un => cont.removeChild(un.n));
+        if (!puestas) pg.cu.removeChild(cont);
+        if (pg.cu.children.length) pg = nueva();
+        cont = crearCont(sc, puestas > 0);
+        pg.cu.appendChild(cont);
+        bl.forEach(un => cont.appendChild(un.n));
+        bl.forEach(un => ajustar(un.n));
+      }
+      puestas += bl.length;
+      const pi = paginas.indexOf(pg);
+      bl.forEach(un => {
+        unidades.push({ u: un.n, cont, pag: pi, t: un.t, on: false });
+        un.subs.forEach(sb => unidades.push({ u: sb.n, cont, pag: pi, t: sb.t, on: false }));
+      });
+    });
+  });
+  libro = { unidades, paginas, T: secs.T };
+}
+
+function aplicar(anim) {
+  const U = libro.unidades;
+  s = Math.max(0, Math.min(s, libro.T));
+  const conts = new Map();
+  U.forEach((o, i) => {
+    const on = o.t <= s;
+    if (on !== o.on) {
+      o.on = on;
+      if (on) { o.u.classList.remove("rapido"); o.u.classList.add("on"); }
+      else { o.u.classList.add("rapido"); o.u.classList.remove("on"); }
+    }
+    if (on) conts.set(o.cont, true); else if (!conts.has(o.cont)) conts.set(o.cont, false);
+  });
+  conts.forEach((v, c) => {
+    if (v) { c.classList.remove("rapido"); c.classList.add("on"); }
+    else { c.classList.add("rapido"); c.classList.remove("on"); }
+  });
+  let p = 0;
+  U.forEach(o => { if (o.t <= s) p = Math.max(p, o.pag); });
+  const L = Math.max(p - 1, 0);
+  const pista = $("pista");
+  pista.classList.toggle("anim", !!anim);
+  pista.style.transform = "translateX(" + (-L * G.Sw) + "px)";
+  if (anim && L > Lprev) {
+    const h = libro.paginas[p].hoja;
+    h.classList.remove("gira"); void h.offsetWidth; h.classList.add("gira");
+    setTimeout(() => h.classList.remove("gira"), 1000);
+  }
+  Lprev = L;
+  const n = libro.T;
+  $("contador").textContent = EJERCICIOS[actual].tab + " · " + s + " / " + n;
+  $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
+  $("btnAtras").disabled = (actual === 0 && s <= 1);
+  $("btnAdelante").disabled = (actual === EJERCICIOS.length - 1 && s === n);
+}
+
+function pintarPestanas() {
+  const nav = $("pestanas");
+  nav.innerHTML = "";
+  EJERCICIOS.forEach((e, i) => {
+    const b = document.createElement("button");
+    b.textContent = e.tab;
+    b.setAttribute("aria-selected", i === actual);
+    b.onclick = ev => { ev.stopPropagation(); cargar(i, false); };
+    nav.appendChild(b);
+  });
+  const sel = nav.querySelector('[aria-selected="true"]');
+  if (sel) sel.scrollIntoView({ inline: "center", block: "nearest" });
+}
+
+function construir() {
+  geometria();
+  const e = EJERCICIOS[actual];
+  const secs = extraer(e);
+  paginar(secs, e._T);
+}
+
+async function cargar(i, alFinal) {
+  const lib = $("libro");
+  lib.classList.add("fuera");
+  await new Promise(r => setTimeout(r, 200));
+  actual = i;
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  construir();
+  s = alFinal ? libro.T : 1;
+  Lprev = 0;
+  pintarPestanas();
+  aplicar(false);
+  lib.classList.remove("fuera");
+}
+
+function avanzar() {
+  if (s < libro.T) { s++; aplicar(true); }
+  else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
+}
+function retroceder() {
+  if (s > 1) { s--; aplicar(true); }
+  else if (actual > 0) cargar(actual - 1, true);
+}
+
+$("libro").addEventListener("click", ev => {
+  if (String(window.getSelection())) return;
+  if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
+});
+$("btnAtras").onclick = ev => { ev.stopPropagation(); retroceder(); };
+$("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
+$("tira").onclick = ev => {
+  ev.stopPropagation();
+  const r = $("tira").getBoundingClientRect();
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * libro.T));
+  aplicar(true);
+};
+document.addEventListener("keydown", ev => {
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
+  else if (ev.key === "Home") { s = 1; aplicar(true); }
+  else if (ev.key === "End") { s = libro.T; aplicar(true); }
+});
+let tRes = null;
+window.addEventListener("resize", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); Lprev = 0; aplicar(false); } }, 150);
+});
+
+window.addEventListener("load", () => cargar(0, false));
+</script>
+</body>
+</html>
