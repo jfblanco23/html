@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Regla de Ruffini: resolución paso a paso</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#1414E6; --rojo:#E01E1E; --gris:#666;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;color:var(--texto);cursor:pointer;
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:20px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+
+  html,body{overflow:hidden}
+  body{background:#fff}
+
+  /* barra superior */
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:0 14px;display:flex;gap:14px;align-items:center;font-size:.85rem;color:var(--gris)}
+  .barra-sup .tit{font-weight:bold;color:#333;white-space:nowrap}
+  .pestanas{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #333;color:#333}
+  .pestanas button[aria-selected="true"]{background:#333;color:#fff}
+
+  /* barra inferior: botones grandes (pizarra digital) y progreso */
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:.85rem;color:var(--gris)}
+  .progreso .tira{flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .nav{font:inherit;font-size:1.5rem;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:9.5em;text-align:right;white-space:nowrap}
+
+  /* el libro: dos páginas, separadas solo por una línea fina */
+  #libro{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:hidden;background:#fff;transition:opacity .25s ease}
+  #libro.fuera{opacity:0}
+  #pista{position:absolute;left:0;top:0;height:100%;will-change:transform}
+  #pista.anim{transition:transform .9s cubic-bezier(.65,.05,.25,1)}
+  .hoja{position:absolute;top:0;padding:6px 8px}
+  .pag{position:relative;background:#fff;transform-origin:0 0;padding:30px 40px 0}
+  .pag .cuerpo{display:flow-root;overflow:hidden}
+  .pag .num{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#bbb;font-size:.8rem}
+  #lomo{position:absolute;left:50%;top:14px;bottom:14px;width:0;border-left:1px solid #c9c9c9;pointer-events:none;z-index:2}
+  .hoja.gira .pag{animation:gira .9s ease both}
+  @keyframes gira{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#pista.anim{transition:none}.hoja.gira .pag{animation:none}}
+
+  /* lo que se va escribiendo */
+  .cont{opacity:0;transition:opacity .35s ease}
+  .cont.on{opacity:1}
+  .u{opacity:0;clip-path:inset(-40px 100% -40px -40px);transition:opacity .25s ease,clip-path .85s ease}
+  span.u{display:block}
+  .u.on{opacity:1;clip-path:inset(-40px -40px -40px -40px)}
+  .u.rapido,.cont.rapido{transition:none}
+  .u:not(.on),.cont:not(.on){pointer-events:none}
+  .cont.sigue{margin-top:0;padding-top:14px;border-top-left-radius:0;border-top-right-radius:0}
+  .fila-menores{display:flex;justify-content:space-around;align-items:center;gap:.4em;margin:.8em 0}
+  .fila-menores .sub{display:block}
+  h1{margin:0 0 6px;font-size:2.1rem;line-height:1.2}
+  h4{margin:16px 0 6px;font-size:1.18rem}
+
+  /* cajas verdes del modelo */
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:20px 20px 10px;margin:26px 0 14px}
+  .caja>.titulo{position:absolute;top:-13px;left:12px;background:var(--verde-titulo);color:#fff;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.92rem}
+  .caja.enunciado{color:var(--azul);margin-top:6px;padding-top:12px}
+  .caja p{margin:.3em 0 .5em}
+  .paso{margin:6px 0 10px}
+
+  .ec{display:flex;align-items:center;justify-content:center;gap:.5em;margin:.6em 0;flex-wrap:wrap}
+  .instr{color:var(--azul);border:1.5px solid #E6C200;border-radius:14px;padding:6px 16px;margin:10px 0;text-align:center}
+  .nota{color:var(--gris);font-size:.9em}
+  b.res{color:var(--rojo)}
+  .katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden}
+
+  /* esquema de Ruffini como en el cuaderno: divisores a la izquierda de la raya vertical,
+     una raya horizontal bajo cada fila de productos y el resto final en un recuadro rojo */
+  .ruf-diag{--wd:3.4em;position:relative;display:grid;width:max-content;max-width:100%;margin:1em auto .8em;
+    grid-template-columns:var(--wd) repeat(var(--L),var(--wd)) auto;font-variant-numeric:tabular-nums}
+  .ruf-diag::before{content:"";position:absolute;left:var(--wd);top:-.4em;bottom:-.4em;
+    border-left:2px solid #111;pointer-events:none}
+  .ruf-diag>div{min-height:1.8em;padding:.1em 0;text-align:center;line-height:1.5}
+  .ruf-diag>.linea{border-top:2px solid #111}
+  .ruf-diag>.dv{color:var(--azul);font-weight:bold;text-align:right;padding-right:.75em}
+  .ruf-diag>.lab{text-align:left;padding-left:1.2em;color:var(--gris);font-size:.8em;font-style:italic;
+    white-space:nowrap;align-self:center}
+  .ruf-diag>.btn-formula{text-align:left;padding-left:1.2em;white-space:nowrap;align-self:center}
+  .ruf-diag .cero{display:inline-block;border:2px solid var(--rojo);border-radius:3px;padding:0 .5em;
+    line-height:1.25;margin-top:.12em}
+  .ruf-diag .cero.mal{background:#FFE0E0;color:var(--rojo);font-weight:bold}
+  button.mini{font:inherit;font-size:.72em;padding:3px 12px;border-radius:9px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  button.mini:hover{background:var(--verde-fondo)}
+
+  /* botón para volver a terminar con Ruffini (cuando se ha elegido la fórmula) */
+  .ramas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:.8em 0 .4em}
+  .ramas button{font:inherit;font-size:.9em;padding:8px 18px;border-radius:12px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .ramas button:hover{background:var(--verde-fondo)}
+
+  /* prácticas interactivas */
+  #practica{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:auto;background:#fff;display:none;cursor:auto}
+  body.modo-practica #practica{display:block}
+  body.modo-practica #libro{display:none}
+  body.modo-practica .progreso .tira{visibility:hidden}
+  .pr{max-width:780px;margin:0 auto;padding:26px 24px 70px}
+  .pr .ruf-diag{margin:1.3em auto 1em;font-size:1.1em}
+  .prCtrl{display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center;justify-content:center;margin:.8em 0}
+  .prCtrl label{display:flex;align-items:center;gap:.5em}
+  .prCtrl input{font:inherit;width:4.4em;padding:5px 8px;text-align:center;border:2px solid #333;border-radius:8px}
+  .prCtrl input:focus{outline:3px solid #BFE7BF;border-color:#2e9e2e}
+  .pbtn{font:inherit;font-size:.9em;padding:7px 18px;border-radius:10px;cursor:pointer;
+    background:#2e9e2e;border:2px solid #2e9e2e;color:#fff}
+  .pbtn.sec{background:#fff;color:#2e9e2e}
+  .pbtn:disabled,.prCtrl input:disabled{opacity:.4;cursor:default}
+  .prMsg{min-height:3em;margin:.6em 0;padding:8px 14px;border-radius:10px;text-align:center;border:1.5px solid transparent}
+  .prMsg.ok{background:var(--verde-fondo);border-color:var(--verde-borde)}
+  .prMsg.mal{background:#FFECEC;border-color:var(--rojo)}
+  .prMsg.info{background:#F4F4F4;border-color:#ddd}
+  .pestanas button.prac{border-color:#2e9e2e;color:#2e9e2e}
+  .pestanas button.prac[aria-selected="true"]{background:#2e9e2e;color:#fff}
+  @media (max-width:560px){
+    .ruf-diag{--wd:2.5em}
+    .pr{padding:18px 12px 70px}
+    .pr .ruf-diag{font-size:.85em}
+    .ruf-diag>.lab{padding-left:.6em}
+    .pr h1{font-size:1.7rem}
+  }
+</style>
+</head>
+<body>
+<div class="barra-sup">
+  <span class="tit">Regla de Ruffini</span>
+  <nav class="pestanas" id="pestanas" aria-label="Ejercicios"></nav>
+</div>
+<div id="libro"><div id="pista"></div><div id="lomo"></div></div>
+<div id="practica" aria-label="Prácticas interactivas"></div>
+<div id="stage" style="position:absolute;left:-99999px;top:0;width:720px;visibility:hidden"></div>
+<div class="progreso">
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
+  <span id="contador"></span>
+</div>
+
+<script>
+/* ---------------------------------------------------------------------
+   Utilidades de LaTeX y de Ruffini
+   --------------------------------------------------------------------- */
+const dsp = x => '$$' + x + '$$';
+const inl = x => '$' + x + '$';
+const ec = (...partes) => '<div class="ec">' + partes.join('') + '</div>';
+const par = n => n < 0 ? '(' + n + ')' : String(n);
+const neg = n => n === 0 ? '0' : (n > 0 ? '-' + n : '-(' + n + ')');
+const mn = v => String(v).replace('-', '\u2212');
+
+function polyTex(c) {
+  const n = c.length - 1;
+  let s = '';
+  c.forEach((a, i) => {
+    const k = n - i;
+    if (a === 0) return;
+    const abs = Math.abs(a);
+    let t = (abs === 1 && k > 0) ? '' : String(abs);
+    if (k > 0) t += 'x' + (k > 1 ? '^{' + k + '}' : '');
+    s += (a < 0 ? '-' : (s ? '+' : '')) + t;
+  });
+  return s || '0';
+}
+const facTex = r => r === 0 ? 'x' : (r > 0 ? '(x-' + r + ')' : '(x+' + (-r) + ')');
+function ruffiniCalc(c, r) {
+  const res = [c[0]];
+  for (let i = 1; i < c.length; i++) res.push(c[i] + r * res[i - 1]);
+  return res;
+}
+const sg = v => v === 0 ? '0' : (v > 0 ? '+' + v : '−' + (-v));
+
+/* Esquema de Ruffini como en el cuaderno: la fila de coeficientes de P y, debajo, una división por cada
+   raíz de `raices` (divisor a la izquierda, fila de productos, raya y fila de resultados; el último
+   resultado, el resto, va en un recuadro rojo). A la derecha se indica el grado de cada fila.
+   Cada celda lleva data-g: las celdas con el mismo número salen en el mismo clic.
+     opt.desde: las divisiones anteriores a este índice se dibujan fijas (sin pasos)
+     opt.boton: junto al cociente de grado 2 añade el botón "Resolver con la fórmula" */
+function rufDiag(P, raices, opt) {
+  opt = opt || {};
+  const desde = opt.desde || 0;
+  const L = P.length;
+  const cel = (txt, cls, g) =>
+    '<div' + ((cls || g) ? ' class="' + [cls, g ? 'sub' : ''].filter(Boolean).join(' ') + '"' : '') +
+    (g ? ' data-g="' + g + '"' : '') + '>' + txt + '</div>';
+  let h = cel('') + P.map(v => cel(sg(v))).join('') + cel('grado ' + (L - 1), 'lab');
+  let cur = P.slice(), g = 0;
+  raices.forEach((r, k) => {
+    const res = ruffiniCalc(cur, r), m = cur.length;
+    const anim = k >= desde;
+    const g0 = anim ? g + 1 : 0;
+    const G = j => anim ? g0 + j : 0;
+    /* fila de productos: divisor a la izquierda y cada producto bajo su columna */
+    h += cel(sg(r), 'dv', G(0));
+    for (let c = 1; c <= L; c++) h += (c >= 2 && c <= m) ? cel(sg(r * res[c - 2]), '', G(c - 1)) : cel('');
+    h += (opt.boton && k > 0 && m === 3)
+      ? cel('<button type="button" class="mini" title="Resolver la ecuación de 2.º grado con la fórmula" onclick="elegir(event)">Resolver con la fórmula</button>', 'btn-formula', g)
+      : cel('');
+    /* fila de resultados, bajo la raya */
+    h += cel('', 'linea', G(0));
+    for (let c = 1; c <= L; c++) {
+      if (c <= m) {
+        const j = c - 1;
+        h += cel(j === m - 1
+          ? '<span class="cero' + (res[j] !== 0 ? ' mal' : '') + '">' + sg(res[j]) + '</span>'
+          : sg(res[j]), 'linea', G(j));
+      } else h += cel('');
+    }
+    h += cel('grado ' + (m - 2), 'lab', G(m - 1));
+    if (anim) g = g0 + m - 1;
+    cur = res.slice(0, -1);
+  });
+  return '<div class="ruf-diag" style="--L:' + L + '">' + h + '</div>';
+}
+const divisores = n => { n = Math.abs(n); const d = []; for (let i = 1; i <= n; i++) if (n % i === 0) d.push(i); return d; };
+const divTex = n => divisores(n).map(d => '\\pm' + d).join(',\\ ');
+const nombreMult = m => m === 1 ? '' : m === 2 ? '\\text{ (doble)}' : m === 3 ? '\\text{ (triple)}' : '\\text{ (multiplicidad ' + m + ')}';
+function agrupar(roots) {
+  const m = new Map();
+  roots.forEach(r => m.set(r, (m.get(r) || 0) + 1));
+  return [...m];
+}
+
+/* botón que vuelve a terminar con Ruffini cuando se ha elegido la fórmula de 2.º grado */
+const ramasHTML = () =>
+  '<div class="ramas"><button type="button" onclick="elegir(event)">Seguir con Ruffini hasta el final</button></div>';
+
+/* ---------------------------------------------------------------------
+   Construye los pasos de un ejercicio. cfg:
+     coefs: coeficientes de la ecuación (grado descendente)
+     div:   divide toda la ecuación entre este número (opcional)
+     fx:    nº de factores x que se sacan factor común (opcional)
+     ruf:   raíces con las que se aplica Ruffini hasta llegar a grado 2
+   rama: 'formula' para resolver la ecuación de 2.º grado con la fórmula;
+         en cualquier otro caso todo se hace con Ruffini (si se puede)
+   --------------------------------------------------------------------- */
+function pasosEj(cfg, rama) {
+  const pasos = [], roots = [];
+  let P = cfg.coefs.slice();
+
+  if (cfg.div) {
+    P = P.map(v => v / cfg.div);
+    pasos.push({ titulo: 'Simplificamos la ecuación',
+      html: '<p>Todos los coeficientes son múltiplos de ' + inl(cfg.div) + '; dividimos la ecuación entre ' + inl(cfg.div) + ':</p>' +
+            dsp(polyTex(P) + '=0') });
+  }
+
+  if (cfg.fx) {
+    if (P.slice(P.length - cfg.fx).some(v => v !== 0)) throw new Error('Factor común incorrecto en ' + cfg.label);
+    const Q = P.slice(0, P.length - cfg.fx);
+    const xk = cfg.fx === 1 ? 'x' : 'x^{' + cfg.fx + '}';
+    pasos.push({ titulo: 'Sacamos factor común',
+      html: '<p>Todos los términos contienen ' + inl(xk) + ', así que lo sacamos factor común:</p>' +
+            dsp(xk + '\\,\\left(' + polyTex(Q) + '\\right)=0') +
+            '<p>Un producto vale ' + inl('0') + ' cuando alguno de sus factores vale ' + inl('0') + '. De ' + inl(xk + '=0') +
+            ' obtenemos ' + inl('x=0') + (cfg.fx > 1 ? ' (doble)' : '') + '. Nos queda resolver:</p>' +
+            dsp(polyTex(Q) + '=0') });
+    for (let i = 0; i < cfg.fx; i++) roots.push(0);
+    P = Q;
+  }
+
+  /* todas las divisiones de Ruffini van en un único cuadro, sin texto entre medias */
+  const raices = cfg.ruf;
+  let Q = P.slice();
+  raices.forEach(r => {
+    const res = ruffiniCalc(Q, r);
+    if (res[res.length - 1] !== 0) throw new Error('Ruffini no exacto en ' + cfg.label + ' con x=' + r);
+    Q = res.slice(0, -1);
+  });
+  if (Q.length !== 3) throw new Error('No se llega a grado 2 en ' + cfg.label);
+  const [a, b, c] = Q;
+  const D = b * b - 4 * a * c, sq = Math.sqrt(D);
+  /* ¿se puede seguir con Ruffini? solo si la ecuación de 2.º grado tiene raíces enteras */
+  const enteras = D >= 0 && Number.isInteger(sq) && (-b + sq) % (2 * a) === 0 && (-b - sq) % (2 * a) === 0;
+  const x1 = enteras ? (-b + sq) / (2 * a) : null, x2 = enteras ? (-b - sq) / (2 * a) : null;
+  const porFormula = !enteras || rama === 'formula';      // por defecto, todo por Ruffini
+  let lin = null;
+  if (!porFormula) {
+    const res = ruffiniCalc(Q, x1);
+    if (res[res.length - 1] !== 0) throw new Error('Ruffini final no exacto en ' + cfg.label);
+    lin = res.slice(0, -1);
+    if (-lin[1] / lin[0] !== x2) throw new Error('Raíces inconsistentes en ' + cfg.label);
+  }
+
+  /* todas las divisiones de Ruffini van apiladas en un único esquema, como en el cuaderno;
+     cada clic escribe el siguiente paso */
+  const tablaRaices = porFormula ? raices : raices.concat([x1, x2]);
+  const probar = tablaRaices.map(r => inl('x=' + r)).join(', después con ');
+  const factores = tablaRaices.map(facTex).join('');
+  const cierre = porFormula
+    ? '<p>Todos los restos son ' + inl('0') + '. El último cociente es ' + inl(polyTex(Q)) + ' y la ecuación queda ' +
+      inl(factores + '\\left(' + polyTex(Q) + '\\right)=0') + '.</p>'
+    : '<p>Todos los restos son ' + inl('0') + ' (los recuadros rojos). Los números de la izquierda son las raíces, así que la ecuación queda factorizada:</p>' +
+      dsp(factores + '=0');
+  const nota = porFormula ? ''
+    : '<p class="nota">Al llegar al cociente de grado 2 puedes pulsar el botón para resolverlo con la fórmula, o seguir con Ruffini hasta el final.</p>';
+  const aviso = (enteras && porFormula)
+    ? '<p class="instr">Hemos parado en el cociente de grado 2 para resolverlo con la fórmula. Pulsa el botón si prefieres terminar con Ruffini.</p>' + ramasHTML()
+    : '';
+  pasos.push({ titulo: 'Aplicamos la regla de Ruffini',
+    html: '<p>El término independiente es ' + inl(P[P.length - 1]) + ', cuyos divisores son ' + inl(divTex(P[P.length - 1])) +
+          '. Probamos con ' + probar + ':</p>' + nota +
+          rufDiag(P, tablaRaices, { boton: !porFormula }) + cierre + aviso });
+  raices.forEach(r => roots.push(r));
+
+  /* ---- ecuación de segundo grado con la fórmula ---- */
+  if (porFormula) {
+    let h = '<p>Nos queda ' + inl(polyTex(Q) + '=0') + '. Para ' + inl('ax^2+bx+c=0') + ' las soluciones son:</p>' +
+            dsp('x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}') +
+            '<p>En nuestra ecuación ' + inl('a=' + a) + ', ' + inl('b=' + b) + ', ' + inl('c=' + c) + '. Sustituimos:</p>' +
+            dsp('x=\\frac{' + neg(b) + '\\pm\\sqrt{' + par(b) + '^2-4\\cdot' + par(a) + '\\cdot' + par(c) + '}}{2\\cdot' + par(a) + '}');
+    if (D < 0) {
+      h += dsp('x=\\frac{' + (-b) + '\\pm\\sqrt{' + D + '}}{' + 2 * a + '}') +
+           '<p>El discriminante es negativo, así que ' + inl(polyTex(Q) + '=0') + ' no tiene soluciones reales.</p>';
+    } else if (!enteras) {
+      h += dsp('x=\\frac{' + (-b) + '\\pm\\sqrt{' + D + '}}{' + 2 * a + '}') +
+           '<p>Las soluciones no son enteras, así que aquí no se puede seguir con Ruffini.</p>';
+    } else if (D === 0) {
+      h += dsp('x=\\frac{' + (-b) + '\\pm\\sqrt{' + D + '}}{' + 2 * a + '}=\\frac{' + (-b) + '\\pm' + sq + '}{' + 2 * a + '}') +
+           '<p>El discriminante vale ' + inl('0') + ', así que solo hay una solución (raíz doble):</p>' + dsp('x=' + x1);
+      roots.push(x1, x1);
+    } else {
+      h += dsp('x=\\frac{' + (-b) + '\\pm\\sqrt{' + D + '}}{' + 2 * a + '}=\\frac{' + (-b) + '\\pm' + sq + '}{' + 2 * a + '}') +
+           '<p>Separamos las dos soluciones:</p>' +
+           dsp('x_1=\\frac{' + (-b) + '+' + sq + '}{' + 2 * a + '}=' + x1 + '\\qquad x_2=\\frac{' + (-b) + '-' + sq + '}{' + 2 * a + '}=' + x2);
+      roots.push(x1, x2);
+    }
+    pasos.push({ titulo: 'Aplicamos la fórmula de la ecuación de segundo grado', html: h });
+  } else {
+    roots.push(x1, x2);
+  }
+
+  /* ---- soluciones ---- */
+  const grupos = agrupar(roots);
+  const lead = cfg.coefs[0] === 1 ? '' : String(cfg.coefs[0]);
+  const fact = grupos.map(([r, m]) => facTex(r) + (m > 1 ? '^{' + m + '}' : '')).join('');
+  const partes = grupos.map(([r, m]) => 'x=' + r + nombreMult(m));
+  let extra = '';
+  if (!enteras) {
+    if (D < 0) extra = '<p>El factor ' + inl(polyTex(Q)) + ' no tiene raíces reales.</p>';
+    else partes.push('x=\\frac{' + (-b) + '+\\sqrt{' + D + '}}{' + 2 * a + '}', 'x=\\frac{' + (-b) + '-\\sqrt{' + D + '}}{' + 2 * a + '}');
+  }
+  pasos.push({ caja: 'Soluciones',
+    html: (enteras ? '<p>La ecuación queda completamente factorizada:</p>' + dsp(lead + fact + '=0') : '') +
+          '<p>Igualando a ' + inl('0') + ' cada factor, las soluciones son:</p>' +
+          dsp('\\color{#E01E1E}{' + partes.join(',\\quad ') + '}') + extra });
+  return pasos;
+}
+
+/* =====================================================================
+   EJERCICIOS
+   ===================================================================== */
+const CFGS = [
+  { label: 'a)', coefs: [1, -2, -3, 4, 4],        ruf: [2, 2] },
+  { label: 'b)', coefs: [1, 3, -1, -3, 0],        fx: 1, ruf: [1] },
+  { label: 'c)', coefs: [2, 6, -6, -14, 12],      div: 2, ruf: [1, 1] },
+  { label: 'd)', coefs: [1, 1, -11, -9, 18],      ruf: [1, -2] },
+  { label: 'e)', coefs: [1, 6, 11, 6, 0],         fx: 1, ruf: [-1] },
+  { label: 'f)', coefs: [1, 1, -5, 3, 0, 0],      fx: 2, ruf: [1] }
+];
+const EJERCICIOS = CFGS.map(cfg => ({
+  titulo: 'Ejercicio ' + cfg.label,
+  enunciado: '<p>Resuelve la siguiente ecuación utilizando la regla de Ruffini:</p>' + dsp(polyTex(cfg.coefs) + '=0'),
+  pasosFn: rama => pasosEj(cfg, rama)
+}));
+
+/* ===================================================================== */
+const OPCIONES_MATE = {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "$",  right: "$",  display: false}
+  ],
+  throwOnError: false
+};
+const $ = id => document.getElementById(id);
+function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
+
+/* ---------------------------------------------------------------------
+   MOTOR DEL LIBRO
+   - Cada ejercicio se trocea en "unidades" (un párrafo, una fórmula, una
+     tabla...). Cada clic escribe la siguiente unidad.
+   - Las unidades se reparten en páginas de tamaño fijo (como un libro).
+   - Se ven dos páginas. Cuando se llena la de la derecha, pasa a ser la
+     de la izquierda y aparece una página nueva a la derecha.
+   --------------------------------------------------------------------- */
+const LW = 800;                     // ancho lógico de una página (px)
+let actual = 0;                     // ejercicio activo
+let s = 0;                          // unidades escritas
+let G = {};                         // geometría
+let libro = null;                   // {unidades, paginas}
+let Lprev = 0;
+
+function geometria() {
+  const W = $("libro").clientWidth, H = $("libro").clientHeight;
+  const Sw = W / 2, k = (Sw - 20) / LW;
+  G = { W, H, Sw, k, LH: (H - 20) / k };
+}
+
+/* trocea un ejercicio en secciones y unidades */
+function extraer(e) {
+  if (e._sec) return e._sec;
+  const stage = $("stage"), secs = [];
+  const add = (tipo, cab, html, salto, mismo) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    stage.appendChild(d);
+    mate(d);
+    const unidades = [];
+    d.childNodes.forEach(n => {
+      if (n.nodeType === 1) unidades.push(n);
+      else if (n.nodeType === 3 && n.textContent.trim()) {
+        const sp = document.createElement("span"); sp.textContent = n.textContent; unidades.push(sp);
+      }
+    });
+    let cabHTML = null;
+    if (cab) { const c = document.createElement("div"); c.innerHTML = cab; mate(c); cabHTML = c.innerHTML; }
+    secs.push({ tipo, cabHTML, unidades, salto: !!salto, mismo: !!mismo });
+  };
+  add("titulo", null, "<h1>" + e.titulo + "</h1>");
+  add("enun", null, e.enunciado, false, true);      // título y enunciado salen juntos con un clic
+  const pasos = e.pasosFn ? e.pasosFn(e._rama) : e.pasos;
+  pasos.forEach(p => add(p.caja ? "caja" : "paso", p.caja || p.titulo, p.html, p.caja && /^Si /.test(p.caja)));
+  stage.innerHTML = "";
+  /* un "tic" = un clic. Cada sección es un bloque; dentro de una fila de menores
+     (.fila-menores) cada .sub sale con su propio clic, y en un esquema de Ruffini
+     (.ruf-diag) salen juntas las celdas que tienen el mismo data-g */
+  let base = 0;
+  secs.forEach(sc => {
+    let cur = sc.mismo ? base : base + 1, nuevo = false;
+    sc.unidades = sc.unidades.map(n => {
+      if (nuevo) { cur++; nuevo = false; }
+      const o = { n, t: cur, subs: [] };
+      if (n.classList && (n.classList.contains("fila-menores") || n.classList.contains("ruf-diag"))) {
+        const base0 = cur;
+        let maxg = 0;
+        n.querySelectorAll(".sub").forEach(sb => {
+          const gi = sb.dataset.g === undefined ? ++maxg : Number(sb.dataset.g);
+          if (gi > maxg) maxg = gi;
+          o.subs.push({ n: sb, t: base0 + gi });
+        });
+        cur = base0 + maxg;
+        nuevo = true;
+      }
+      return o;
+    });
+    base = cur;
+  });
+  e._T = base;
+  e._sec = secs;
+  return secs;
+}
+
+function crearCont(sc, sigue) {
+  const c = document.createElement("div");
+  c.className = "cont";
+  if (sc.tipo === "caja") {
+    c.classList.add("caja");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", '<span class="titulo">' + sc.cabHTML + "</span>");
+  } else if (sc.tipo === "paso") {
+    c.classList.add("paso");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", "<h4>" + sc.cabHTML + "</h4>");
+  } else if (sc.tipo === "enun") {
+    c.classList.add("caja", "enunciado");
+  }
+  if (sigue) c.classList.add("sigue");
+  return c;
+}
+
+/* una fórmula más ancha que la página se reduce hasta caber */
+function ajustar(u) {
+  if (u.classList && (u.classList.contains("fila-menores") || u.classList.contains("ruf-diag"))) {
+    u.style.zoom = "";
+    if (u.scrollWidth > u.clientWidth + 2) u.style.zoom = String(Math.max(.55, u.clientWidth / u.scrollWidth * .97));
+  }
+  u.querySelectorAll(".katex-display").forEach(d => {
+    const k = d.firstElementChild;
+    if (!k) return;
+    k.style.zoom = "";
+    if (d.scrollWidth > d.clientWidth + 2) k.style.zoom = String(Math.max(.55, d.clientWidth / d.scrollWidth * .98));
+  });
+}
+
+/* reparte las unidades en páginas del tamaño actual */
+function paginar(secs, T) {
+  secs.T = T;
+  const pista = $("pista");
+  pista.innerHTML = "";
+  const paginas = [], unidades = [];
+  const nueva = () => {
+    const hoja = document.createElement("div");
+    hoja.className = "hoja";
+    hoja.style.cssText = "left:" + (paginas.length * G.Sw) + "px;width:" + G.Sw + "px;height:" + G.H + "px";
+    const pag = document.createElement("div");
+    pag.className = "pag";
+    pag.style.cssText = "width:" + LW + "px;height:" + G.LH + "px;transform:scale(" + G.k + ")";
+    const cu = document.createElement("div");
+    cu.className = "cuerpo";
+    cu.style.height = (G.LH - 34 - 56) + "px";
+    const num = document.createElement("div");
+    num.className = "num"; num.textContent = paginas.length + 1;
+    pag.append(cu, num); hoja.appendChild(pag); pista.appendChild(hoja);
+    const o = { hoja, cu };
+    paginas.push(o);
+    return o;
+  };
+  let pg = nueva();
+  const desborda = () => pg.cu.scrollHeight > pg.cu.clientHeight + 1;
+  secs.forEach(sc => {
+    if (sc.salto && pg.cu.children.length) pg = nueva();
+    let cont = crearCont(sc, false), puestas = 0;
+    pg.cu.appendChild(cont);
+    /* un bloque (lo que sale con un clic) nunca se parte entre dos páginas */
+    const bloques = [];
+    sc.unidades.forEach(un => {
+      const ult = bloques[bloques.length - 1];
+      if (ult && ult[0].t === un.t) ult.push(un); else bloques.push([un]);
+    });
+    bloques.forEach(bl => {
+      bl.forEach(un => {
+        un.n.classList.add("u"); un.n.classList.remove("on");
+        un.subs.forEach(sb => { sb.n.classList.add("u"); sb.n.classList.remove("on"); });
+        cont.appendChild(un.n);
+      });
+      bl.forEach(un => ajustar(un.n));
+      if (desborda()) {
+        bl.forEach(un => cont.removeChild(un.n));
+        if (!puestas) pg.cu.removeChild(cont);
+        if (pg.cu.children.length) pg = nueva();     // página nueva solo si la actual ya tiene algo
+        cont = crearCont(sc, puestas > 0);
+        pg.cu.appendChild(cont);
+        bl.forEach(un => cont.appendChild(un.n));
+        bl.forEach(un => ajustar(un.n));
+      }
+      puestas += bl.length;
+      const pi = paginas.indexOf(pg);
+      bl.forEach(un => {
+        unidades.push({ u: un.n, cont, pag: pi, t: un.t, on: false });
+        un.subs.forEach(sb => unidades.push({ u: sb.n, cont, pag: pi, t: sb.t, on: false }));
+      });
+    });
+  });
+  libro = { unidades, paginas, T: secs.T };
+}
+
+/* pone al día lo que se ve según s */
+function aplicar(anim) {
+  const U = libro.unidades;
+  s = Math.max(0, Math.min(s, libro.T));
+  const conts = new Map();
+  U.forEach((o, i) => {
+    const on = o.t <= s;
+    if (on !== o.on) {
+      o.on = on;
+      if (on) { o.u.classList.remove("rapido"); o.u.classList.add("on"); }
+      else { o.u.classList.add("rapido"); o.u.classList.remove("on"); }
+    }
+    if (on) conts.set(o.cont, true); else if (!conts.has(o.cont)) conts.set(o.cont, false);
+  });
+  conts.forEach((v, c) => {
+    if (v) { c.classList.remove("rapido"); c.classList.add("on"); }
+    else { c.classList.add("rapido"); c.classList.remove("on"); }
+  });
+  let p = 0;
+  U.forEach(o => { if (o.t <= s) p = Math.max(p, o.pag); });
+  const L = Math.max(p - 1, 0);
+  const pista = $("pista");
+  pista.classList.toggle("anim", !!anim);
+  pista.style.transform = "translateX(" + (-L * G.Sw) + "px)";
+  if (anim && L > Lprev) {
+    const h = libro.paginas[p].hoja;
+    h.classList.remove("gira"); void h.offsetWidth; h.classList.add("gira");
+    setTimeout(() => h.classList.remove("gira"), 1000);
+  }
+  Lprev = L;
+  const n = libro.T;
+  $("contador").textContent = EJERCICIOS[actual].titulo + " · " + s + " / " + n;
+  $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
+  $("btnAtras").disabled = (actual === 0 && s <= 1);
+  $("btnAdelante").disabled = false;      // tras el último ejercicio vienen las prácticas
+}
+
+function pintarPestanas() {
+  const nav = $("pestanas");
+  nav.innerHTML = "";
+  EJERCICIOS.forEach((e, i) => {
+    const b = document.createElement("button");
+    b.textContent = e.titulo.replace("Ejercicio ", "Ej. ");
+    b.setAttribute("aria-selected", modo === "libro" && i === actual);
+    b.onclick = ev => { ev.stopPropagation(); cargar(i, false); };
+    nav.appendChild(b);
+  });
+  PRACTICAS.forEach((p, i) => {
+    const b = document.createElement("button");
+    b.className = "prac";
+    b.textContent = "Práctica " + (i + 1);
+    b.setAttribute("aria-selected", modo === "practica" && i === pr);
+    b.onclick = ev => { ev.stopPropagation(); cargarPractica(i); };
+    nav.appendChild(b);
+  });
+  const sel = nav.querySelector('[aria-selected="true"]');
+  if (sel) sel.scrollIntoView({ inline: "center", block: "nearest" });
+}
+
+function construir() {
+  geometria();
+  const e = EJERCICIOS[actual];
+  const secs = extraer(e);
+  paginar(secs, e._T);
+}
+
+async function cargar(i, alFinal) {
+  const lib = $("libro");
+  lib.classList.add("fuera");
+  modo = "libro"; prLimpiar();
+  document.body.classList.remove("modo-practica");
+  await new Promise(r => setTimeout(r, 200));
+  actual = i;
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  construir();
+  s = alFinal ? libro.T : 1;          // al abrir un ejercicio ya se ve el enunciado
+  Lprev = 0;
+  pintarPestanas();
+  aplicar(false);
+  lib.classList.remove("fuera");
+}
+
+function avanzar() {
+  if (modo === "practica") { if (pr < PRACTICAS.length - 1) cargarPractica(pr + 1); return; }
+  if (s < libro.T) { s++; aplicar(true); }
+  else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
+  else cargarPractica(0);
+}
+function retroceder() {
+  if (modo === "practica") { if (pr > 0) cargarPractica(pr - 1); else cargar(EJERCICIOS.length - 1, true); return; }
+  if (s > 1) { s--; aplicar(true); }
+  else if (actual > 0) cargar(actual - 1, true);
+}
+
+/* Botón de la ecuación de segundo grado: por defecto todo se hace con Ruffini; el botón junto al
+   cociente de grado 2 pasa a la fórmula y, desde ahí, "Seguir con Ruffini" vuelve a Ruffini.
+   Se rehacen los pasos del ejercicio con el método elegido y se continúa donde se estaba. */
+function elegir(ev) {
+  ev.stopPropagation();
+  ev.currentTarget.blur();
+  const e = EJERCICIOS[actual];
+  const aFormula = e._rama !== 'formula';
+  e._rama = aFormula ? 'formula' : 'ruffini';
+  e._sec = null;
+  construir();
+  Lprev = 0;
+  const o = libro.unidades.find(x => x.u.matches && x.u.matches(aFormula ? '.ramas' : '.btn-formula'));
+  s = o ? o.t : s;
+  aplicar(false);
+  avanzar();
+}
+
+/* clic: tercio izquierdo = atrás; resto = adelante */
+$("libro").addEventListener("click", ev => {
+  if (ev.target.closest("button")) return;
+  if (String(window.getSelection())) return;
+  if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
+});
+$("btnAtras").onclick = ev => { ev.stopPropagation(); retroceder(); };
+$("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
+$("tira").onclick = ev => {
+  ev.stopPropagation();
+  const r = $("tira").getBoundingClientRect();
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * libro.T));
+  aplicar(true);
+};
+document.addEventListener("keydown", ev => {
+  if (modo === "practica") return;
+  if (ev.target.closest && ev.target.closest("button") && [" ", "Enter"].includes(ev.key)) return;
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
+  else if (ev.key === "Home") { s = 1; aplicar(true); }
+  else if (ev.key === "End") { s = libro.T; aplicar(true); }
+});
+let tRes = null;
+window.addEventListener("resize", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro && modo === "libro") { construir(); Lprev = 0; aplicar(false); } }, 150);
+});
+
+/* ---------------------------------------------------------------------
+   PRÁCTICAS INTERACTIVAS
+   El alumno escribe un número y se hace la división de Ruffini con él. Si el resto es 0
+   la división se queda y se sigue con el cociente; si no, se muestra un momento y se
+   borra para que pruebe con otro número. Se acaba cuando solo queda el 1 y todos los
+   restos han sido 0.
+   --------------------------------------------------------------------- */
+const PRACTICAS = [
+  { coefs: [1, -6, 11, -6] },          // (x-1)(x-2)(x-3)
+  { coefs: [1, 3, -6, -8, 0] },        // x(x+1)(x-2)(x+4)
+  { coefs: [1, -1, -7, 1, 6] },        // (x+2)(x+1)(x-1)(x-3)
+  { coefs: [1, -3, -3, 11, -6] }       // (x-1)^2 (x-3)(x+2)
+];
+let modo = "libro", pr = 0, PS = null, prTimers = [];
+const prLimpiar = () => { prTimers.forEach(clearTimeout); prTimers = []; };
+const prEsp = (f, ms) => prTimers.push(setTimeout(f, ms));
+
+function msg(html, cls) {
+  const m = $("prMsg");
+  m.className = "prMsg " + (cls || "info");
+  m.innerHTML = html;
+  mate(m);
+}
+function pintarDiag(intento) {
+  const raices = intento === undefined ? PS.hechas : PS.hechas.concat([intento]);
+  $("prDiag").innerHTML = rufDiag(PS.P0, raices, { desde: PS.hechas.length });
+}
+function setCtrl(on) {
+  ["prIn", "prProbar", "prPista"].forEach(id => { $(id).disabled = !on; });
+}
+
+function iniciarPractica(i) {
+  prLimpiar();
+  pr = i;
+  const co = PRACTICAS[i].coefs;
+  PS = { P0: co.slice(), cur: co.slice(), hechas: [], busy: false, fin: false };
+  const root = $("practica");
+  root.innerHTML =
+    '<div class="pr">' +
+    '<h1>Práctica ' + (i + 1) + '</h1>' +
+    '<div class="caja enunciado"><p>Encuentra todas las raíces de la ecuación utilizando la regla de Ruffini:</p>' +
+      dsp(polyTex(co) + '=0') + '</div>' +
+    '<p class="nota">Escribe un número y pulsa «Probar». Si el resto es 0, la división se queda y sigues con el cociente; ' +
+      'si no, la división se borra y puedes probar con otro número. Si una raíz es doble, vuelve a probarla.</p>' +
+    '<div id="prDiag"></div>' +
+    '<div class="prCtrl">' +
+      '<label>Probar con x = <input id="prIn" type="text" inputmode="numeric" autocomplete="off" maxlength="5" aria-label="Número a probar"></label>' +
+      '<button type="button" class="pbtn" id="prProbar">Probar</button>' +
+      '<button type="button" class="pbtn sec" id="prPista">Pista</button>' +
+      '<button type="button" class="pbtn sec" id="prReset">Empezar de nuevo</button>' +
+    '</div>' +
+    '<div id="prMsg" class="prMsg info" aria-live="polite"></div>' +
+    '<div id="prFin"></div>' +
+    '</div>';
+  mate(root);
+  root.scrollTop = 0;
+  pintarDiag();
+  $("prProbar").onclick = probar;
+  $("prPista").onclick = pista;
+  $("prReset").onclick = () => iniciarPractica(pr);
+  $("prIn").addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); probar(); } });
+  msg("Empieza probando con un divisor del término independiente. Si necesitas ayuda, pulsa «Pista».", "info");
+  $("prIn").focus({ preventScroll: true });
+}
+
+function pista() {
+  if (PS.busy || PS.fin) return;
+  const c = PS.cur[PS.cur.length - 1];
+  msg(c === 0
+    ? 'El término independiente de $' + polyTex(PS.cur) + '$ es $0$: ¡prueba con $x=0$!'
+    : 'Las raíces enteras son divisores del término independiente $' + c + '$: $' + divTex(c) + '$.', "info");
+}
+
+function probar() {
+  if (PS.busy || PS.fin) return;
+  const inp = $("prIn");
+  const txt = inp.value.trim().replace(/[−–—]/g, "-").replace(/^\+/, "");
+  if (!/^-?\d{1,4}$/.test(txt)) {
+    msg('Escribe un número entero, por ejemplo <b>2</b> o <b>−3</b>.', "info");
+    inp.select();
+    return;
+  }
+  const r = parseInt(txt, 10), m = PS.cur.length;
+  const res = ruffiniCalc(PS.cur, r), resto = res[m - 1], ok = resto === 0;
+  PS.busy = true;
+  setCtrl(false);
+  pintarDiag(r);
+  const celdas = [...$("prDiag").querySelectorAll(".sub")];
+  celdas.forEach(c => c.classList.add("u"));
+  msg('Probamos con $x=' + r + '$…', "info");
+  let j = 1;
+  const paso = () => {
+    celdas.filter(c => Number(c.dataset.g) === j).forEach(c => c.classList.add("on"));
+    if (j < m) { j++; prEsp(paso, 480); return; }
+    if (ok) bien(r, res); else mal(r, resto);
+  };
+  prEsp(paso, 150);
+}
+
+function bien(r, res) {
+  PS.hechas.push(r);
+  PS.cur = res.slice(0, -1);
+  PS.busy = false;
+  $("prIn").value = "";
+  if (PS.cur.length === 1) { terminar(); return; }
+  msg('¡Correcto! $x=' + r + '$ es raíz: el resto es $0$. Sigue con el cociente $' + polyTex(PS.cur) + '$.', "ok");
+  setCtrl(true);
+  $("prIn").focus({ preventScroll: true });
+}
+
+function mal(r, resto) {
+  msg('$x=' + r + '$ no es raíz: el resto es <b style="color:var(--rojo)">' + resto + '</b>, no $0$. ' +
+      'Se borra la división; prueba con otro número.', "mal");
+  prEsp(() => {
+    pintarDiag();                       // sin el intento: se queda lo que ya estaba bien
+    PS.busy = false;
+    $("prIn").value = "";
+    setCtrl(true);
+    $("prIn").focus({ preventScroll: true });
+    msg("Se ha borrado la división. Prueba con otro número; si necesitas ayuda, pulsa «Pista».", "info");
+  }, 2400);
+}
+
+function terminar() {
+  PS.fin = true;
+  setCtrl(false);
+  const grupos = agrupar(PS.hechas);
+  const fact = grupos.map(([x, k]) => facTex(x) + (k > 1 ? '^{' + k + '}' : '')).join('');
+  const sols = grupos.map(([x, k]) => 'x=' + x + nombreMult(k)).join(',\\quad ');
+  msg("¡Muy bien! Has completado el esquema: todos los restos son $0$.", "ok");
+  $("prFin").innerHTML =
+    '<div class="caja"><span class="titulo">Soluciones</span>' +
+    '<p>La ecuación queda factorizada:</p>' + dsp(fact + '=0') +
+    '<p>Las soluciones son:</p>' + dsp('\\color{#E01E1E}{' + sols + '}') + '</div>' +
+    '<div class="prCtrl"><button type="button" class="pbtn sec" onclick="iniciarPractica(pr)">Repetir</button>' +
+    (pr < PRACTICAS.length - 1 ? '<button type="button" class="pbtn" onclick="cargarPractica(pr+1)">Siguiente práctica ›</button>' : '') +
+    '</div>';
+  mate($("prFin"));
+  $("prFin").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function cargarPractica(i) {
+  modo = "practica";
+  document.body.classList.add("modo-practica");
+  iniciarPractica(i);
+  pintarPestanas();
+  $("contador").textContent = "Práctica " + (pr + 1) + " de " + PRACTICAS.length;
+  $("relleno").style.width = "0";
+  $("btnAtras").disabled = false;
+  $("btnAdelante").disabled = pr === PRACTICAS.length - 1;
+}
+
+window.addEventListener("load", () => cargar(0, false));
+</script>
+</body>
+</html>

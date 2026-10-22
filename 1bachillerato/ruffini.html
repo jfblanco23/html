@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Regla de Ruffini: hoja de ejercicios</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1f2328; --muted: #6b7280; --line: #e5e7eb;
+    --box: #f6f7f9; --accent: #2563eb; --ok: #15803d; --okbg: #ecfdf3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1b1e; --fg: #e8e9eb; --muted: #9aa0a6; --line: #34363b;
+      --box: #24262b; --accent: #7aa2ff; --ok: #5fd38d; --okbg: #1c2b22;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 17px/1.6 Georgia, "Times New Roman", serif;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: 40px 16px 80px; }
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 .3rem; }
+  .meta { color: var(--muted); font: 14px system-ui, sans-serif; margin-bottom: 1.2rem; }
+  .intro { margin-bottom: 1.6rem; }
+  h2 { font-size: 1.25rem; margin: 2rem 0 .6rem; }
+  .eq {
+    background: var(--box); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 16px; overflow-x: auto; font-size: 1.1rem;
+  }
+  details {
+    margin: .7rem 0 0; border-left: 3px solid var(--accent); padding: 2px 0 2px 14px;
+  }
+  summary {
+    cursor: pointer; font: 600 14px system-ui, sans-serif; color: var(--accent);
+    padding: 4px 0; user-select: none;
+  }
+  .step { margin: .6rem 0; }
+  .step p { margin: .3rem 0; }
+  table.ruf {
+    border-collapse: collapse; margin: .5rem 0 .2rem; font-size: 1rem;
+    font-variant-numeric: tabular-nums;
+  }
+  table.ruf td { padding: 3px 12px; text-align: right; min-width: 42px; }
+  table.ruf td:first-child { border-right: 2px solid var(--fg); font-weight: 600; color: var(--accent); }
+  table.ruf tr.res td { border-top: 2px solid var(--fg); }
+  table.ruf tr.res td:last-child { color: var(--ok); font-weight: 700; }
+  .roots {
+    margin-top: .7rem; padding: 8px 14px; border-radius: 8px;
+    background: var(--okbg); color: var(--ok); font-weight: 600;
+  }
+  ol.sol { padding-left: 1.4rem; }
+  ol.sol li { margin: .35rem 0; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 2.2rem 0 0; }
+  @media print { details { display: block; } summary { display: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Regla de Ruffini: hoja de ejercicios</h1>
+  <div class="meta">2026-10-22 · Jesús</div>
+  <p class="intro">Resuelve cada ecuación utilizando la regla de Ruffini y comprueba las soluciones en la ecuación original.</p>
+
+  <div id="ejercicios"></div>
+
+  <hr>
+  <h2>Soluciones</h2>
+  <ol class="sol" id="soluciones" type="a"></ol>
+</main>
+
+<script>
+// Cada ejercicio: eq (LaTeX), pasos (texto o esquema de Ruffini) y solución final.
+const E = [
+  { eq: "x^4-2x^3-3x^2+4x+4=0",
+    pasos: [
+      { t: "Probamos con los divisores de $4$. Para $x=2$:" },
+      { r: 2, c: [1,-2,-3,4,4] },
+      { t: "Queda $(x-2)(x^3-3x-2)=0$. Volvemos a probar con $x=2$:" },
+      { r: 2, c: [1,0,-3,-2] },
+      { t: "Queda $(x-2)^2(x^2+2x+1)=(x-2)^2(x+1)^2=0$." }
+    ],
+    sol: "x=2 \\text{ (doble)},\\quad x=-1 \\text{ (doble)}",
+    solTxt: "$x=2$ (doble) y $x=-1$ (doble)" },
+
+  { eq: "x^4+3x^3-x^2-3x=0",
+    pasos: [
+      { t: "Sacamos factor común: $x\\,(x^3+3x^2-x-3)=0$, de donde $x=0$. Aplicamos Ruffini al polinomio de grado 3 con $x=1$:" },
+      { r: 1, c: [1,3,-1,-3] },
+      { t: "Queda $x(x-1)(x^2+4x+3)=x(x-1)(x+1)(x+3)=0$." }
+    ],
+    sol: "x=0,\\quad x=1,\\quad x=-1,\\quad x=-3",
+    solTxt: "$x=0$, $x=1$, $x=-1$ y $x=-3$" },
+
+  { eq: "2x^4+6x^3-6x^2-14x+12=0",
+    pasos: [
+      { t: "Dividimos entre $2$: $x^4+3x^3-3x^2-7x+6=0$. Probamos con $x=1$:" },
+      { r: 1, c: [1,3,-3,-7,6] },
+      { t: "Volvemos a probar con $x=1$ en $x^3+4x^2+x-6$:" },
+      { r: 1, c: [1,4,1,-6] },
+      { t: "Queda $(x-1)^2(x^2+5x+6)=(x-1)^2(x+2)(x+3)=0$." }
+    ],
+    sol: "x=1 \\text{ (doble)},\\quad x=-2,\\quad x=-3",
+    solTxt: "$x=1$ (doble), $x=-2$ y $x=-3$" },
+
+  { eq: "x^4+x^3-11x^2-9x+18=0",
+    pasos: [
+      { t: "Probamos con $x=1$:" },
+      { r: 1, c: [1,1,-11,-9,18] },
+      { t: "Ahora con $x=-2$ en $x^3+2x^2-9x-18$:" },
+      { r: -2, c: [1,2,-9,-18] },
+      { t: "Queda $(x-1)(x+2)(x^2-9)=(x-1)(x+2)(x-3)(x+3)=0$." }
+    ],
+    sol: "x=1,\\quad x=-2,\\quad x=3,\\quad x=-3",
+    solTxt: "$x=1$, $x=-2$, $x=3$ y $x=-3$" },
+
+  { eq: "x^4+6x^3+11x^2+6x=0",
+    pasos: [
+      { t: "Sacamos factor común: $x\\,(x^3+6x^2+11x+6)=0$, de donde $x=0$. Aplicamos Ruffini con $x=-1$:" },
+      { r: -1, c: [1,6,11,6] },
+      { t: "Queda $x(x+1)(x^2+5x+6)=x(x+1)(x+2)(x+3)=0$." }
+    ],
+    sol: "x=0,\\quad x=-1,\\quad x=-2,\\quad x=-3",
+    solTxt: "$x=0$, $x=-1$, $x=-2$ y $x=-3$" },
+
+  { eq: "x^5+x^4-5x^3+3x^2=0",
+    pasos: [
+      { t: "Sacamos factor común: $x^2\\,(x^3+x^2-5x+3)=0$, de donde $x=0$ (doble). Aplicamos Ruffini con $x=1$:" },
+      { r: 1, c: [1,1,-5,3] },
+      { t: "Queda $x^2(x-1)(x^2+2x-3)=x^2(x-1)^2(x+3)=0$." }
+    ],
+    sol: "x=0 \\text{ (doble)},\\quad x=1 \\text{ (doble)},\\quad x=-3",
+    solTxt: "$x=0$ (doble), $x=1$ (doble) y $x=-3$" }
+];
+
+function ruffini(r, c) {
+  const res = [c[0]];
+  for (let i = 1; i < c.length; i++) res.push(c[i] + r * res[i - 1]);
+  const mid = res.slice(0, -1).map(v => r * v);
+  const row = (cells, cls) =>
+    `<tr${cls ? ` class="${cls}"` : ""}>${cells.map(v => `<td>${v}</td>`).join("")}</tr>`;
+  const f = v => String(v).replace("-", "−");
+  return `<table class="ruf">` +
+    row(["", ...c.map(f)]) +
+    row([f(r), "", ...mid.map(f)]) +
+    row(["", ...res.map(f)], "res") +
+    `</table>`;
+}
+
+const cont = document.getElementById("ejercicios");
+const sols = document.getElementById("soluciones");
+E.forEach((e, i) => {
+  const letra = "abcdef"[i];
+  const pasos = e.pasos.map(p =>
+    `<div class="step">${p.t ? `<p>${p.t}</p>` : ruffini(p.r, p.c)}</div>`).join("");
+  cont.insertAdjacentHTML("beforeend", `
+    <h2>${letra})</h2>
+    <div class="eq">$$${e.eq}$$</div>
+    <details open>
+      <summary>Resolución</summary>
+      ${pasos}
+      <div class="roots">$${e.sol}$</div>
+    </details>`);
+  sols.insertAdjacentHTML("beforeend", `<li>${e.solTxt}</li>`);
+});
+
+window.addEventListener("load", () => {
+  try {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false }
+      ]
+    });
+  } catch (err) { /* sin KaTeX se muestra el LaTeX en texto */ }
+});
+</script>
+</body>
+</html>
