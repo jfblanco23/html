@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Problemas de matrices</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#1414E6; --rojo:#E01E1E; --gris:#666;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;color:var(--texto);cursor:pointer;
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:20px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+
+  html,body{overflow:hidden}
+  body{background:#fff}
+
+  /* barra superior */
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:0 14px;display:flex;gap:14px;align-items:center;font-size:.85rem;color:var(--gris)}
+  .barra-sup .tit{font-weight:bold;color:#333;white-space:nowrap}
+  .pestanas{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #333;color:#333}
+  .pestanas button[aria-selected="true"]{background:#333;color:#fff}
+
+  /* barra inferior: botones grandes (pizarra digital) y progreso */
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:.85rem;color:var(--gris)}
+  .progreso .tira{flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .nav{font:inherit;font-size:1.5rem;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:9.5em;text-align:right;white-space:nowrap}
+
+  /* el libro: dos páginas, separadas solo por una línea fina */
+  #libro{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:hidden;background:#fff;transition:opacity .25s ease}
+  #libro.fuera{opacity:0}
+  #pista{position:absolute;left:0;top:0;height:100%;will-change:transform}
+  #pista.anim{transition:transform .9s cubic-bezier(.65,.05,.25,1)}
+  .hoja{position:absolute;top:0;padding:6px 8px}
+  .pag{position:relative;background:#fff;transform-origin:0 0;padding:30px 40px 0}
+  .pag .cuerpo{display:flow-root;overflow:hidden}
+  .pag .num{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#bbb;font-size:.8rem}
+  #lomo{position:absolute;left:50%;top:14px;bottom:14px;width:0;border-left:1px solid #c9c9c9;pointer-events:none;z-index:2}
+  .hoja.gira .pag{animation:gira .9s ease both}
+  @keyframes gira{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#pista.anim{transition:none}.hoja.gira .pag{animation:none}}
+
+  /* lo que se va escribiendo */
+  .cont{opacity:0;transition:opacity .35s ease}
+  .cont.on{opacity:1}
+  .u{opacity:0;clip-path:inset(-40px 100% -40px -40px);transition:opacity .25s ease,clip-path .85s ease}
+  span.u{display:block}
+  .u.on{opacity:1;clip-path:inset(-40px -40px -40px -40px)}
+  .u.rapido,.cont.rapido{transition:none}
+  .cont.sigue{margin-top:0;padding-top:14px;border-top-left-radius:0;border-top-right-radius:0}
+  .fila-menores{display:flex;justify-content:space-around;align-items:center;gap:.4em;margin:.8em 0}
+  .fila-menores .sub{display:block}
+  .fila-menores.col{flex-direction:column;align-items:center;gap:.1em;margin:.4em 0}
+  h1{margin:0 0 6px;font-size:2.1rem;line-height:1.2}
+  h4{margin:16px 0 6px;font-size:1.18rem}
+
+  /* cajas verdes del modelo */
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:20px 20px 10px;margin:26px 0 14px}
+  .caja>.titulo{position:absolute;top:-13px;left:12px;background:var(--verde-titulo);color:#fff;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.92rem}
+  .caja.enunciado{color:var(--azul);margin-top:6px;padding-top:12px}
+  .caja p{margin:.3em 0 .5em}
+  .paso{margin:6px 0 10px}
+
+  /* matrices con menores marcados en caja roja */
+  .ec{display:flex;align-items:center;justify-content:center;gap:.5em;margin:.6em 0;flex-wrap:wrap}
+  .mat{--w:2.5em;--h:1.7em;position:relative;display:inline-grid;
+    grid-template-columns:repeat(var(--nc),var(--w));grid-auto-rows:var(--h);
+    margin:1.1em .7em .2em;text-align:center}
+  .mat .c{display:flex;align-items:center;justify-content:center;white-space:nowrap}
+  .mat::before,.mat::after{content:"";position:absolute;top:-.15em;bottom:-.15em;width:.55em;border:2px solid #111}
+  .mat::before{left:-.7em;border-right:0;border-radius:60% 0 0 60%/50% 0 0 50%}
+  .mat::after{right:-.7em;border-left:0;border-radius:0 60% 60% 0/0 50% 50% 0}
+  .mat .bar{position:absolute;top:.1em;bottom:.1em;left:calc(var(--k) * var(--w));border-left:1.5px solid #111}
+  .mat .caja-roja{position:absolute;border:1.5px solid var(--rojo);pointer-events:none;
+    left:calc(var(--c0) * var(--w) + .15em);top:calc(var(--r0) * var(--h) + .12em);
+    width:calc(var(--cs) * var(--w) - .3em);height:calc(var(--rs) * var(--h) - .24em)}
+  .mat .caja-roja i{position:absolute;left:50%;top:-1.35em;transform:rotate(-40deg);transform-origin:left bottom;
+    color:var(--rojo);font-style:normal;white-space:nowrap}
+  .mat .tacha{position:absolute;left:-.2em;right:-.2em;top:calc((var(--r) + .5) * var(--h));
+    border-top:1.5px solid var(--rojo);pointer-events:none}
+  .mat .etq{position:absolute;left:calc((var(--c) + .5) * var(--w));top:-.15em;width:0;height:0;pointer-events:none}
+  .mat .etq i{position:absolute;left:0;bottom:0;transform:rotate(-40deg);transform-origin:left bottom;
+    color:var(--rojo);font-style:normal;white-space:nowrap}
+  .instr{color:var(--azul);border:1.5px solid #E6C200;border-radius:14px;padding:6px 16px;margin:10px 0;text-align:center}
+  .nota{color:var(--gris);font-size:.9em}
+  b.res{color:var(--rojo)}
+  .katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden}
+  table.res{border-collapse:collapse;margin:6px auto 8px}
+  table.res th,table.res td{padding:5px 16px;text-align:center}
+  table.res th{border-bottom:1.5px solid #111}
+  table.res td:not(:last-child),table.res th:not(:last-child){border-right:1px solid #111}
+  table.res td:last-child,table.res th:last-child{text-align:left}
+</style>
+</head>
+<body>
+<div class="barra-sup">
+  <span class="tit">Problemas de matrices</span>
+  <nav class="pestanas" id="pestanas" aria-label="Ejercicios"></nav>
+</div>
+<div id="libro"><div id="pista"></div><div id="lomo"></div></div>
+<div id="stage" style="position:absolute;left:-99999px;top:0;width:720px;visibility:hidden"></div>
+<div class="progreso">
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
+  <span id="contador"></span>
+</div>
+
+<script>
+/* ---------------------------------------------------------------------
+   Matriz con barra opcional y menor marcado en caja roja.
+   rows: filas (cadenas LaTeX); opts.bar = nº de columnas antes de la barra;
+   opts.box = [fila0, col0, fila1, col1] (empezando en 0)
+   opts.tach = [filas a tachar]; opts.etq = [[columna, 'texto'], ...] (rótulo rojo sobre una columna)
+   --------------------------------------------------------------------- */
+function mat(rows, opts = {}) {
+  const nr = rows.length, nc = rows[0].length;
+  const largo = Math.max(...rows.map(r => Math.max(...r.map(c => String(c).replace(/\\[a-zA-Z]+|[{}\s]/g, '').length))));
+  const ancho = Math.max(2.5, 1.0 + 0.55 * largo);
+  let h = '<span class="mat" style="--nc:' + nc + ';--nr:' + nr + ';--w:' + ancho.toFixed(2) + 'em' + (opts.etq ? ';margin-top:2.3em' : '') + '">';
+  rows.forEach(r => r.forEach(c => { h += '<span class="c">$' + c + '$</span>'; }));
+  if (opts.bar != null) h += '<span class="bar" style="--k:' + opts.bar + '"></span>';
+  if (opts.box) {
+    /* box = [f0,c0,f1,c1] o, para un menor de columnas no contiguas, una lista de cajas;
+       el rótulo ≠0 solo va en la primera */
+    const cajas = Array.isArray(opts.box[0]) ? opts.box : [opts.box];
+    cajas.forEach(([r0, c0, r1, c1], i) => {
+      h += '<span class="caja-roja" style="--r0:' + r0 + ';--c0:' + c0 + ';--rs:' + (r1 - r0 + 1) +
+           ';--cs:' + (c1 - c0 + 1) + '">' + (i === 0 ? '<i>$\\neq0$</i>' : '') + '</span>';
+    });
+  }
+  if (opts.tach) opts.tach.forEach(r => { h += '<span class="tacha" style="--r:' + r + '"></span>'; });
+  if (opts.etq) opts.etq.forEach(([c, t]) => { h += '<span class="etq" style="--c:' + c + '"><i>$' + t + '$</i></span>'; });
+  return h + '</span>';
+}
+const ec = (...partes) => '<div class="ec">' + partes.join('') + '</div>';
+const f = s => '<span>$' + s + '$</span>';
+
+/* ---------------------------------------------------------------------
+   Ayudantes para construir los pasos de un ejercicio con parámetro.
+   --------------------------------------------------------------------- */
+const rg = x => '\\operatorname{rg}(' + x + ')';
+const detTex = filas => '\\begin{vmatrix} ' + filas.map(r => r.join('&')).join('\\\\ ') + ' \\end{vmatrix}';
+
+/* forma matricial, determinante, valores críticos y conclusión del caso general */
+function pasosInicio(o) {
+  const fx = o.x.map(v => [v]), fb = o.b.map(v => [v]);
+  return [
+    { nueva: true, titulo: 'Escribimos el sistema en forma matricial',
+      html: ec(mat(o.A), mat(fx), f('='), mat(fb)) +
+            ec(f('\\text{Matriz de coeficientes: }'), mat(o.A)) +
+            ec(f('\\text{Matriz ampliada: }'), mat(o.Ap, {bar: 3})) },
+    { nueva: true, titulo: 'El determinante de la matriz de coeficientes es:', html: o.det },
+    { nueva: true, titulo: 'Ahora resolvemos la ecuación $' + o.ecuacion + '$', html: o.resolucion },
+    { nueva: true, caja: 'Conclusión', html: o.concl }
+  ];
+}
+
+/* caso con rg(A)=rg(A')=2: tres menores nulos + combinación lineal por filas */
+function pasosSCI(o) {
+  return [
+    { nueva: true, caja: 'Si ' + o.etiqueta,
+      html: '<p><b>Si $' + o.valor + '$</b>, el sistema queda representado por la siguiente matriz:</p>' +
+            ec(mat(o.Ap, {bar: 3})) },
+    { titulo: 'Matriz $A$',
+      html: ec(f('A='), mat(o.A, {box: o.boxA})) +
+            '<p>Como $|A|=0$, $' + rg('A') + '<3$; y el menor marcado, $' + detTex(o.menorA) + '=' + o.valMenorA +
+            '$, es distinto de cero.</p>$$' + rg('A') + '=2$$' },
+    { nueva: true, titulo: "Matriz ampliada $A'$",
+      html: ec(f("A'="), mat(o.Ap, {bar: 3, box: o.boxAp})) +
+            '<p>El menor marcado es distinto de cero, luego $' + rg("A'") + '\\geq2$. ' +
+            "Como $|A|=0$, solo falta calcular los otros tres menores de orden 3 de $A'$ (regla de Sarrus):</p>" +
+            '<div class="fila-menores col">' + o.menores.map(m => '<span class="sub">$\\displaystyle ' + detTex(m) + '=' + sarrusTex(m) + '$</span>').join('') + '</div>' +
+            '<p>Todos los menores de orden 3 son nulos.</p>$$' + rg("A'") + '=2$$' },
+    { nueva: true, titulo: "Otra manera de ver que $" + rg("A'") + "=2$", html: o.comb },
+    { caja: 'Conclusión', html: o.concl }
+  ];
+}
+
+/* caso con rg(A)=2 y rg(A')=3: menor de orden 3 distinto de cero */
+function pasosSI(o) {
+  return [
+    { nueva: true, caja: 'Si ' + o.etiqueta,
+      html: '<p><b>Si $' + o.valor + '$</b>, el sistema queda representado por la siguiente matriz:</p>' +
+            ec(mat(o.Ap, {bar: 3})) },
+    { titulo: 'Matriz $A$',
+      html: ec(f('A='), mat(o.A, {box: o.boxA})) +
+            '<p>Como $|A|=0$, $' + rg('A') + '<3$; y el menor marcado, $' + detTex(o.menorA) + '=' + o.valMenorA +
+            '$, es distinto de cero.</p>$$' + rg('A') + '=2$$' },
+    { nueva: true, titulo: "Matriz ampliada $A'$",
+      html: ec(f("A'="), mat(o.Ap, {bar: 3, box: o.boxAp})) +
+            '<p>El menor de orden 3 marcado' + (o.columnas ? ' (columnas ' + o.columnas + ')' : '') +
+            ' vale, por la regla de Sarrus:</p>$$' + detTex(o.menor3) + '=' + sarrusTex(o.menor3) + '\\neq0$$ $$' + rg("A'") + '=3$$' },
+    { caja: 'Conclusión', html: o.concl }
+  ];
+}
+
+/* ---------------------------------------------------------------------
+   Ayudantes numéricos para matrices
+   --------------------------------------------------------------------- */
+const strs = M => M.map(r => r.map(String));
+const tr = M => M[0].map((_, j) => M.map(r => r[j]));
+const pn = v => (v < 0 ? '(' + v + ')' : String(v));
+
+/* regla de Sarrus para un determinante numérico de orden 3 */
+const det3 = M => M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1])
+                - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0])
+                + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
+const suma = t => t.map((x, i) => (i && x >= 0) ? '+' + x : String(x)).join('');
+function sarrusTex(M0) {
+  const a = M0.map(r => r.map(Number));
+  const p = [a[0][0] * a[1][1] * a[2][2], a[0][1] * a[1][2] * a[2][0], a[0][2] * a[1][0] * a[2][1]];
+  const n = [a[0][2] * a[1][1] * a[2][0], a[0][0] * a[1][2] * a[2][1], a[0][1] * a[1][0] * a[2][2]];
+  return '(' + suma(p) + ')-(' + suma(n) + ')=' + det3(a);
+}
+
+/* producto numérico: devuelve el HTML (un clic por elemento) y la matriz resultado */
+function prodNum(A, B, nom) {
+  let h = '';
+  const res = [];
+  A.forEach((fila, i) => {
+    const r = [];
+    h += '<div class="fila-menores">';
+    B[0].forEach((_, j) => {
+      const t = fila.map((a, k) => pn(a) + '\\cdot ' + pn(B[k][j])).join('+');
+      const v = fila.reduce((acc, a, k) => acc + a * B[k][j], 0);
+      r.push(v);
+      h += '<span class="sub">$\\displaystyle ' + nom + '_{' + (i + 1) + (j + 1) + '}=' + t + '=' + v + '$</span>';
+    });
+    h += '</div>';
+    res.push(r);
+  });
+  return { html: h, res };
+}
+/* elemento del producto con expresiones literales */
+const elem = (i, j, t, v) => '<span class="sub">$\\displaystyle c_{' + i + j + '}=' + t + '=' + v + '$</span>';
+/* adjunto de un elemento (matriz 3x3): signo, menor 2x2 y valor */
+const cof = (i, j, sg, m, v) => '<span class="sub">$\\displaystyle C_{' + i + j + '}=' + sg + detTex(m) + '=' + v + '$</span>';
+
+/* ---------------------------------------------------------------------
+   Ayudantes para los apartados de resolución del sistema (Ejercicio 5)
+   --------------------------------------------------------------------- */
+const INSTR_Y = '<p class="instr">Tachamos la fila que queda fuera del menor distinto de cero que hemos seleccionado ' +
+  'y le damos a la variable cuya columna queda fuera del menor el valor del parámetro; en este caso $y=\\lambda$.</p>';
+
+const I2 = [['1','0'],['0','1']], I3 = [['1','0','0'],['0','1','0'],['0','0','1']];
+/* =====================================================================
+   PROBLEMAS DE MATRICES Y SISTEMAS CON PARÁMETRO
+   ===================================================================== */
+const sb = t => '<span class="sub">$\\displaystyle ' + t + '$</span>';
+const fm = (...x) => '<div class="fila-menores col">' + x.join('') + '</div>';
+const INSTR = v => '<p class="instr">Tachamos la fila que queda fuera del menor distinto de cero que hemos seleccionado ' +
+  'y le damos a la variable cuya columna queda fuera del menor el valor del parámetro; en este caso $' + v + '=\\lambda$.</p>';
+const tabla = (cab, filas) => '<table class="res"><tr>' + cab.map(c => '<th>' + c + '</th>').join('') + '</tr>' +
+  filas.map(r => '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>').join('') + '</table>';
+const inv2 = (nombre, det, M, Mi) =>
+  '<p>Para una matriz $2\\times2$ se intercambian los elementos de la diagonal principal y se cambia el signo de los de la otra diagonal, y se divide entre el determinante:</p>' +
+  ec(mat([['a','b'],['c','d']]), f('{}^{-1}=\\dfrac{1}{ad-bc}'), mat([['d','-b'],['-c','a']]));
+
+
+/* matriz de adjuntos de una sola vez: cada elemento es el menor 2x2 con su signo, y a continuación el resultado */
+const adjUna = (mins, vals) => {
+  const cel = (i, j) => ((i + j) % 2 ? '-' : '+') + detTex(mins[i][j]);
+  const filas = [0, 1, 2].map(i => [0, 1, 2].map(j => cel(i, j)).join('&')).join('\\\\[2mm]');
+  const res = vals.map(r => r.join('&')).join('\\\\');
+  return '$$\\operatorname{Adj}(A)=\\begin{pmatrix}' + filas + '\\end{pmatrix}=\\begin{pmatrix}' + res + '\\end{pmatrix}$$';
+};
+
+/* ---- datos de los ejercicios 1 y 2 ---- */
+const A1_0 = [['2','1','0'],['1','1','0'],['0','0','1']];
+const A1_0inv = [['1','-1','0'],['-1','2','0'],['0','0','1']];
+const A2_2 = [['2','1','1'],['1','2','1'],['1','1','2']];
+
+/* ---- datos del ejercicio 3: A·X·B = C ---- */
+const A3 = [[1,1],[0,1]], B3 = [[2,1],[1,1]], C3 = [[4,3],[2,1]];
+const A3i = [[1,-1],[0,1]], B3i = [[1,-1],[-1,2]];
+const AiC3 = prodNum(A3i, C3, 'm');
+const X3 = prodNum(AiC3.res, B3i, 'x');
+const AX3 = prodNum(A3, X3.res, 'd');
+const AXB3 = prodNum(AX3.res, B3, 'e');
+
+/* ---- datos del ejercicio 4: X·A + B = C − X·A ---- */
+const A4 = [[2,1],[1,1]], B4 = [[1,0],[2,1]], C4 = [[3,4],[8,3]];
+const CmB4 = [[2,4],[6,2]], H4 = [[1,2],[3,1]];
+const A4i = [[1,-1],[-1,2]];
+const X4 = prodNum(H4, A4i, 'x');
+const XA4 = prodNum(X4.res, A4, 'd');
+
+const EJERCICIOS = [
+
+  /* ===================== EJERCICIO 1 (problema 1) ===================== */
+  {
+    titulo: "Ejercicio 1",
+    enunciado: '<p>Dada la matriz</p>' +
+      ec(f('A='), mat([['2','1','a'],['1','1','0'],['a','0','1']])) +
+      String.raw`<p style="margin-left:1.6em">a)&nbsp; ¿Para qué valores de $a$ existe la matriz inversa $A^{-1}$?</p>
+      <p style="margin-left:1.6em">b)&nbsp; Calcular $A^{-1}$ para $a=0$.</p>`,
+    pasos: [
+      { titulo: "a) Condición de existencia de $A^{-1}$",
+        html: String.raw`<p>Una matriz cuadrada tiene inversa si y solo si su determinante es distinto de cero. Calculamos $|A|$ con la regla de Sarrus:
+          suma de los productos de la diagonal principal y de sus dos paralelas, menos los productos de la diagonal secundaria y de sus dos paralelas.</p>
+          $$\begin{aligned}
+          |A|&=\begin{vmatrix} 2&1&a\\ 1&1&0\\ a&0&1 \end{vmatrix}\\[1mm]
+          &=\bigl(2\cdot1\cdot1+1\cdot0\cdot a+a\cdot1\cdot0\bigr)-\bigl(a\cdot1\cdot a+2\cdot0\cdot0+1\cdot1\cdot1\bigr)\\[1mm]
+          &=(2+0+0)-(a^2+0+1)\\[1mm]
+          &=1-a^2
+          \end{aligned}$$` },
+      { nueva: true, titulo: "Resolvemos $|A|=0$",
+        html: String.raw`$$1-a^2=0\;\Rightarrow\;a^2=1\;\Rightarrow\;a=1\quad\text{o}\quad a=-1$$
+          <p class="nota">Factorizado: $1-a^2=(1-a)(1+a)$.</p>` },
+      { caja: "Conclusión",
+        html: String.raw`<p><b class="res">Existe $A^{-1}$ si y solo si $a\neq1$ y $a\neq-1$.</b></p>` },
+
+      { nueva: true, titulo: "b) Inversa para $a=0$",
+        html: '<p>Como $0\\neq1$ y $0\\neq-1$, la matriz es invertible. Sustituimos $a=0$:</p>' +
+              ec(f('A='), mat(A1_0)) +
+              String.raw`<p>Su determinante es $|A|=1-0^2=1\neq0$. Usamos la fórmula de la matriz adjunta:</p>
+              $$A^{-1}=\frac{1}{|A|}\,\bigl(\operatorname{Adj}(A)\bigr)^t$$` },
+      { nueva: true, titulo: "Matriz de adjuntos",
+        html: '<p>$C_{ij}=(-1)^{i+j}\\cdot$ (determinante que queda al quitar la fila $i$ y la columna $j$):</p>' +
+              adjUna([[ [['1','0'],['0','1']], [['1','0'],['0','1']], [['1','1'],['0','0']] ],
+                      [ [['1','0'],['0','1']], [['2','0'],['0','1']], [['2','1'],['0','0']] ],
+                      [ [['1','0'],['1','0']], [['2','0'],['1','0']], [['2','1'],['1','1']] ]],
+                     A1_0inv) },
+      { nueva: true, titulo: "Matriz traspuesta de la de adjuntos",
+        html: '<p>La traspuesta se obtiene cambiando filas por columnas (aquí la matriz es simétrica, así que no cambia):</p>' +
+              ec(f('\\bigl(\\operatorname{Adj}(A)\\bigr)^t='), mat(A1_0inv)) },
+      { caja: "Matriz inversa",
+        html: ec(f('A^{-1}=\\dfrac{1}{1}'), mat(A1_0inv), f('='), mat(A1_0inv)) },
+      { nueva: true, titulo: "Comprobación: $A\\cdot A^{-1}=I$",
+        html: ec(f('A\\cdot A^{-1}='), mat(A1_0), mat(A1_0inv), f('='), mat(I3)) }
+    ]
+  },
+
+  /* ===================== EJERCICIO 2 (problema 2) ===================== */
+  {
+    titulo: "Ejercicio 2",
+    enunciado: '<p>Dada la matriz</p>' +
+      ec(f('A='), mat([['m','1','1'],['1','m','1'],['1','1','m']])) +
+      String.raw`<p style="margin-left:1.6em">a)&nbsp; Calcula los valores de $m$ para los que la matriz $A$ es invertible.</p>
+      <p style="margin-left:1.6em">b)&nbsp; Para $m=2$, calcula la inversa de $A$.</p>`,
+    pasos: [
+      { titulo: "a) Determinante de $A$",
+        html: String.raw`<p>$A$ es invertible si y solo si $|A|\neq0$. Aplicamos la regla de Sarrus:</p>
+          $$\begin{aligned}
+          |A|&=\begin{vmatrix} m&1&1\\ 1&m&1\\ 1&1&m \end{vmatrix}\\[1mm]
+          &=\bigl(m\cdot m\cdot m+1\cdot1\cdot1+1\cdot1\cdot1\bigr)-\bigl(1\cdot m\cdot1+m\cdot1\cdot1+1\cdot1\cdot m\bigr)\\[1mm]
+          &=(m^3+1+1)-(m+m+m)\\[1mm]
+          &=m^3-3m+2
+          \end{aligned}$$` },
+      { nueva: true, titulo: "Resolvemos $|A|=0$",
+        html: String.raw`<p>Buscamos una raíz entera entre los divisores de $2$. Para $m=1$: $1-3+2=0$, luego $m=1$ es raíz. Dividimos por $(m-1)$ con la regla de Ruffini:</p>
+          $$\begin{array}{r|rrrr} & 1&0&-3&2\\ 1& &1&1&-2\\ \hline &1&1&-2&0\end{array}
+          \quad\Rightarrow\quad m^3-3m+2=(m-1)(m^2+m-2)$$
+          <p>Resolvemos la ecuación de segundo grado:</p>
+          $$m^2+m-2=0\;\Rightarrow\;m=\frac{-1\pm\sqrt{1+8}}{2}=\frac{-1\pm3}{2}\;\Rightarrow\;m=1\ \text{ o }\ m=-2$$
+          <p>Por tanto:</p>
+          $$|A|=(m-1)^2(m+2)=0\;\Rightarrow\;m=1\ \text{(doble)}\quad\text{y}\quad m=-2$$` },
+      { caja: "Conclusión",
+        html: String.raw`<p><b class="res">$A$ es invertible si y solo si $m\neq1$ y $m\neq-2$.</b></p>` },
+
+      { nueva: true, titulo: "b) Inversa para $m=2$",
+        html: '<p>Como $2\\neq1$ y $2\\neq-2$, la matriz es invertible. Sustituimos $m=2$:</p>' +
+              ec(f('A='), mat(A2_2)) +
+              String.raw`<p>Su determinante es $|A|=(2-1)^2(2+2)=4\neq0$. Usamos la fórmula de la matriz adjunta:</p>
+              $$A^{-1}=\frac{1}{|A|}\,\bigl(\operatorname{Adj}(A)\bigr)^t$$` },
+      { nueva: true, titulo: "Matriz de adjuntos",
+        html: '<p>$C_{ij}=(-1)^{i+j}\\cdot$ (determinante que queda al quitar la fila $i$ y la columna $j$):</p>' +
+              adjUna([[ [['2','1'],['1','2']], [['1','1'],['1','2']], [['1','2'],['1','1']] ],
+                      [ [['1','1'],['1','2']], [['2','1'],['1','2']], [['2','1'],['1','1']] ],
+                      [ [['1','1'],['2','1']], [['2','1'],['1','1']], [['2','1'],['1','2']] ]],
+                     [['3','-1','-1'],['-1','3','-1'],['-1','-1','3']]) },
+      { nueva: true, titulo: "Matriz traspuesta de la de adjuntos",
+        html: '<p>La traspuesta se obtiene cambiando filas por columnas (la matriz es simétrica, luego no cambia):</p>' +
+              ec(f('\\bigl(\\operatorname{Adj}(A)\\bigr)^t='), mat([['3','-1','-1'],['-1','3','-1'],['-1','-1','3']])) },
+      { caja: "Matriz inversa",
+        html: ec(f('A^{-1}=\\dfrac{1}{4}'), mat([['3','-1','-1'],['-1','3','-1'],['-1','-1','3']])) +
+              ec(f('A^{-1}='), mat([['\\frac{3}{4}','-\\frac{1}{4}','-\\frac{1}{4}'],['-\\frac{1}{4}','\\frac{3}{4}','-\\frac{1}{4}'],['-\\frac{1}{4}','-\\frac{1}{4}','\\frac{3}{4}']])) },
+      { nueva: true, titulo: "Comprobación: $A\\cdot\\bigl(\\operatorname{Adj}(A)\\bigr)^t=|A|\\cdot I$",
+        html: ec(f('A\\cdot\\bigl(\\operatorname{Adj}(A)\\bigr)^t='), mat(A2_2), mat([['3','-1','-1'],['-1','3','-1'],['-1','-1','3']]), f('='), mat([['4','0','0'],['0','4','0'],['0','0','4']])) +
+              String.raw`<p>El resultado es $4I=|A|\cdot I$, luego dividiendo entre $|A|=4$ obtenemos $A\cdot A^{-1}=I$.</p>` }
+    ]
+  },
+
+  /* ===================== EJERCICIO 3 (problema 3) ===================== */
+  {
+    titulo: "Ejercicio 3",
+    enunciado: '<p>Se consideran las matrices</p>' +
+      ec(f('A='), mat(strs(A3)), f('B='), mat(strs(B3)), f('C='), mat(strs(C3))) +
+      String.raw`<p>Calcula razonadamente la matriz $X$ que verifica $A\cdot X\cdot B=C$.</p>`,
+    pasos: [
+      { titulo: "Paso 1: despejar $X$",
+        html: String.raw`<p>La matriz $A$ está a la izquierda de $X$ y la matriz $B$ a su derecha. Multiplicamos los dos miembros por $A^{-1}$ <b>por la izquierda</b> y por $B^{-1}$ <b>por la derecha</b> (el producto de matrices no es conmutativo):</p>
+          $$A^{-1}\cdot A\cdot X\cdot B\cdot B^{-1}=A^{-1}\cdot C\cdot B^{-1}
+          \;\Rightarrow\;\underbrace{A^{-1}A}_{I}\cdot X\cdot\underbrace{B\,B^{-1}}_{I}=A^{-1}\cdot C\cdot B^{-1}$$` },
+      { caja: "Fórmula para $X$",
+        html: '$$X=A^{-1}\\cdot C\\cdot B^{-1}$$' +
+              String.raw`<p class="nota">Deben existir $A^{-1}$ y $B^{-1}$: $|A|=1\cdot1-1\cdot0=1\neq0$ y $|B|=2\cdot1-1\cdot1=1\neq0$.</p>` },
+      { nueva: true, titulo: "Paso 2: calcular $A^{-1}$",
+        html: inv2() +
+              ec(f('A^{-1}=\\dfrac{1}{1}'), mat([['1','-1'],['0','1']]), f('='), mat(strs(A3i))) },
+      { nueva: true, titulo: "Paso 3: calcular $B^{-1}$",
+        html: ec(f('B^{-1}=\\dfrac{1}{1}'), mat([['1','-1'],['-1','2']]), f('='), mat(strs(B3i))) },
+      { nueva: true, titulo: "Paso 4: calcular $A^{-1}\\cdot C$",
+        html: '<p>Cada elemento es la fila $i$ de $A^{-1}$ por la columna $j$ de $C$:</p>' +
+              ec(f('A^{-1}\\cdot C='), mat(strs(A3i)), mat(strs(C3))) + AiC3.html },
+      { caja: "Resultado",
+        html: ec(f('A^{-1}\\cdot C='), mat(strs(AiC3.res))) },
+      { nueva: true, titulo: "Paso 5: calcular $X=(A^{-1}\\cdot C)\\cdot B^{-1}$",
+        html: ec(f('X='), mat(strs(AiC3.res)), mat(strs(B3i))) + X3.html },
+      { caja: "Solución",
+        html: ec(f('X='), mat(strs(X3.res))) },
+      { nueva: true, titulo: "Comprobación: $A\\cdot X\\cdot B=C$",
+        html: ec(f('A\\cdot X='), mat(strs(A3)), mat(strs(X3.res)), f('='), mat(strs(AX3.res))) +
+              ec(f('A\\cdot X\\cdot B='), mat(strs(AX3.res)), mat(strs(B3)), f('='), mat(strs(AXB3.res)), f('=C\\ \\checkmark')) }
+    ]
+  },
+
+  /* ===================== EJERCICIO 4 (problema 4) ===================== */
+  {
+    titulo: "Ejercicio 4",
+    enunciado: '<p>Se consideran las matrices</p>' +
+      ec(f('A='), mat(strs(A4)), f('B='), mat(strs(B4)), f('C='), mat(strs(C4))) +
+      String.raw`<p>Calcula razonadamente la matriz $X$ que verifica $X\cdot A+B=C-X\cdot A$.</p>`,
+    pasos: [
+      { titulo: "Paso 1: despejar $X$",
+        html: String.raw`<p>Pasamos al primer miembro el término $X\cdot A$ del segundo, y $B$ al segundo miembro:</p>
+          $$X\cdot A+B=C-X\cdot A\;\Rightarrow\;X\cdot A+X\cdot A=C-B\;\Rightarrow\;2\,X\cdot A=C-B$$
+          <p>Dividimos entre 2:</p>
+          $$X\cdot A=\frac{1}{2}\,(C-B)$$
+          <p>Multiplicamos por $A^{-1}$ <b>por la derecha</b> (la matriz $A$ está a la derecha de $X$):</p>
+          $$X\cdot A\cdot A^{-1}=\frac{1}{2}\,(C-B)\cdot A^{-1}\;\Rightarrow\;X\cdot\underbrace{A\,A^{-1}}_{I}=\frac{1}{2}\,(C-B)\cdot A^{-1}$$` },
+      { caja: "Fórmula para $X$",
+        html: '$$X=\\frac{1}{2}\\,(C-B)\\cdot A^{-1}$$' +
+              String.raw`<p class="nota">Debe existir $A^{-1}$: $|A|=2\cdot1-1\cdot1=1\neq0$.</p>` },
+      { nueva: true, titulo: "Paso 2: calcular $C-B$",
+        html: '<p>Se restan los elementos que ocupan la misma posición:</p>' +
+              ec(f('C-B='), mat(strs(C4)), f('-'), mat(strs(B4))) +
+              ec(f('C-B='), mat([['3-1','4-0'],['8-2','3-1']]), f('='), mat(strs(CmB4))) },
+      { nueva: true, titulo: "Paso 3: multiplicar por $\\frac{1}{2}$",
+        html: ec(f('\\dfrac{1}{2}\\,(C-B)=\\dfrac{1}{2}'), mat(strs(CmB4)), f('='), mat(strs(H4))) },
+      { nueva: true, titulo: "Paso 4: calcular $A^{-1}$",
+        html: inv2() +
+              ec(f('A^{-1}=\\dfrac{1}{1}'), mat([['1','-1'],['-1','2']]), f('='), mat(strs(A4i))) },
+      { nueva: true, titulo: "Paso 5: calcular $X=\\frac{1}{2}(C-B)\\cdot A^{-1}$",
+        html: '<p>Cada elemento es la fila $i$ de $\\frac{1}{2}(C-B)$ por la columna $j$ de $A^{-1}$:</p>' +
+              ec(f('X='), mat(strs(H4)), mat(strs(A4i))) + X4.html },
+      { caja: "Solución",
+        html: ec(f('X='), mat(strs(X4.res))) },
+      { nueva: true, titulo: "Comprobación: $X\\cdot A+B=C-X\\cdot A$",
+        html: ec(f('X\\cdot A='), mat(strs(X4.res)), mat(strs(A4)), f('='), mat(strs(XA4.res))) +
+              ec(f('X\\cdot A+B='), mat(strs(XA4.res)), f('+'), mat(strs(B4)), f('='), mat([['2','2'],['5','2']])) +
+              ec(f('C-X\\cdot A='), mat(strs(C4)), f('-'), mat(strs(XA4.res)), f('='), mat([['2','2'],['5','2']])) +
+              String.raw`<p>Los dos miembros coinciden, luego la solución es correcta.</p>` }
+    ]
+  },
+
+  /* ===================== EJERCICIO 5: rango 2x3 con parámetro ===================== */
+  {
+    titulo: "Ejercicio 5",
+    enunciado: '<p>Calcula, según los valores del parámetro $a$, el rango de la matriz</p>' +
+      ec(f('M='), mat([['1','a','2'],['a','4','a+2']])),
+    pasos: [
+      { titulo: "Rango máximo",
+        html: String.raw`<p>La matriz $M$ tiene 2 filas y 3 columnas, luego $\operatorname{rg}(M)\leq2$.</p>
+          <p>• $\operatorname{rg}(M)=2$ si algún menor de orden 2 es distinto de cero.</p>
+          <p>• $\operatorname{rg}(M)=1$ si todos los menores de orden 2 son nulos (y $M$ no es la matriz nula).</p>` },
+      { titulo: "Menores de orden 2",
+        html: '<p>Hay tres menores de orden 2, según las dos columnas que elijamos:</p>' +
+          fm(
+            sb('\\begin{vmatrix} 1&a\\\\ a&4 \\end{vmatrix}=1\\cdot4-a\\cdot a=4-a^2\\qquad\\text{(columnas 1 y 2)}'),
+            sb('\\begin{vmatrix} 1&2\\\\ a&a+2 \\end{vmatrix}=1\\cdot(a+2)-2\\cdot a=2-a\\qquad\\text{(columnas 1 y 3)}'),
+            sb('\\begin{vmatrix} a&2\\\\ 4&a+2 \\end{vmatrix}=a\\,(a+2)-2\\cdot4=a^2+2a-8\\qquad\\text{(columnas 2 y 3)}')) },
+      { titulo: "¿Cuándo se anulan los tres menores a la vez?",
+        html: '<p>El rango baja a 1 solo si los tres menores valen 0 para el mismo valor de $a$. Resolvemos cada ecuación:</p>' +
+          fm(
+            sb('4-a^2=0\\;\\Rightarrow\\;a=2\\ \\text{ o }\\ a=-2'),
+            sb('2-a=0\\;\\Rightarrow\\;a=2'),
+            sb('a^2+2a-8=0\\;\\Rightarrow\\;a=\\dfrac{-2\\pm\\sqrt{4+32}}{2}=\\dfrac{-2\\pm6}{2}\\;\\Rightarrow\\;a=2\\ \\text{ o }\\ a=-4')) +
+          '<p>El único valor que anula los tres menores es <b class="res">$a=2$</b>.</p>' },
+      { caja: "Si a ≠ 2",
+        html: String.raw`<p>Alguno de los menores de orden 2 es distinto de cero (por ejemplo, $2-a\neq0$), luego</p>
+          $$\operatorname{rg}(M)=2$$` },
+      { caja: "Si a = 2",
+        html: '<p>Sustituimos $a=2$:</p>' + ec(f('M='), mat([['1','2','2'],['2','4','4']])) +
+          String.raw`<p>Los tres menores de orden 2 son nulos y la matriz no es la matriz nula. Además, la segunda fila es el doble de la primera: $F_2=2F_1$.</p>
+          $$\operatorname{rg}(M)=1$$` },
+      { nueva: true, caja: "Resumen",
+        html: tabla(['Valor de $a$', '$\\operatorname{rg}(M)$'],
+          [['$a\\neq2$', '2'], ['$a=2$', '1']]) }
+    ]
+  },
+
+  /* ===================== EJERCICIO 6: rango 3x3 con parámetro ===================== */
+  {
+    titulo: "Ejercicio 6",
+    enunciado: '<p>Calcula, según los valores del parámetro $a$, el rango de la matriz</p>' +
+      ec(f('M='), mat([['a','1','2'],['1','a','2'],['1','1','a+1']])),
+    pasos: [
+      { titulo: "Determinante de $M$",
+        html: String.raw`<p>$M$ es cuadrada de orden 3, luego $\operatorname{rg}(M)\leq3$, y $\operatorname{rg}(M)=3$ si y solo si $|M|\neq0$. Aplicamos la regla de Sarrus:</p>
+          $$\begin{aligned}
+          |M|&=\begin{vmatrix} a&1&2\\ 1&a&2\\ 1&1&a+1 \end{vmatrix}\\[1mm]
+          &=\bigl(a\cdot a\,(a+1)+1\cdot2\cdot1+2\cdot1\cdot1\bigr)-\bigl(2\cdot a\cdot1+a\cdot2\cdot1+1\cdot1\,(a+1)\bigr)\\[1mm]
+          &=(a^3+a^2+2+2)-(2a+2a+a+1)\\[1mm]
+          &=a^3+a^2-5a+3
+          \end{aligned}$$` },
+      { nueva: true, titulo: "Resolvemos $|M|=0$",
+        html: String.raw`<p>Probamos con los divisores de $3$. Para $a=1$: $1+1-5+3=0$, luego $a=1$ es raíz. Dividimos por $(a-1)$ con la regla de Ruffini:</p>
+          $$\begin{array}{r|rrrr} & 1&1&-5&3\\ 1& &1&2&-3\\ \hline &1&2&-3&0\end{array}
+          \quad\Rightarrow\quad a^3+a^2-5a+3=(a-1)(a^2+2a-3)$$
+          <p>Resolvemos la ecuación de segundo grado:</p>
+          $$a^2+2a-3=0\;\Rightarrow\;a=\frac{-2\pm\sqrt{4+12}}{2}=\frac{-2\pm4}{2}\;\Rightarrow\;a=1\ \text{ o }\ a=-3$$
+          <p>Por tanto:</p>
+          $$|M|=(a-1)^2(a+3)=0\;\Rightarrow\;a=1\ \text{(doble)}\quad\text{y}\quad a=-3$$` },
+      { caja: "Si a ≠ 1 y a ≠ −3",
+        html: String.raw`<p>El determinante $|M|$ es distinto de cero, luego</p>
+          $$\operatorname{rg}(M)=3$$` },
+      { caja: "Si a = 1",
+        html: '<p>Sustituimos $a=1$:</p>' + ec(f('M='), mat([['1','1','2'],['1','1','2'],['1','1','2']])) +
+          String.raw`<p>Las tres filas son iguales, así que todos los menores de orden 2 son nulos; y como $M$ no es nula, tiene un menor de orden 1 distinto de cero.</p>
+          $$\operatorname{rg}(M)=1$$` },
+      { caja: "Si a = −3",
+        html: '<p>Sustituimos $a=-3$:</p>' + ec(f('M='), mat([['-3','1','2'],['1','-3','2'],['1','1','-2']], {box: [[0,0,1,1]]})) +
+          String.raw`<p>Como $|M|=0$, $\operatorname{rg}(M)<3$; y el menor marcado, $\begin{vmatrix} -3&1\\ 1&-3 \end{vmatrix}=9-1=8$, es distinto de cero.</p>
+          $$\operatorname{rg}(M)=2$$` },
+      { nueva: true, caja: "Resumen",
+        html: tabla(['Valor de $a$', '$\\operatorname{rg}(M)$'],
+          [['$a\\neq1,\\,-3$', '3'], ['$a=1$', '1'], ['$a=-3$', '2']]) }
+    ]
+  },
+
+  /* ===================== EJERCICIO 7: rango 3x4 con parámetro ===================== */
+  {
+    titulo: "Ejercicio 7",
+    enunciado: '<p>Calcula, según los valores del parámetro $a$, el rango de la matriz</p>' +
+      ec(f('M='), mat([['1','0','1','2'],['2','1','3','a'],['1','-1','0','1']])),
+    pasos: [
+      { titulo: "Rango máximo",
+        html: String.raw`<p>La matriz $M$ tiene 3 filas y 4 columnas, luego $\operatorname{rg}(M)\leq3$.</p>` },
+      { titulo: "Un menor de orden 2 distinto de cero",
+        html: ec(f('M='), mat([['1','0','1','2'],['2','1','3','a'],['1','-1','0','1']], {box: [[0,0,1,1]]})) +
+          String.raw`<p>El menor marcado, $\begin{vmatrix} 1&0\\ 2&1 \end{vmatrix}=1\cdot1-0\cdot2=1$, es distinto de cero, y no depende de $a$. Por tanto:</p>
+          $$\operatorname{rg}(M)\geq2$$` },
+      { titulo: "Orlamos el menor",
+        html: String.raw`<p>Para saber si el rango es 3 basta con <b>orlar</b> ese menor: añadimos la fila 3 y, una a una, las columnas que faltan (la 3.ª y la 4.ª). Si alguno de estos menores de orden 3 es distinto de cero, el rango es 3; si los dos son nulos, el rango es 2.</p>` +
+          fm(
+            sb(detTex([['1','0','1'],['2','1','3'],['1','-1','0']]) + '=' + sarrusTex([['1','0','1'],['2','1','3'],['1','-1','0']]) + '\\qquad\\text{(columnas 1, 2 y 3)}'),
+            sb('\\begin{aligned}' + detTex([['1','0','2'],['2','1','a'],['1','-1','1']]) +
+               '&=\\bigl(1\\cdot1\\cdot1+0\\cdot a\\cdot1+2\\cdot2\\cdot(-1)\\bigr)-\\bigl(2\\cdot1\\cdot1+1\\cdot a\\cdot(-1)+0\\cdot2\\cdot1\\bigr)\\\\' +
+               '&=(1+0-4)-(2-a+0)=a-5\\qquad\\text{(columnas 1, 2 y 4)}\\end{aligned}')) +
+          String.raw`<p class="nota">No hace falta calcular los otros menores de orden 3: el que ya es distinto de cero de orden 2 está dentro de estos dos.</p>` },
+      { caja: "Si a ≠ 5",
+        html: String.raw`<p>El menor de columnas 1, 2 y 4 vale $a-5\neq0$, luego</p>
+          $$\operatorname{rg}(M)=3$$` },
+      { caja: "Si a = 5",
+        html: '<p>Sustituimos $a=5$:</p>' + ec(f('M='), mat([['1','0','1','2'],['2','1','3','5'],['1','-1','0','1']], {box: [[0,0,1,1]]})) +
+          String.raw`<p>Los dos menores orlados valen $0$ y $a-5=0$, luego ninguno es distinto de cero:</p>
+          $$\operatorname{rg}(M)=2$$
+          <p class="nota">Otra manera de verlo: la fila 2 es combinación lineal de las otras dos, $F_2=3F_1-F_3$, pues $3(1,0,1,2)-(1,-1,0,1)=(2,1,3,5)$.</p>` },
+      { nueva: true, caja: "Resumen",
+        html: tabla(['Valor de $a$', '$\\operatorname{rg}(M)$'],
+          [['$a\\neq5$', '3'], ['$a=5$', '2']]) }
+    ]
+  },
+
+  /* ===================== EJERCICIO 8 (problema 5) ===================== */
+  {
+    titulo: "Ejercicio 8",
+    enunciado: '<p>Dado el sistema de ecuaciones lineales</p>' +
+      String.raw`$$\left\{\begin{array}{rcrcrcl}(a+1)x& &&+&(a-1)z&=&1\\ (a+1)x&+&2y&+&z&=&a\\ &&2y&-&z&=&0\end{array}\right.$$
+      <p style="margin-left:1.6em">a)&nbsp; Discute el sistema según los valores del parámetro $a$.</p>
+      <p style="margin-left:1.6em">b)&nbsp; Resuélvelo para el valor de $a$ que lo hace compatible indeterminado.</p>`,
+    pasos: [].concat(
+      pasosInicio({
+        A: [['a+1','0','a-1'],['a+1','2','1'],['0','2','-1']],
+        x: ['x','y','z'], b: ['1','a','0'],
+        Ap: [['a+1','0','a-1','1'],['a+1','2','1','a'],['0','2','-1','0']],
+        det: String.raw`
+          $$\begin{aligned}
+          \begin{vmatrix} a+1&0&a-1\\ a+1&2&1\\ 0&2&-1 \end{vmatrix}
+          &=\bigl((a+1)\cdot2\cdot(-1)+0\cdot1\cdot0+(a-1)(a+1)\cdot2\bigr)-\bigl((a-1)\cdot2\cdot0+(a+1)\cdot1\cdot2+0\cdot(a+1)(-1)\bigr)\\[1mm]
+          &=\bigl(-2(a+1)+0+2(a-1)(a+1)\bigr)-\bigl(0+2(a+1)+0\bigr)\\[1mm]
+          &=2(a+1)\bigl[-1+(a-1)-1\bigr]=2(a+1)(a-3)
+          \end{aligned}$$
+          <p class="nota">(regla de Sarrus; sacamos factor común $2(a+1)$)</p>`,
+        ecuacion: '2(a+1)(a-3)=0',
+        resolucion: String.raw`<p>Un producto es cero cuando algún factor es cero:</p>
+          $$a+1=0\;\Rightarrow\;a=-1\qquad\qquad a-3=0\;\Rightarrow\;a=3$$
+          <p>Los valores de $a$ son:</p>
+          $$a=-1\quad\text{y}\quad a=3$$`,
+        concl: String.raw`<p>Si $a\neq-1$ y $a\neq3$, entonces $\operatorname{rg}(A)=\operatorname{rg}(A')=3$
+          (el determinante de $A$ no es nulo y $A'$ solo tiene 3 filas), por lo tanto el sistema es
+          <b class="res">compatible determinado</b>.</p>`
+      }),
+      pasosSCI({
+        etiqueta: 'a = −1', valor: 'a=-1',
+        A: [['0','0','-2'],['0','2','1'],['0','2','-1']],
+        Ap: [['0','0','-2','1'],['0','2','1','-1'],['0','2','-1','0']],
+        boxA: [[1,1,2,2]], boxAp: [[1,1,2,2]],
+        menorA: [['2','1'],['2','-1']], valMenorA: '-4',
+        menores: [[['0','0','1'],['0','2','-1'],['0','2','0']],
+                  [['0','-2','1'],['0','1','-1'],['0','-1','0']],
+                  [['0','-2','1'],['2','1','-1'],['2','-1','0']]],
+        comb: String.raw`
+          <p>Sería escribir una fila como combinación lineal de las otras (por filas). Aquí la fila 3 se obtiene sumando las filas 1 y 2 de $A'$:</p>
+          $$F_1+F_2=(0,0,-2,1)+(0,2,1,-1)=(0,2,-1,0)=F_3$$
+          <p>La fila 3 es combinación lineal de las otras, luego $\operatorname{rg}(A')<3$;
+          y como hay un menor de orden 2 distinto de cero, $\operatorname{rg}(A')=2$.</p>`,
+        concl: String.raw`
+          $$\operatorname{rg}(A)=\operatorname{rg}(A')=2<3=\text{número de incógnitas}$$
+          <p><b class="res">El sistema es compatible indeterminado (infinitas soluciones) cuando $a=-1$.</b></p>`
+      }),
+      pasosSI({
+        etiqueta: 'a = 3', valor: 'a=3',
+        A: [['4','0','2'],['4','2','1'],['0','2','-1']],
+        Ap: [['4','0','2','1'],['4','2','1','3'],['0','2','-1','0']],
+        boxA: [[0,0,1,1]], boxAp: [[0,0,2,1],[0,3,2,3]],
+        menorA: [['4','0'],['4','2']], valMenorA: '8',
+        menor3: [['4','0','1'],['4','2','3'],['0','2','0']], valMenor3: '-16',
+        columnas: '1, 2 y 4',
+        concl: String.raw`
+          $$\operatorname{rg}(A)=2\neq3=\operatorname{rg}(A')$$
+          <p><b class="res">El sistema es incompatible (no tiene solución) cuando $a=3$.</b></p>`
+      }),
+      [{
+        nueva: true, caja: "Resumen",
+        html: String.raw`
+          <table class="res">
+            <tr><th>Valor de $a$</th><th>$\operatorname{rg}(A)$</th><th>$\operatorname{rg}(A')$</th><th>Clasificación</th></tr>
+            <tr><td>$a\neq-1,\,3$</td><td>3</td><td>3</td><td>compatible determinado (una solución)</td></tr>
+            <tr><td>$a=-1$</td><td>2</td><td>2</td><td>compatible indeterminado (infinitas)</td></tr>
+            <tr><td>$a=3$</td><td>2</td><td>3</td><td>incompatible (ninguna)</td></tr>
+          </table>`
+      }],
+
+      /* ---- apartado b): resolución ---- */
+      [{
+        nueva: true, titulo: "b) Resolución del sistema compatible indeterminado ($a=-1$)",
+        html: '<p>Cuando $a=-1$ el sistema es compatible indeterminado. Nos quedamos con las filas 2 y 3, y con las columnas de $y$ y $z$, cuyo menor $\\begin{vmatrix}2&1\\\\ 2&-1\\end{vmatrix}=-4\\neq0$. La fila 1 y la columna de $x$ quedan fuera.</p>' +
+              INSTR('x') +
+              ec(f("A'="), mat([['0','0','-2','1'],['0','2','1','-1'],['0','2','-1','0']],
+                              {bar: 3, box: [[1,1,2,2]], tach: [0], etq: [[0, 'x=\\lambda']]}))
+      }, {
+        nueva: true, titulo: "Resolución del sistema",
+        html: String.raw`
+          <p>Eliminando la fila tachada y con $x=\lambda$, los términos en $x$ valen $(a+1)\lambda=0$ y el sistema se reduce a:</p>
+          $$\left\{\begin{array}{l} 2y+z=-1\\ 2y-z=0 \end{array}\right.$$
+          <p>Sumando las dos ecuaciones:</p>
+          $$4y=-1\;\Rightarrow\;y=-\frac{1}{4}$$
+          <p>Sustituyendo en la segunda ecuación:</p>
+          $$z=2y=-\frac{1}{2}$$`
+      }, {
+        caja: "Solución general",
+        html: String.raw`
+          $$\left\{\begin{array}{l} x=\lambda\\[2mm] y=-\dfrac{1}{4}\\[3mm] z=-\dfrac{1}{2} \end{array}\right.\qquad\lambda\in\mathbb{R}$$
+          <p class="nota">Comprobación en la fila 1 (la que hemos tachado) con $a=-1$: $0\cdot\lambda+0\cdot y-2z=-2\cdot\left(-\tfrac{1}{2}\right)=1$. ✓</p>
+          <p>Representa una recta en el espacio; $\lambda$ fija la posición a lo largo de ella.</p>`
+      }]
+    )
+  },
+
+  /* ===================== EJERCICIO 9 (problema 6) ===================== */
+  {
+    titulo: "Ejercicio 9",
+    enunciado: '<p>Dado el sistema de ecuaciones lineales</p>' +
+      String.raw`$$\left\{\begin{array}{rcrcrcl}x&+&y&-&z&=&-a\\ 2x&+&2y&+&az&=&a\\ &&(a-1)y&+&(a-1)z&=&0\end{array}\right.$$
+      <p style="margin-left:1.6em">a)&nbsp; Discute el sistema según los valores del parámetro $a$.</p>
+      <p style="margin-left:1.6em">b)&nbsp; Resuélvelo para el valor de $a$ que lo hace compatible indeterminado.</p>`,
+    pasos: [].concat(
+      pasosInicio({
+        A: [['1','1','-1'],['2','2','a'],['0','a-1','a-1']],
+        x: ['x','y','z'], b: ['-a','a','0'],
+        Ap: [['1','1','-1','-a'],['2','2','a','a'],['0','a-1','a-1','0']],
+        det: String.raw`
+          $$\begin{aligned}
+          \begin{vmatrix} 1&1&-1\\ 2&2&a\\ 0&a-1&a-1 \end{vmatrix}
+          &=\bigl(1\cdot2\,(a-1)+1\cdot a\cdot0+(-1)\cdot2\,(a-1)\bigr)-\bigl((-1)\cdot2\cdot0+1\cdot a\,(a-1)+1\cdot2\,(a-1)\bigr)\\[1mm]
+          &=\bigl(2(a-1)+0-2(a-1)\bigr)-\bigl(0+a(a-1)+2(a-1)\bigr)\\[1mm]
+          &=0-(a-1)(a+2)=-(a-1)(a+2)
+          \end{aligned}$$
+          <p class="nota">(regla de Sarrus; sacamos factor común $(a-1)$)</p>`,
+        ecuacion: '-(a-1)(a+2)=0',
+        resolucion: String.raw`<p>Un producto es cero cuando algún factor es cero:</p>
+          $$a-1=0\;\Rightarrow\;a=1\qquad\qquad a+2=0\;\Rightarrow\;a=-2$$
+          <p>Los valores de $a$ son:</p>
+          $$a=1\quad\text{y}\quad a=-2$$`,
+        concl: String.raw`<p>Si $a\neq1$ y $a\neq-2$, entonces $\operatorname{rg}(A)=\operatorname{rg}(A')=3$
+          (el determinante de $A$ no es nulo y $A'$ solo tiene 3 filas), por lo tanto el sistema es
+          <b class="res">compatible determinado</b>.</p>`
+      }),
+      pasosSCI({
+        etiqueta: 'a = 1', valor: 'a=1',
+        A: [['1','1','-1'],['2','2','1'],['0','0','0']],
+        Ap: [['1','1','-1','-1'],['2','2','1','1'],['0','0','0','0']],
+        boxA: [[0,0,1,0],[0,2,1,2]], boxAp: [[0,0,1,0],[0,2,1,2]],
+        menorA: [['1','-1'],['2','1']], valMenorA: '3',
+        menores: [[['1','1','-1'],['2','2','1'],['0','0','0']],
+                  [['1','-1','-1'],['2','1','1'],['0','0','0']],
+                  [['1','-1','-1'],['2','1','1'],['0','0','0']]],
+        comb: String.raw`
+          <p>Sería escribir una fila como combinación lineal de las otras (por filas). Aquí la fila 3 de $A'$ es nula:</p>
+          $$F_3=(0,0,0,0)=0\cdot F_1+0\cdot F_2$$
+          <p>La fila 3 es combinación lineal de las otras, luego $\operatorname{rg}(A')<3$;
+          y como hay un menor de orden 2 distinto de cero, $\operatorname{rg}(A')=2$.</p>`,
+        concl: String.raw`
+          $$\operatorname{rg}(A)=\operatorname{rg}(A')=2<3=\text{número de incógnitas}$$
+          <p><b class="res">El sistema es compatible indeterminado (infinitas soluciones) cuando $a=1$.</b></p>`
+      }),
+      pasosSI({
+        etiqueta: 'a = −2', valor: 'a=-2',
+        A: [['1','1','-1'],['2','2','-2'],['0','-3','-3']],
+        Ap: [['1','1','-1','2'],['2','2','-2','-2'],['0','-3','-3','0']],
+        boxA: [[1,0,2,1]], boxAp: [[0,0,2,1],[0,3,2,3]],
+        menorA: [['2','2'],['0','-3']], valMenorA: '-6',
+        menor3: [['1','1','2'],['2','2','-2'],['0','-3','0']], valMenor3: '-18',
+        columnas: '1, 2 y 4',
+        concl: String.raw`
+          $$\operatorname{rg}(A)=2\neq3=\operatorname{rg}(A')$$
+          <p><b class="res">El sistema es incompatible (no tiene solución) cuando $a=-2$.</b></p>`
+      }),
+      [{
+        nueva: true, caja: "Resumen",
+        html: String.raw`
+          <table class="res">
+            <tr><th>Valor de $a$</th><th>$\operatorname{rg}(A)$</th><th>$\operatorname{rg}(A')$</th><th>Clasificación</th></tr>
+            <tr><td>$a\neq1,\,-2$</td><td>3</td><td>3</td><td>compatible determinado (una solución)</td></tr>
+            <tr><td>$a=1$</td><td>2</td><td>2</td><td>compatible indeterminado (infinitas)</td></tr>
+            <tr><td>$a=-2$</td><td>2</td><td>3</td><td>incompatible (ninguna)</td></tr>
+          </table>`
+      }],
+
+      /* ---- apartado b): resolución ---- */
+      [{
+        nueva: true, titulo: "b) Resolución del sistema compatible indeterminado ($a=1$)",
+        html: '<p>Cuando $a=1$ el sistema es compatible indeterminado. La fila 3 es nula; nos quedamos con las filas 1 y 2, cuyo menor $\\begin{vmatrix}1&-1\\\\ 2&1\\end{vmatrix}=3\\neq0$ usa las columnas de $x$ y $z$.</p>' +
+              INSTR_Y +
+              ec(f("A'="), mat([['1','1','-1','-1'],['2','2','1','1'],['0','0','0','0']],
+                              {bar: 3, box: [[0,0,1,0],[0,2,1,2]], tach: [2], etq: [[1, 'y=\\lambda']]}))
+      }, {
+        nueva: true, titulo: "Resolución del sistema",
+        html: String.raw`
+          <p>Eliminando la fila tachada y considerando $y=\lambda$, el sistema se reduce a:</p>
+          $$\left\{\begin{array}{l} x+\lambda-z=-1\\ 2x+2\lambda+z=1 \end{array}\right.
+            \;\Rightarrow\;
+            \left\{\begin{array}{l} x-z=-1-\lambda\\ 2x+z=1-2\lambda \end{array}\right.$$
+          <p>Sumando las dos ecuaciones:</p>
+          $$3x=-3\lambda\;\Rightarrow\;x=-\lambda$$
+          <p>Sustituyendo en la primera ecuación:</p>
+          $$-\lambda-z=-1-\lambda\;\Rightarrow\;z=1$$`
+      }, {
+        caja: "Solución general",
+        html: String.raw`
+          $$\left\{\begin{array}{l} x=-\lambda\\ y=\lambda\\ z=1 \end{array}\right.\qquad\lambda\in\mathbb{R}$$
+          <p class="nota">Comprobación en la segunda ecuación con $a=1$: $2(-\lambda)+2\lambda+1=1$. ✓</p>
+          <p>Representa una recta en el espacio; $\lambda$ fija la posición a lo largo de ella.</p>`
+      }]
+    )
+  }
+];
+
+/* ===================================================================== */
+const OPCIONES_MATE = {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "$",  right: "$",  display: false}
+  ],
+  throwOnError: false
+};
+const $ = id => document.getElementById(id);
+function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
+
+/* ---------------------------------------------------------------------
+   MOTOR DEL LIBRO
+   - Cada ejercicio se trocea en "unidades" (un párrafo, una fórmula, una
+     matriz...). Cada clic escribe la siguiente unidad.
+   - Las unidades se reparten en páginas de tamaño fijo (como un libro).
+     Cada valor crítico ("Si a = ...") empieza en página nueva.
+   - Se ven dos páginas. Cuando se llena la de la derecha, pasa a ser la
+     de la izquierda y aparece una página nueva a la derecha.
+   --------------------------------------------------------------------- */
+const LW = 800;                     // ancho lógico de una página (px)
+let actual = 0;                     // ejercicio activo
+let s = 0;                          // unidades escritas
+let G = {};                         // geometría
+let libro = null;                   // {unidades, paginas}
+let Lprev = 0;
+
+function geometria() {
+  const W = $("libro").clientWidth, H = $("libro").clientHeight;
+  const Sw = W / 2, k = (Sw - 20) / LW;
+  G = { W, H, Sw, k, LH: (H - 20) / k };
+}
+
+/* trocea un ejercicio en secciones y unidades (se hace una sola vez) */
+function extraer(e) {
+  if (e._sec) return e._sec;
+  const stage = $("stage"), secs = [];
+  const add = (tipo, cab, html, salto, mismo) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    stage.appendChild(d);
+    mate(d);
+    const unidades = [];
+    d.childNodes.forEach(n => {
+      if (n.nodeType === 1) unidades.push(n);
+      else if (n.nodeType === 3 && n.textContent.trim()) {
+        const sp = document.createElement("span"); sp.textContent = n.textContent; unidades.push(sp);
+      }
+    });
+    let cabHTML = null;
+    if (cab) { const c = document.createElement("div"); c.innerHTML = cab; mate(c); cabHTML = c.innerHTML; }
+    secs.push({ tipo, cabHTML, unidades, salto: !!salto, mismo: !!mismo });
+  };
+  add("titulo", null, "<h1>" + e.titulo + "</h1>");
+  add("enun", null, e.enunciado, false, true);      // título y enunciado salen juntos con un clic
+  e.pasos.forEach(p => add(p.caja ? "caja" : "paso", p.caja || p.titulo, p.html, p.caja && /^Si /.test(p.caja)));
+  stage.innerHTML = "";
+  /* un "tic" = un clic. Cada sección es un bloque; dentro de una fila de menores
+     (.fila-menores) cada .sub sale con su propio clic */
+  let base = 0;
+  secs.forEach(sc => {
+    let cur = sc.mismo ? base : base + 1, nuevo = false;
+    sc.unidades = sc.unidades.map(n => {
+      if (nuevo) { cur++; nuevo = false; }
+      const o = { n, t: cur, subs: [] };
+      if (n.classList && n.classList.contains("fila-menores")) {
+        n.querySelectorAll(".sub").forEach(sb => { cur++; o.subs.push({ n: sb, t: cur }); });
+        nuevo = true;
+      }
+      return o;
+    });
+    base = cur;
+  });
+  e._T = base;
+  e._sec = secs;
+  return secs;
+}
+
+function crearCont(sc, sigue) {
+  const c = document.createElement("div");
+  c.className = "cont";
+  if (sc.tipo === "caja") {
+    c.classList.add("caja");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", '<span class="titulo">' + sc.cabHTML + "</span>");
+  } else if (sc.tipo === "paso") {
+    c.classList.add("paso");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", "<h4>" + sc.cabHTML + "</h4>");
+  } else if (sc.tipo === "enun") {
+    c.classList.add("caja", "enunciado");
+  }
+  if (sigue) c.classList.add("sigue");
+  return c;
+}
+
+/* una fórmula más ancha que la página se reduce hasta caber */
+function ajustar(u) {
+  if (u.classList && u.classList.contains("fila-menores")) {
+    u.style.zoom = "";
+    if (u.scrollWidth > u.clientWidth + 2) u.style.zoom = String(Math.max(.55, u.clientWidth / u.scrollWidth * .97));
+  }
+  u.querySelectorAll(".katex-display").forEach(d => {
+    const k = d.firstElementChild;
+    if (!k) return;
+    k.style.zoom = "";
+    if (d.scrollWidth > d.clientWidth + 2) k.style.zoom = String(Math.max(.55, d.clientWidth / d.scrollWidth * .98));
+  });
+}
+
+/* reparte las unidades en páginas del tamaño actual */
+function paginar(secs, T) {
+  secs.T = T;
+  const pista = $("pista");
+  pista.innerHTML = "";
+  const paginas = [], unidades = [];
+  const nueva = () => {
+    const hoja = document.createElement("div");
+    hoja.className = "hoja";
+    hoja.style.cssText = "left:" + (paginas.length * G.Sw) + "px;width:" + G.Sw + "px;height:" + G.H + "px";
+    const pag = document.createElement("div");
+    pag.className = "pag";
+    pag.style.cssText = "width:" + LW + "px;height:" + G.LH + "px;transform:scale(" + G.k + ")";
+    const cu = document.createElement("div");
+    cu.className = "cuerpo";
+    cu.style.height = (G.LH - 34 - 56) + "px";
+    const num = document.createElement("div");
+    num.className = "num"; num.textContent = paginas.length + 1;
+    pag.append(cu, num); hoja.appendChild(pag); pista.appendChild(hoja);
+    const o = { hoja, cu };
+    paginas.push(o);
+    return o;
+  };
+  let pg = nueva();
+  const desborda = () => pg.cu.scrollHeight > pg.cu.clientHeight + 1;
+  secs.forEach(sc => {
+    if (sc.salto && pg.cu.children.length) pg = nueva();
+    let cont = crearCont(sc, false), puestas = 0;
+    pg.cu.appendChild(cont);
+    /* un bloque (lo que sale con un clic) nunca se parte entre dos páginas */
+    const bloques = [];
+    sc.unidades.forEach(un => {
+      const ult = bloques[bloques.length - 1];
+      if (ult && ult[0].t === un.t) ult.push(un); else bloques.push([un]);
+    });
+    bloques.forEach(bl => {
+      bl.forEach(un => {
+        un.n.classList.add("u"); un.n.classList.remove("on");
+        un.subs.forEach(sb => { sb.n.classList.add("u"); sb.n.classList.remove("on"); });
+        cont.appendChild(un.n);
+      });
+      bl.forEach(un => ajustar(un.n));
+      if (desborda()) {
+        bl.forEach(un => cont.removeChild(un.n));
+        if (!puestas) pg.cu.removeChild(cont);
+        if (pg.cu.children.length) pg = nueva();     // página nueva solo si la actual ya tiene algo
+        cont = crearCont(sc, puestas > 0);
+        pg.cu.appendChild(cont);
+        bl.forEach(un => cont.appendChild(un.n));
+        bl.forEach(un => ajustar(un.n));
+      }
+      puestas += bl.length;
+      const pi = paginas.indexOf(pg);
+      bl.forEach(un => {
+        unidades.push({ u: un.n, cont, pag: pi, t: un.t, on: false });
+        un.subs.forEach(sb => unidades.push({ u: sb.n, cont, pag: pi, t: sb.t, on: false }));
+      });
+    });
+  });
+  libro = { unidades, paginas, T: secs.T };
+}
+
+/* pone al día lo que se ve según s */
+function aplicar(anim) {
+  const U = libro.unidades;
+  s = Math.max(0, Math.min(s, libro.T));
+  const conts = new Map();
+  U.forEach((o, i) => {
+    const on = o.t <= s;
+    if (on !== o.on) {
+      o.on = on;
+      if (on) { o.u.classList.remove("rapido"); o.u.classList.add("on"); }
+      else { o.u.classList.add("rapido"); o.u.classList.remove("on"); }
+    }
+    if (on) conts.set(o.cont, true); else if (!conts.has(o.cont)) conts.set(o.cont, false);
+  });
+  conts.forEach((v, c) => {
+    if (v) { c.classList.remove("rapido"); c.classList.add("on"); }
+    else { c.classList.add("rapido"); c.classList.remove("on"); }
+  });
+  let p = 0;
+  U.forEach(o => { if (o.t <= s) p = Math.max(p, o.pag); });
+  const L = Math.max(p - 1, 0);
+  const pista = $("pista");
+  pista.classList.toggle("anim", !!anim);
+  pista.style.transform = "translateX(" + (-L * G.Sw) + "px)";
+  if (anim && L > Lprev) {
+    const h = libro.paginas[p].hoja;
+    h.classList.remove("gira"); void h.offsetWidth; h.classList.add("gira");
+    setTimeout(() => h.classList.remove("gira"), 1000);
+  }
+  Lprev = L;
+  const n = libro.T;
+  $("contador").textContent = EJERCICIOS[actual].titulo + " · " + s + " / " + n;
+  $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
+  $("btnAtras").disabled = (actual === 0 && s <= 1);
+  $("btnAdelante").disabled = (actual === EJERCICIOS.length - 1 && s === n);
+}
+
+function pintarPestanas() {
+  const nav = $("pestanas");
+  nav.innerHTML = "";
+  EJERCICIOS.forEach((e, i) => {
+    const b = document.createElement("button");
+    b.textContent = e.titulo.replace("Ejercicio ", "Ej. ");
+    b.setAttribute("aria-selected", i === actual);
+    b.onclick = ev => { ev.stopPropagation(); cargar(i, false); };
+    nav.appendChild(b);
+  });
+  const sel = nav.querySelector('[aria-selected="true"]');
+  if (sel) sel.scrollIntoView({ inline: "center", block: "nearest" });
+}
+
+function construir() {
+  geometria();
+  const e = EJERCICIOS[actual];
+  const secs = extraer(e);
+  paginar(secs, e._T);
+}
+
+async function cargar(i, alFinal) {
+  const lib = $("libro");
+  lib.classList.add("fuera");
+  await new Promise(r => setTimeout(r, 200));
+  actual = i;
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  construir();
+  s = alFinal ? libro.T : 1;          // al abrir un ejercicio ya se ve el enunciado
+  Lprev = 0;
+  pintarPestanas();
+  aplicar(false);
+  lib.classList.remove("fuera");
+}
+
+function avanzar() {
+  if (s < libro.T) { s++; aplicar(true); }
+  else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
+}
+function retroceder() {
+  if (s > 1) { s--; aplicar(true); }
+  else if (actual > 0) cargar(actual - 1, true);
+}
+
+/* clic: tercio izquierdo = atrás; resto = adelante */
+$("libro").addEventListener("click", ev => {
+  if (String(window.getSelection())) return;
+  if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
+});
+$("btnAtras").onclick = ev => { ev.stopPropagation(); retroceder(); };
+$("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
+$("tira").onclick = ev => {
+  ev.stopPropagation();
+  const r = $("tira").getBoundingClientRect();
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * libro.T));
+  aplicar(true);
+};
+document.addEventListener("keydown", ev => {
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
+  else if (ev.key === "Home") { s = 1; aplicar(true); }
+  else if (ev.key === "End") { s = libro.T; aplicar(true); }
+});
+let tRes = null;
+window.addEventListener("resize", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); Lprev = 0; aplicar(false); } }, 150);
+});
+
+window.addEventListener("load", () => cargar(0, false));
+</script>
+</body>
+</html>
