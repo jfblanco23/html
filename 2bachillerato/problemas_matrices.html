@@ -563,11 +563,9 @@ const EJERCICIOS = [
       { titulo: "Orlamos el menor",
         html: String.raw`<p>Para saber si el rango es 3 basta con <b>orlar</b> ese menor: añadimos la fila 3 y, una a una, las columnas que faltan (la 3.ª y la 4.ª). Si alguno de estos menores de orden 3 es distinto de cero, el rango es 3; si los dos son nulos, el rango es 2.</p>` +
           fm(
-            sb(detTex([['1','0','1'],['2','1','3'],['1','-1','0']]) + '=' + sarrusTex([['1','0','1'],['2','1','3'],['1','-1','0']]) + '\\qquad\\text{(columnas 1, 2 y 3)}'),
-            sb('\\begin{aligned}' + detTex([['1','0','2'],['2','1','a'],['1','-1','1']]) +
-               '&=\\bigl(1\\cdot1\\cdot1+0\\cdot a\\cdot1+2\\cdot2\\cdot(-1)\\bigr)-\\bigl(2\\cdot1\\cdot1+1\\cdot a\\cdot(-1)+0\\cdot2\\cdot1\\bigr)\\\\' +
-               '&=(1+0-4)-(2-a+0)=a-5\\qquad\\text{(columnas 1, 2 y 4)}\\end{aligned}')) +
-          String.raw`<p class="nota">No hace falta calcular los otros menores de orden 3: el que ya es distinto de cero de orden 2 está dentro de estos dos.</p>` },
+            sb(detTex([['1','0','1'],['2','1','3'],['1','-1','0']]) + '=0\\qquad\\text{(columnas 1, 2 y 3)}'),
+            sb(detTex([['1','0','2'],['2','1','a'],['1','-1','1']]) + '=a-5\\qquad\\text{(columnas 1, 2 y 4)}')) +
+          String.raw`<p>El segundo menor vale $a-5$: si $a\neq5$ es distinto de cero y el rango es 3. Estudiamos aparte el caso $a=5$.</p>` },
       { caja: "Si a ≠ 5",
         html: String.raw`<p>El menor de columnas 1, 2 y 4 vale $a-5\neq0$, luego</p>
           $$\operatorname{rg}(M)=3$$` },
@@ -671,7 +669,7 @@ const EJERCICIOS = [
       }, {
         caja: "Solución general",
         html: String.raw`
-          $$\left\{\begin{array}{l} x=\lambda\\[2mm] y=-\dfrac{1}{4}\\[3mm] z=-\dfrac{1}{2} \end{array}\right.\qquad\lambda\in\mathbb{R}$$
+          $$\left\{\begin{array}{l} x=\lambda\\ y=-\dfrac{1}{4}\\ z=-\dfrac{1}{2} \end{array}\right.\qquad\lambda\in\mathbb{R}$$
           <p class="nota">Comprobación en la fila 1 (la que hemos tachado) con $a=-1$: $0\cdot\lambda+0\cdot y-2z=-2\cdot\left(-\tfrac{1}{2}\right)=1$. ✓</p>
           <p>Representa una recta en el espacio; $\lambda$ fija la posición a lo largo de ella.</p>`
       }]
