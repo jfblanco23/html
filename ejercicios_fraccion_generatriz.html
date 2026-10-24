@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fracción generatriz</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#1414E6; --rojo:#E01E1E; --gris:#666;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;color:var(--texto);cursor:pointer;
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:20px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+
+  html,body{overflow:hidden}
+  body{background:#fff}
+
+  /* barra superior */
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:0 14px;display:flex;gap:14px;align-items:center;font-size:.85rem;color:var(--gris)}
+  .barra-sup .tit{font-weight:bold;color:#333;white-space:nowrap}
+  .pestanas{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #333;color:#333}
+  .pestanas button[aria-selected="true"]{background:#333;color:#fff}
+
+  /* barra inferior: botones grandes (pizarra digital) y progreso */
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:.85rem;color:var(--gris)}
+  .progreso .tira{flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .nav{font:inherit;font-size:1.5rem;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:9.5em;text-align:right;white-space:nowrap}
+
+  /* el libro: dos páginas, separadas solo por una línea fina */
+  #libro{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:hidden;background:#fff;transition:opacity .25s ease}
+  #libro.fuera{opacity:0}
+  #pista{position:absolute;left:0;top:0;height:100%;will-change:transform}
+  #pista.anim{transition:transform .9s cubic-bezier(.65,.05,.25,1)}
+  .hoja{position:absolute;top:0;padding:6px 8px}
+  .pag{position:relative;background:#fff;transform-origin:0 0;padding:30px 40px 0}
+  .pag .cuerpo{display:flow-root;overflow:hidden}
+  .pag .num{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#bbb;font-size:.8rem}
+  #lomo{position:absolute;left:50%;top:14px;bottom:14px;width:0;border-left:1px solid #c9c9c9;pointer-events:none;z-index:2}
+  .hoja.gira .pag{animation:gira .9s ease both}
+  @keyframes gira{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#pista.anim{transition:none}.hoja.gira .pag{animation:none}}
+
+  /* lo que se va escribiendo */
+  .cont{opacity:0;transition:opacity .35s ease}
+  .cont.on{opacity:1}
+  .u{opacity:0;clip-path:inset(-40px 100% -40px -40px);transition:opacity .25s ease,clip-path .85s ease}
+  span.u{display:block}
+  .u.on{opacity:1;clip-path:inset(-40px -40px -40px -40px)}
+  .u.rapido,.cont.rapido{transition:none}
+  .cont.sigue{margin-top:0;padding-top:14px;border-top-left-radius:0;border-top-right-radius:0}
+  .fila-menores{display:flex;justify-content:space-around;align-items:center;gap:.4em;margin:.8em 0}
+  .fila-menores .sub{display:block}
+  .fila-menores.col{flex-direction:column;align-items:center;gap:.1em;margin:.4em 0}
+  h1{margin:0 0 6px;font-size:2.1rem;line-height:1.2}
+  h4{margin:16px 0 6px;font-size:1.18rem}
+
+  /* cajas verdes del modelo */
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:20px 20px 10px;margin:26px 0 14px}
+  .caja>.titulo{position:absolute;top:-13px;left:12px;background:var(--verde-titulo);color:#fff;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.92rem}
+  .caja.enunciado{color:var(--azul);margin-top:6px;padding-top:12px}
+  .caja p{margin:.3em 0 .5em}
+  .paso{margin:6px 0 10px}
+
+  /* matrices con menores marcados en caja roja */
+  .ec{display:flex;align-items:center;justify-content:center;gap:.5em;margin:.6em 0;flex-wrap:wrap}
+  .mat{--w:2.5em;--h:1.7em;position:relative;display:inline-grid;
+    grid-template-columns:repeat(var(--nc),var(--w));grid-auto-rows:var(--h);
+    margin:1.1em .7em .2em;text-align:center}
+  .mat .c{display:flex;align-items:center;justify-content:center;white-space:nowrap}
+  .mat::before,.mat::after{content:"";position:absolute;top:-.15em;bottom:-.15em;width:.55em;border:2px solid #111}
+  .mat::before{left:-.7em;border-right:0;border-radius:60% 0 0 60%/50% 0 0 50%}
+  .mat::after{right:-.7em;border-left:0;border-radius:0 60% 60% 0/0 50% 50% 0}
+  .mat .bar{position:absolute;top:.1em;bottom:.1em;left:calc(var(--k) * var(--w));border-left:1.5px solid #111}
+  .mat .caja-roja{position:absolute;border:1.5px solid var(--rojo);pointer-events:none;
+    left:calc(var(--c0) * var(--w) + .15em);top:calc(var(--r0) * var(--h) + .12em);
+    width:calc(var(--cs) * var(--w) - .3em);height:calc(var(--rs) * var(--h) - .24em)}
+  .mat .caja-roja i{position:absolute;left:50%;top:-1.35em;transform:rotate(-40deg);transform-origin:left bottom;
+    color:var(--rojo);font-style:normal;white-space:nowrap}
+  .mat .tacha{position:absolute;left:-.2em;right:-.2em;top:calc((var(--r) + .5) * var(--h));
+    border-top:1.5px solid var(--rojo);pointer-events:none}
+  .mat .etq{position:absolute;left:calc((var(--c) + .5) * var(--w));top:-.15em;width:0;height:0;pointer-events:none}
+  .mat .etq i{position:absolute;left:0;bottom:0;transform:rotate(-40deg);transform-origin:left bottom;
+    color:var(--rojo);font-style:normal;white-space:nowrap}
+  .instr{color:var(--azul);border:1.5px solid #E6C200;border-radius:14px;padding:6px 16px;margin:10px 0;text-align:center}
+  .nota{color:var(--gris);font-size:.9em}
+  b.res{color:var(--rojo)}
+  .katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden}
+  table.res{border-collapse:collapse;margin:6px auto 8px}
+  table.res th,table.res td{padding:5px 16px;text-align:center}
+  table.res th{border-bottom:1.5px solid #111}
+  table.res td:not(:last-child),table.res th:not(:last-child){border-right:1px solid #111}
+  table.res td:last-child,table.res th:last-child{text-align:left}
+
+  /* ---- añadidos para estas páginas ---- */
+  svg.recta{display:block;width:100%;max-width:740px;height:auto;margin:.2em auto}
+  .ec svg.recta{flex:1 1 100%}
+  table.res td.i,table.res th.i{text-align:center}
+  body.inter{cursor:default}
+  .inter{color:#111}
+  .inter p{margin:.4em 0}
+  .inter .resp{display:flex;align-items:center;gap:.6em;margin:.55em 0;flex-wrap:wrap}
+  .inter label{min-width:4.6em;text-align:right}
+  .inter input{font:inherit;font-size:1.05rem;width:19em;max-width:100%;padding:3px 10px;border:2px solid var(--verde-borde);
+    border-radius:8px;background:#fff;color:#111;cursor:text}
+  .inter input:focus{outline:none;border-color:var(--verde-titulo);box-shadow:0 0 0 3px #e5ffe5}
+  .inter input.ok{background:#e9fbe9;border-color:#2e9e2e}
+  .inter input.mal{background:#fff1f1;border-color:var(--rojo)}
+  .inter .fb{font-size:.95em}
+  .inter .fb.ok{color:#1b7a1b}
+  .inter .fb.mal{color:var(--rojo)}
+  .inter .acciones{display:flex;align-items:center;gap:1em;margin:.7em 0 .3em}
+  .inter button{font:inherit;font-size:1rem;padding:4px 18px;border-radius:999px;cursor:pointer;background:#2e9e2e;border:0;color:#fff}
+  .inter button:disabled{opacity:.4;cursor:default}
+  .inter .intentos{color:var(--gris);font-size:.9em}
+  .inter .pista{color:var(--azul);margin:.3em 0}
+  .inter .caja{margin-top:24px}
+  #puntos{color:#2e7d2e;font-weight:bold;white-space:nowrap;font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="barra-sup">
+  <span class="tit">Fracción generatriz</span>
+  <nav class="pestanas" id="pestanas" aria-label="Ejercicios"></nav>
+</div>
+<div id="libro"><div id="pista"></div><div id="lomo"></div></div>
+<div id="stage" style="position:absolute;left:-99999px;top:0;width:720px;visibility:hidden"></div>
+<div class="progreso">
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
+  <span id="contador"></span>
+</div>
+
+<script>
+
+const ec = (...partes) => '<div class="ec">' + partes.join('') + '</div>';
+const f = s => '<span>$' + s + '$</span>';
+const q = Math.sqrt, c3 = Math.cbrt, pw = Math.pow;
+/* número con coma decimal, listo para KaTeX */
+const D = (x, n = 3) => String(+x.toFixed(n)).replace('.', '{,}');
+/* comprobación numérica: se calcula en el navegador con las dos expresiones */
+const chk = (l, vl, r, vr, n = 3) => '<p class="nota">Comprobación con la calculadora: $' + l + '\\approx ' + D(vl, n) +
+  '$ y $' + r + '\\approx ' + D(vr, n) + '$.</p>';
+
+/* =====================================================================
+   FRACCIÓN GENERATRIZ: 6 ejercicios
+   ===================================================================== */
+const IDEA_EX = { caja: 'Decimal exacto',
+  html: String.raw`<p>El numerador es el número <b>sin la coma</b>; el denominador es un $1$ seguido de <b>tantos ceros como cifras decimales</b> tenga.</p>` };
+const IDEA_PER = { caja: 'Decimal periódico',
+  html: String.raw`<p>Llamamos $x$ al número y lo multiplicamos por potencias de $10$ para tener <b>dos números con la misma parte decimal</b>. Al restarlos, la parte periódica desaparece y despejamos $x$.</p>` };
+
+const EJERCICIOS = [
+
+  /* ===================== EJERCICIO 1 ===================== */
+  {
+    titulo: 'Ejercicio 1',
+    enunciado: String.raw`<p>Calcula la fracción generatriz de $2{,}3$.</p>`,
+    pasos: [
+      IDEA_EX,
+      { titulo: 'Un decimal',
+        html: String.raw`<p>Sin la coma queda $23$, y hay una cifra decimal, luego el denominador es $10$:</p>
+          $$2{,}3=\dfrac{23}{10}$$
+          <p>La fracción es irreducible: $23$ es primo.</p>` },
+      { caja: 'Resultado',
+        html: String.raw`$$2{,}3=\dfrac{23}{10}$$` + '<p class="nota">Comprobación: $23:10=' + D(23 / 10, 1) + '$.</p>' }
+    ]
+  },
+
+  /* ===================== EJERCICIO 2 ===================== */
+  {
+    titulo: 'Ejercicio 2',
+    enunciado: String.raw`<p>Calcula la fracción generatriz de $2{,}45$.</p>`,
+    pasos: [
+      { titulo: 'Dos cifras decimales',
+        html: String.raw`<p>Sin la coma queda $245$, y hay dos cifras decimales, luego el denominador es $100$:</p>
+          $$2{,}45=\dfrac{245}{100}$$` },
+      { titulo: 'Simplificamos',
+        html: String.raw`<p>Dividimos numerador y denominador entre $5$:</p>
+          $$\dfrac{245}{100}=\dfrac{49}{20}$$
+          <p>$49=7^2$ y $20=2^2\cdot5$ no tienen factores comunes: ya es irreducible.</p>` },
+      { caja: 'Resultado',
+        html: String.raw`$$2{,}45=\dfrac{49}{20}$$` + '<p class="nota">Comprobación: $49:20=' + D(49 / 20, 2) + '$.</p>' }
+    ]
+  },
+
+  /* ===================== EJERCICIO 3 ===================== */
+  {
+    titulo: 'Ejercicio 3',
+    enunciado: String.raw`<p>Calcula la fracción generatriz de $34{,}\overset{\frown}{2}$ (es decir, $34{,}222\ldots$).</p>`,
+    pasos: [
+      IDEA_PER,
+      { titulo: 'Planteamos $x$',
+        html: String.raw`$$x=34{,}222\ldots$$
+          <p>El periodo ($2$) tiene una cifra y empieza justo después de la coma. Multiplicamos por $10$ para mover la coma una cifra:</p>
+          $$10x=342{,}222\ldots$$` },
+      { titulo: 'Restamos para eliminar el periodo',
+        html: String.raw`$$\begin{aligned}10x&=342{,}222\ldots\\ x&=\ \ 34{,}222\ldots\\ \hline 9x&=308\end{aligned}$$` },
+      { titulo: 'Despejamos $x$',
+        html: String.raw`$$x=\dfrac{308}{9}$$
+          <p>$308=2^2\cdot7\cdot11$ y $9=3^2$: no se puede simplificar.</p>` },
+      { caja: 'Resultado',
+        html: String.raw`$$34{,}\overset{\frown}{2}=\dfrac{308}{9}$$` + '<p class="nota">Comprobación: $308:9=' + D(308 / 9, 4) + '\\ldots$</p>' }
+    ]
+  },
+
+  /* ===================== EJERCICIO 4 ===================== */
+  {
+    titulo: 'Ejercicio 4',
+    enunciado: String.raw`<p>Calcula la fracción generatriz de $54{,}3\overset{\frown}{74}$ (es decir, $54{,}3747474\ldots$).</p>`,
+    pasos: [
+      { caja: 'Periódico mixto',
+        html: String.raw`<p>Hay una cifra entre la coma y el periodo (el <b>anteperiodo</b>, $3$) y el periodo es $74$ (dos cifras).</p>
+          <p>Necesitamos dos números con la misma parte decimal: uno que deje el anteperiodo antes de la coma y otro que deje también el primer periodo.</p>` },
+      { titulo: 'Planteamos $x$ y multiplicamos',
+        html: String.raw`$$x=54{,}3747474\ldots$$
+          <p>Multiplicamos por $10$ (la coma pasa detrás del anteperiodo):</p>
+          $$10x=543{,}747474\ldots$$
+          <p>Multiplicamos por $1000$ (la coma pasa detrás del primer periodo):</p>
+          $$1000x=54374{,}747474\ldots$$` },
+      { titulo: 'Restamos',
+        html: String.raw`$$\begin{aligned}1000x&=54374{,}7474\ldots\\ 10x&=\ \ \ 543{,}7474\ldots\\ \hline 990x&=53831\end{aligned}$$` },
+      { titulo: 'Despejamos $x$',
+        html: String.raw`$$x=\dfrac{53831}{990}$$
+          <p>$990=2\cdot3^2\cdot5\cdot11$. El numerador $53831$ no es par, no acaba en $0$ ni en $5$, sus cifras suman $20$ (no es múltiplo de $3$) y no es múltiplo de $11$: la fracción es irreducible.</p>` },
+      { caja: 'Resultado',
+        html: String.raw`$$54{,}3\overset{\frown}{74}=\dfrac{53831}{990}$$` + '<p class="nota">Comprobación: $53831:990=' + D(53831 / 990, 6) + '\\ldots$</p>' }
+    ]
+  },
+
+  /* ===================== EJERCICIO 5 ===================== */
+  {
+    titulo: 'Ejercicio 5',
+    enunciado: String.raw`<p>Calcula la fracción generatriz de $0{,}\overset{\frown}{36}$ (es decir, $0{,}3636\ldots$).</p>`,
+    pasos: [
+      { titulo: 'Planteamos $x$',
+        html: String.raw`$$x=0{,}3636\ldots$$
+          <p>El periodo tiene dos cifras: multiplicamos por $100$:</p>
+          $$100x=36{,}3636\ldots$$` },
+      { titulo: 'Restamos',
+        html: String.raw`$$\begin{aligned}100x&=36{,}3636\ldots\\ x&=\ \ 0{,}3636\ldots\\ \hline 99x&=36\end{aligned}$$` },
+      { titulo: 'Despejamos y simplificamos',
+        html: String.raw`<p>Dividimos entre $9$ (es el máximo común divisor de $36$ y $99$):</p>
+          $$x=\dfrac{36}{99}=\dfrac{4}{11}$$` },
+      { caja: 'Resultado',
+        html: String.raw`$$0{,}\overset{\frown}{36}=\dfrac{4}{11}$$` + '<p class="nota">Comprobación: $4:11=' + D(4 / 11, 6) + '\\ldots$</p>' }
+    ]
+  },
+
+  /* ===================== EJERCICIO 6 ===================== */
+  {
+    titulo: 'Ejercicio 6',
+    enunciado: String.raw`<p>Calcula la fracción generatriz de $12{,}5\overset{\frown}{4}$ (es decir, $12{,}5444\ldots$).</p>`,
+    pasos: [
+      { titulo: 'Planteamos $x$ y multiplicamos',
+        html: String.raw`<p>Anteperiodo $5$ (una cifra) y periodo $4$ (una cifra):</p>
+          $$x=12{,}5444\ldots$$
+          $$10x=125{,}444\ldots\qquad 100x=1254{,}444\ldots$$` },
+      { titulo: 'Restamos',
+        html: String.raw`$$\begin{aligned}100x&=1254{,}444\ldots\\ 10x&=\ \ 125{,}444\ldots\\ \hline 90x&=1129\end{aligned}$$` },
+      { titulo: 'Despejamos $x$',
+        html: String.raw`$$x=\dfrac{1129}{90}$$
+          <p>$1129$ no es par, no acaba en $0$ ni en $5$ y sus cifras suman $13$ (no es múltiplo de $3$): irreducible.</p>` },
+      { caja: 'Resultado',
+        html: String.raw`$$12{,}5\overset{\frown}{4}=\dfrac{1129}{90}$$` + '<p class="nota">Comprobación: $1129:90=' + D(1129 / 90, 5) + '\\ldots$</p>' }
+    ]
+  }
+];
+
+const OPCIONES_MATE = {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "$",  right: "$",  display: false}
+  ],
+  throwOnError: false
+};
+const $ = id => document.getElementById(id);
+function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
+
+/* ---------------------------------------------------------------------
+   MOTOR DEL LIBRO
+   - Cada ejercicio se trocea en "unidades" (un párrafo, una fórmula, una
+     matriz...). Cada clic escribe la siguiente unidad.
+   - Las unidades se reparten en páginas de tamaño fijo (como un libro).
+     Cada valor crítico ("Si a = ...") empieza en página nueva.
+   - Se ven dos páginas. Cuando se llena la de la derecha, pasa a ser la
+     de la izquierda y aparece una página nueva a la derecha.
+   --------------------------------------------------------------------- */
+const LW = 800;                     // ancho lógico de una página (px)
+let actual = 0;                     // ejercicio activo
+let s = 0;                          // unidades escritas
+let G = {};                         // geometría
+let libro = null;                   // {unidades, paginas}
+let Lprev = 0;
+
+function geometria() {
+  const W = $("libro").clientWidth, H = $("libro").clientHeight;
+  const Sw = W / 2, k = (Sw - 20) / LW;
+  G = { W, H, Sw, k, LH: (H - 20) / k };
+}
+
+/* trocea un ejercicio en secciones y unidades (se hace una sola vez) */
+function extraer(e) {
+  if (e._sec) return e._sec;
+  const stage = $("stage"), secs = [];
+  const add = (tipo, cab, html, salto, mismo) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    stage.appendChild(d);
+    mate(d);
+    const unidades = [];
+    d.childNodes.forEach(n => {
+      if (n.nodeType === 1) unidades.push(n);
+      else if (n.nodeType === 3 && n.textContent.trim()) {
+        const sp = document.createElement("span"); sp.textContent = n.textContent; unidades.push(sp);
+      }
+    });
+    let cabHTML = null;
+    if (cab) { const c = document.createElement("div"); c.innerHTML = cab; mate(c); cabHTML = c.innerHTML; }
+    secs.push({ tipo, cabHTML, unidades, salto: !!salto, mismo: !!mismo });
+  };
+  add("titulo", null, "<h1>" + e.titulo + "</h1>");
+  add("enun", null, e.enunciado, false, true);      // título y enunciado salen juntos con un clic
+  e.pasos.forEach(p => add(p.caja ? "caja" : "paso", p.caja || p.titulo, p.html, p.caja && /^Si /.test(p.caja)));
+  stage.innerHTML = "";
+  /* un "tic" = un clic. Cada sección es un bloque; dentro de una fila de menores
+     (.fila-menores) cada .sub sale con su propio clic */
+  let base = 0;
+  secs.forEach(sc => {
+    let cur = sc.mismo ? base : base + 1, nuevo = false;
+    sc.unidades = sc.unidades.map(n => {
+      if (nuevo) { cur++; nuevo = false; }
+      const o = { n, t: cur, subs: [] };
+      if (n.classList && n.classList.contains("fila-menores")) {
+        n.querySelectorAll(".sub").forEach(sb => { cur++; o.subs.push({ n: sb, t: cur }); });
+        nuevo = true;
+      }
+      return o;
+    });
+    base = cur;
+  });
+  e._T = base;
+  e._sec = secs;
+  return secs;
+}
+
+function crearCont(sc, sigue) {
+  const c = document.createElement("div");
+  c.className = "cont";
+  if (sc.tipo === "caja") {
+    c.classList.add("caja");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", '<span class="titulo">' + sc.cabHTML + "</span>");
+  } else if (sc.tipo === "paso") {
+    c.classList.add("paso");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", "<h4>" + sc.cabHTML + "</h4>");
+  } else if (sc.tipo === "enun") {
+    c.classList.add("caja", "enunciado");
+  }
+  if (sigue) c.classList.add("sigue");
+  return c;
+}
+
+/* una fórmula más ancha que la página se reduce hasta caber */
+function ajustar(u) {
+  if (u.classList && u.classList.contains("fila-menores")) {
+    u.style.zoom = "";
+    if (u.scrollWidth > u.clientWidth + 2) u.style.zoom = String(Math.max(.55, u.clientWidth / u.scrollWidth * .97));
+  }
+  u.querySelectorAll(".katex-display").forEach(d => {
+    const k = d.firstElementChild;
+    if (!k) return;
+    k.style.zoom = "";
+    if (d.scrollWidth > d.clientWidth + 2) k.style.zoom = String(Math.max(.55, d.clientWidth / d.scrollWidth * .98));
+  });
+}
+
+/* reparte las unidades en páginas del tamaño actual */
+function paginar(secs, T) {
+  secs.T = T;
+  const pista = $("pista");
+  pista.innerHTML = "";
+  const paginas = [], unidades = [];
+  const nueva = () => {
+    const hoja = document.createElement("div");
+    hoja.className = "hoja";
+    hoja.style.cssText = "left:" + (paginas.length * G.Sw) + "px;width:" + G.Sw + "px;height:" + G.H + "px";
+    const pag = document.createElement("div");
+    pag.className = "pag";
+    pag.style.cssText = "width:" + LW + "px;height:" + G.LH + "px;transform:scale(" + G.k + ")";
+    const cu = document.createElement("div");
+    cu.className = "cuerpo";
+    cu.style.height = (G.LH - 34 - 56) + "px";
+    const num = document.createElement("div");
+    num.className = "num"; num.textContent = paginas.length + 1;
+    pag.append(cu, num); hoja.appendChild(pag); pista.appendChild(hoja);
+    const o = { hoja, cu };
+    paginas.push(o);
+    return o;
+  };
+  let pg = nueva();
+  const desborda = () => pg.cu.scrollHeight > pg.cu.clientHeight + 1;
+  secs.forEach(sc => {
+    if (sc.salto && pg.cu.children.length) pg = nueva();
+    let cont = crearCont(sc, false), puestas = 0;
+    pg.cu.appendChild(cont);
+    /* un bloque (lo que sale con un clic) nunca se parte entre dos páginas */
+    const bloques = [];
+    sc.unidades.forEach(un => {
+      const ult = bloques[bloques.length - 1];
+      if (ult && ult[0].t === un.t) ult.push(un); else bloques.push([un]);
+    });
+    bloques.forEach(bl => {
+      bl.forEach(un => {
+        un.n.classList.add("u"); un.n.classList.remove("on");
+        un.subs.forEach(sb => { sb.n.classList.add("u"); sb.n.classList.remove("on"); });
+        cont.appendChild(un.n);
+      });
+      bl.forEach(un => ajustar(un.n));
+      if (desborda()) {
+        bl.forEach(un => cont.removeChild(un.n));
+        if (!puestas) pg.cu.removeChild(cont);
+        if (pg.cu.children.length) pg = nueva();     // página nueva solo si la actual ya tiene algo
+        cont = crearCont(sc, puestas > 0);
+        pg.cu.appendChild(cont);
+        bl.forEach(un => cont.appendChild(un.n));
+        bl.forEach(un => ajustar(un.n));
+      }
+      puestas += bl.length;
+      const pi = paginas.indexOf(pg);
+      bl.forEach(un => {
+        unidades.push({ u: un.n, cont, pag: pi, t: un.t, on: false });
+        un.subs.forEach(sb => unidades.push({ u: sb.n, cont, pag: pi, t: sb.t, on: false }));
+      });
+    });
+  });
+  libro = { unidades, paginas, T: secs.T };
+}
+
+/* pone al día lo que se ve según s */
+function aplicar(anim) {
+  const U = libro.unidades;
+  s = Math.max(0, Math.min(s, libro.T));
+  const conts = new Map();
+  U.forEach((o, i) => {
+    const on = o.t <= s;
+    if (on !== o.on) {
+      o.on = on;
+      if (on) { o.u.classList.remove("rapido"); o.u.classList.add("on"); }
+      else { o.u.classList.add("rapido"); o.u.classList.remove("on"); }
+    }
+    if (on) conts.set(o.cont, true); else if (!conts.has(o.cont)) conts.set(o.cont, false);
+  });
+  conts.forEach((v, c) => {
+    if (v) { c.classList.remove("rapido"); c.classList.add("on"); }
+    else { c.classList.add("rapido"); c.classList.remove("on"); }
+  });
+  let p = 0;
+  U.forEach(o => { if (o.t <= s) p = Math.max(p, o.pag); });
+  const L = Math.max(p - 1, 0);
+  const pista = $("pista");
+  pista.classList.toggle("anim", !!anim);
+  pista.style.transform = "translateX(" + (-L * G.Sw) + "px)";
+  if (anim && L > Lprev) {
+    const h = libro.paginas[p].hoja;
+    h.classList.remove("gira"); void h.offsetWidth; h.classList.add("gira");
+    setTimeout(() => h.classList.remove("gira"), 1000);
+  }
+  Lprev = L;
+  const n = libro.T;
+  $("contador").textContent = EJERCICIOS[actual].interactivo ? EJERCICIOS[actual].titulo : EJERCICIOS[actual].titulo + " · " + s + " / " + n;
+  $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
+  $("btnAtras").disabled = (actual === 0 && s <= 1);
+  $("btnAdelante").disabled = (actual === EJERCICIOS.length - 1 && s === n);
+}
+
+function pintarPestanas() {
+  const nav = $("pestanas");
+  nav.innerHTML = "";
+  EJERCICIOS.forEach((e, i) => {
+    const b = document.createElement("button");
+    b.textContent = e.corto || e.titulo.replace("Ejercicio ", "Ej. ");
+    b.setAttribute("aria-selected", i === actual);
+    b.onclick = ev => { ev.stopPropagation(); cargar(i, false); };
+    nav.appendChild(b);
+  });
+  const sel = nav.querySelector('[aria-selected="true"]');
+  if (sel) sel.scrollIntoView({ inline: "center", block: "nearest" });
+}
+
+function construir() {
+  geometria();
+  const e = EJERCICIOS[actual];
+  const secs = extraer(e);
+  paginar(secs, e._T);
+}
+
+async function cargar(i, alFinal) {
+  const lib = $("libro");
+  lib.classList.add("fuera");
+  await new Promise(r => setTimeout(r, 200));
+  actual = i;
+  document.body.classList.toggle("inter", !!EJERCICIOS[actual].interactivo);
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  construir();
+  s = alFinal ? libro.T : 1;          // al abrir un ejercicio ya se ve el enunciado
+  Lprev = 0;
+  pintarPestanas();
+  aplicar(false);
+  lib.classList.remove("fuera");
+}
+
+function avanzar() {
+  if (s < libro.T) { s++; aplicar(true); }
+  else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
+}
+function retroceder() {
+  if (s > 1) { s--; aplicar(true); }
+  else if (actual > 0) cargar(actual - 1, true);
+}
+
+/* clic: tercio izquierdo = atrás; resto = adelante */
+$("libro").addEventListener("click", ev => {
+  if (String(window.getSelection())) return;
+  if (EJERCICIOS[actual].interactivo || ev.target.closest("input,button,a,.inter")) return;
+  if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
+});
+$("btnAtras").onclick = ev => { ev.stopPropagation(); retroceder(); };
+$("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
+$("tira").onclick = ev => {
+  ev.stopPropagation();
+  const r = $("tira").getBoundingClientRect();
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * libro.T));
+  aplicar(true);
+};
+document.addEventListener("keydown", ev => {
+  if (ev.target.closest && ev.target.closest("input,textarea,button,select")) return;
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
+  else if (ev.key === "Home") { s = 1; aplicar(true); }
+  else if (ev.key === "End") { s = libro.T; aplicar(true); }
+});
+let tRes = null;
+window.addEventListener("resize", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); Lprev = 0; aplicar(false); } }, 150);
+});
+
+window.addEventListener("load", () => cargar(0, false));
+</script>
+</body>
+</html>
