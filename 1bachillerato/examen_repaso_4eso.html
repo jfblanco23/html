@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Repaso tipo examen · 4º ESO</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#1414E6; --rojo:#E01E1E; --gris:#666;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;color:var(--texto);cursor:pointer;
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:20px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+
+  html,body{overflow:hidden}
+  body{background:#fff}
+
+  /* barra superior */
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:0 14px;display:flex;gap:14px;align-items:center;font-size:.85rem;color:var(--gris)}
+  .barra-sup .tit{font-weight:bold;color:#333;white-space:nowrap}
+  .pestanas{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #333;color:#333}
+  .pestanas button[aria-selected="true"]{background:#333;color:#fff}
+
+  /* barra inferior: botones grandes (pizarra digital) y progreso */
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:.85rem;color:var(--gris)}
+  .progreso .tira{flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .nav{font:inherit;font-size:1.5rem;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:9.5em;text-align:right;white-space:nowrap}
+
+  /* el libro: dos páginas, separadas solo por una línea fina */
+  #libro{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:hidden;background:#fff;transition:opacity .25s ease}
+  #libro.fuera{opacity:0}
+  #pista{position:absolute;left:0;top:0;height:100%;will-change:transform}
+  #pista.anim{transition:transform .9s cubic-bezier(.65,.05,.25,1)}
+  .hoja{position:absolute;top:0;padding:6px 8px}
+  .pag{position:relative;background:#fff;transform-origin:0 0;padding:30px 40px 0}
+  .pag .cuerpo{display:flow-root;overflow:hidden}
+  .pag .num{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#bbb;font-size:.8rem}
+  #lomo{position:absolute;left:50%;top:14px;bottom:14px;width:0;border-left:1px solid #c9c9c9;pointer-events:none;z-index:2}
+  .hoja.gira .pag{animation:gira .9s ease both}
+  @keyframes gira{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#pista.anim{transition:none}.hoja.gira .pag{animation:none}}
+
+  /* lo que se va escribiendo */
+  .cont{opacity:0;transition:opacity .35s ease}
+  .cont.on{opacity:1}
+  .u{opacity:0;clip-path:inset(-40px 100% -40px -40px);transition:opacity .25s ease,clip-path .85s ease}
+  span.u{display:block}
+  .u.on{opacity:1;clip-path:inset(-40px -40px -40px -40px)}
+  .u.rapido,.cont.rapido{transition:none}
+  .cont.sigue{margin-top:0;padding-top:14px;border-top-left-radius:0;border-top-right-radius:0}
+  .fila-menores{display:flex;justify-content:space-around;align-items:center;gap:.4em;margin:.8em 0}
+  .fila-menores .sub{display:block}
+  .fila-menores.col{flex-direction:column;align-items:center;gap:.1em;margin:.4em 0}
+  h1{margin:0 0 6px;font-size:2.1rem;line-height:1.2}
+  h4{margin:16px 0 6px;font-size:1.18rem}
+
+  /* cajas verdes del modelo */
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:20px 20px 10px;margin:26px 0 14px}
+  .caja>.titulo{position:absolute;top:-13px;left:12px;background:var(--verde-titulo);color:#fff;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.92rem}
+  .caja.enunciado{color:var(--azul);margin-top:6px;padding-top:12px}
+  .caja p{margin:.3em 0 .5em}
+  .paso{margin:6px 0 10px}
+
+  /* matrices con menores marcados en caja roja */
+  .ec{display:flex;align-items:center;justify-content:center;gap:.5em;margin:.6em 0;flex-wrap:wrap}
+  .mat{--w:2.5em;--h:1.7em;position:relative;display:inline-grid;
+    grid-template-columns:repeat(var(--nc),var(--w));grid-auto-rows:var(--h);
+    margin:1.1em .7em .2em;text-align:center}
+  .mat .c{display:flex;align-items:center;justify-content:center;white-space:nowrap}
+  .mat::before,.mat::after{content:"";position:absolute;top:-.15em;bottom:-.15em;width:.55em;border:2px solid #111}
+  .mat::before{left:-.7em;border-right:0;border-radius:60% 0 0 60%/50% 0 0 50%}
+  .mat::after{right:-.7em;border-left:0;border-radius:0 60% 60% 0/0 50% 50% 0}
+  .mat .bar{position:absolute;top:.1em;bottom:.1em;left:calc(var(--k) * var(--w));border-left:1.5px solid #111}
+  .mat .caja-roja{position:absolute;border:1.5px solid var(--rojo);pointer-events:none;
+    left:calc(var(--c0) * var(--w) + .15em);top:calc(var(--r0) * var(--h) + .12em);
+    width:calc(var(--cs) * var(--w) - .3em);height:calc(var(--rs) * var(--h) - .24em)}
+  .mat .caja-roja i{position:absolute;left:50%;top:-1.35em;transform:rotate(-40deg);transform-origin:left bottom;
+    color:var(--rojo);font-style:normal;white-space:nowrap}
+  .mat .tacha{position:absolute;left:-.2em;right:-.2em;top:calc((var(--r) + .5) * var(--h));
+    border-top:1.5px solid var(--rojo);pointer-events:none}
+  .mat .etq{position:absolute;left:calc((var(--c) + .5) * var(--w));top:-.15em;width:0;height:0;pointer-events:none}
+  .mat .etq i{position:absolute;left:0;bottom:0;transform:rotate(-40deg);transform-origin:left bottom;
+    color:var(--rojo);font-style:normal;white-space:nowrap}
+  .instr{color:var(--azul);border:1.5px solid #E6C200;border-radius:14px;padding:6px 16px;margin:10px 0;text-align:center}
+  .nota{color:var(--gris);font-size:.9em}
+  b.res{color:var(--rojo)}
+  .katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden}
+  table.res{border-collapse:collapse;margin:6px auto 8px}
+  table.res th,table.res td{padding:5px 16px;text-align:center}
+  table.res th{border-bottom:1.5px solid #111}
+  table.res td:not(:last-child),table.res th:not(:last-child){border-right:1px solid #111}
+  table.res td:last-child,table.res th:last-child{text-align:left}
+
+  /* ---- añadidos para estas páginas ---- */
+  svg.recta{display:block;width:100%;max-width:740px;height:auto;margin:.2em auto}
+  .ec svg.recta{flex:1 1 100%}
+  table.res td.i,table.res th.i{text-align:center}
+  body.inter{cursor:default}
+  .inter{color:#111}
+  .inter p{margin:.4em 0}
+  .inter .resp{display:flex;align-items:center;gap:.6em;margin:.55em 0;flex-wrap:wrap}
+  .inter label{min-width:4.6em;text-align:right}
+  .inter input{font:inherit;font-size:1.05rem;width:19em;max-width:100%;padding:3px 10px;border:2px solid var(--verde-borde);
+    border-radius:8px;background:#fff;color:#111;cursor:text}
+  .inter input:focus{outline:none;border-color:var(--verde-titulo);box-shadow:0 0 0 3px #e5ffe5}
+  .inter input.ok{background:#e9fbe9;border-color:#2e9e2e}
+  .inter input.mal{background:#fff1f1;border-color:var(--rojo)}
+  .inter .fb{font-size:.95em}
+  .inter .fb.ok{color:#1b7a1b}
+  .inter .fb.mal{color:var(--rojo)}
+  .inter .acciones{display:flex;align-items:center;gap:1em;margin:.7em 0 .3em}
+  .inter button{font:inherit;font-size:1rem;padding:4px 18px;border-radius:999px;cursor:pointer;background:#2e9e2e;border:0;color:#fff}
+  .inter button:disabled{opacity:.4;cursor:default}
+  .inter .intentos{color:var(--gris);font-size:.9em}
+  .inter .pista{color:var(--azul);margin:.3em 0}
+  .inter .caja{margin-top:24px}
+  #puntos{color:#2e7d2e;font-weight:bold;white-space:nowrap;font-size:.85rem}
+@keyframes extIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes defFly{0%{transform:translate(var(--dx),var(--dy)) scale(var(--s));opacity:var(--o0,1)}
+  22%{transform:translate(var(--dx),var(--dy)) scale(var(--s));opacity:1}
+  100%{transform:none;opacity:1}}
+/* pasos sueltos: sin hueco entre líneas */
+.cont.paso{margin:0}
+.cont.paso .katex-display{margin:.55em 0}
+/* extraer factores: clic 1 = división (izquierda), clic 2 = radical (derecha, más grande) */
+.fila-ext{justify-content:flex-start;gap:0;margin:.2em 0;min-height:108px}
+.fila-ext .izq{flex:none;width:250px;display:flex;justify-content:center}
+.fila-ext .der{flex:1;font-size:1.45em}
+.fila-ext .der .katex-display{margin:.1em 0;text-align:left}
+.cas{display:grid;grid-template-columns:auto auto;justify-items:center;align-items:center;font-family:KaTeX_Main,"Times New Roman",serif;font-size:2.6rem;line-height:1.2}
+.cas span{padding:.04em .4em;min-width:1.4em;text-align:center;font-weight:bold}
+.cas .ds{border-left:.07em solid currentColor;border-bottom:.07em solid currentColor}
+.izq.on .dq{animation:extIn .45s .45s both}
+.izq.on .dr{animation:extIn .45s 1s both}
+/* definición de logaritmo animada */
+.defa{position:relative;height:104px;margin:.5em auto .3em;font-family:KaTeX_Main,"Times New Roman",serif;font-size:2.5rem;color:#111;line-height:1}
+.defa span{position:absolute;white-space:nowrap;transform-origin:left top}
+.defa i{font-family:KaTeX_Math,"Times New Roman",serif;font-style:italic}
+.defa .iff,.defa .eqr{opacity:0}
+.defa .vuela{opacity:0}
+.defa.on .vuela{animation:defFly 1.9s .7s both}
+.defa.on .iff,.defa.on .eqr{animation:extIn .5s 2.4s both}
+</style>
+</head>
+<body>
+<div class="barra-sup">
+  <span class="tit">Repaso tipo examen · 4º ESO</span>
+  <nav class="pestanas" id="pestanas" aria-label="Ejercicios"></nav>
+</div>
+<div id="libro"><div id="pista"></div><div id="lomo"></div></div>
+<div id="stage" style="position:absolute;left:-99999px;top:0;width:720px;visibility:hidden"></div>
+<div class="progreso">
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
+  <span id="contador"></span>
+</div>
+
+<script>
+
+const ec = (...partes) => '<div class="ec">' + partes.join('') + '</div>';
+const f = s => '<span>$' + s + '$</span>';
+const q = Math.sqrt, c3 = Math.cbrt, pw = Math.pow;
+/* número con coma decimal, listo para KaTeX */
+const D = (x, n = 3) => String(+x.toFixed(n)).replace('.', '{,}');
+/* comprobación numérica: se calcula en el navegador con las dos expresiones */
+const chk = (l, vl, r, vr, n = 3) => '<p class="nota">Comprobación con la calculadora: $' + l + '\\approx ' + D(vl, n) +
+  '$ y $' + r + '\\approx ' + D(vr, n) + '$.</p>';
+
+/* =====================================================================
+   INTERVALOS: dibujo de la recta, analizador de respuestas y ejercicios
+   ===================================================================== */
+const COL = {A: '#1414E6', B: '#D9730D', R: '#1f9d3a'};
+const IV = (lo, hi, lc, hc, etq, col, res, mas) => ({lo, hi, lc, hc, etq, col, res, mas});
+const menos = v => String(v).replace('-', '−');
+const tri = (x, y, dir, c) => '<polygon points="' + x + ',' + y + ' ' + (x - dir * 12) + ',' + (y - 6) + ' ' + (x - dir * 12) + ',' + (y + 6) + '" fill="' + c + '"/>';
+const circ = (x, y, c, cerrado) => '<circle cx="' + x + '" cy="' + y + '" r="7.5" fill="' + (cerrado ? c : '#fff') + '" stroke="' + c + '" stroke-width="3"/>';
+
+/* recta real con intervalos dibujados: o = {min, max, guias:[valores], filas:[IV...]} */
+function recta(o) {
+  const W = 760, L = 66, Rr = 26, rowH = 42, top = 14;
+  const n = o.filas.length, yAx = top + n * rowH + 8, H = yAx + 36;
+  const X = v => L + (v - o.min) / (o.max - o.min) * (W - L - Rr);
+  const xmin = L - 20, xmax = W - Rr + 20;
+  let s = '<svg class="recta" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" font-family="inherit">';
+  (o.guias || []).forEach(v => {
+    s += '<line x1="' + X(v) + '" x2="' + X(v) + '" y1="' + top + '" y2="' + yAx + '" stroke="#bdbdbd" stroke-width="1.3" stroke-dasharray="4 4"/>';
+  });
+  s += '<line x1="' + xmin + '" x2="' + xmax + '" y1="' + yAx + '" y2="' + yAx + '" stroke="#111" stroke-width="1.8"/>' +
+       tri(xmin, yAx, -1, '#111') + tri(xmax, yAx, 1, '#111');
+  for (let v = Math.ceil(o.min); v <= o.max; v++) {
+    s += '<line x1="' + X(v) + '" x2="' + X(v) + '" y1="' + (yAx - 5) + '" y2="' + (yAx + 5) + '" stroke="#111" stroke-width="1.5"/>' +
+         '<text x="' + X(v) + '" y="' + (yAx + 24) + '" text-anchor="middle" font-size="18" fill="#111">' + menos(v) + '</text>';
+  }
+  o.filas.forEach((r, i) => {
+    const y = top + i * rowH + rowH / 2, c = r.col || COL.A, w = r.res ? 8 : 5.5;
+    if (r.etq) s += '<text x="8" y="' + (y + 7) + '" font-size="21" font-style="italic" font-weight="bold" fill="' + c + '">' + r.etq + '</text>';
+    [r].concat(r.mas || []).forEach(t => {
+      const xl = t.lo === -Infinity ? xmin : X(t.lo), xr = t.hi === Infinity ? xmax : X(t.hi);
+      if (xr > xl) s += '<line x1="' + xl + '" x2="' + xr + '" y1="' + y + '" y2="' + y + '" stroke="' + c + '" stroke-width="' + w + '"/>';
+      if (t.lo === -Infinity) s += tri(xl, y, -1, c); else s += circ(xl, y, c, t.lc);
+      if (t.hi === Infinity) s += tri(xr, y, 1, c); else if (t.hi !== t.lo) s += circ(xr, y, c, t.hc);
+    });
+  });
+  return s + '</svg>';
+}
+const R = (min, max, filas, guias) => ec(recta({min, max, filas, guias}));
+
+/* ---------------------------------------------------------------------
+   Analizador de lo que escribe el alumno
+   --------------------------------------------------------------------- */
+const MSG_FORMA = 'Escribe cada intervalo con corchete o paréntesis en los dos extremos, por ejemplo [1, 3) o (-inf, 2].';
+function numTok(t) {
+  if (t === 'inf' || t === '+inf') return Infinity;
+  if (t === '-inf') return -Infinity;
+  const m = t.match(/^([+-]?\d+)\/(\d+)$/);
+  if (m) return +m[2] ? +m[1] / +m[2] : NaN;
+  t = t.replace(',', '.');
+  return /^[+-]?(\d+\.?\d*|\.\d+)$/.test(t) ? parseFloat(t) : NaN;
+}
+function parsear(str) {
+  const s = String(str).toLowerCase().replace(/[−–—]/g, '-').replace(/∞/g, 'inf')
+    .replace(/infinito|infinity/g, 'inf').replace(/\s+/g, '');
+  if (!s) return {ok: false, msg: 'Escribe una respuesta.'};
+  if (/^(∅|vacio|vacío|\{\}|conjuntovacio|conjuntovacío|ninguno)$/.test(s)) return {ok: true, ivs: []};
+  if (/^(r|ℝ|reales)$/.test(s)) return {ok: true, ivs: [{lo: -Infinity, hi: Infinity, lc: false, hc: false}]};
+  const ivs = [];
+  let infCerrado = false;
+  for (const p of s.split(/u|∪/)) {
+    if (!p) return {ok: false, msg: MSG_FORMA};
+    let m = p.match(/^\{(.+)\}$/);
+    if (m) {
+      const v = numTok(m[1]);
+      if (!isFinite(v)) return {ok: false, msg: 'Dentro de las llaves va un número, por ejemplo {3}.'};
+      ivs.push({lo: v, hi: v, lc: true, hc: true});
+      continue;
+    }
+    m = p.match(/^([\[\(\]])(.+)([\]\)\[])$/);
+    if (!m) return {ok: false, msg: MSG_FORMA};
+    const t = m[2].split(m[2].includes(';') ? ';' : ',');
+    if (t.length !== 2) return {ok: false, msg: MSG_FORMA};
+    const lo = numTok(t[0]), hi = numTok(t[1]);
+    if (isNaN(lo) || isNaN(hi)) return {ok: false, msg: 'No reconozco los números. Usa cifras, o inf para infinito.'};
+    if (lo === Infinity || hi === -Infinity || lo > hi) return {ok: false, msg: 'El extremo izquierdo debe ser menor que el derecho.'};
+    const lc = m[1] === '[', hc = m[3] === ']';
+    if ((lo === -Infinity && lc) || (hi === Infinity && hc)) infCerrado = true;
+    ivs.push({lo, hi, lc: lo === -Infinity ? false : lc, hc: hi === Infinity ? false : hc});
+  }
+  return {ok: true, ivs, infCerrado};
+}
+/* forma canónica: ordena y une los trozos que se tocan sin dejar hueco */
+function canon(ivs) {
+  const a = ivs.filter(v => v.lo < v.hi || (v.lo === v.hi && v.lc && v.hc)).map(v => Object.assign({}, v));
+  a.sort((x, y) => x.lo < y.lo ? -1 : x.lo > y.lo ? 1 : (x.lc === y.lc ? 0 : x.lc ? -1 : 1));
+  const out = [];
+  a.forEach(v => {
+    const L = out[out.length - 1];
+    if (L && (v.lo < L.hi || (v.lo === L.hi && (L.hc || v.lc)))) {
+      if (v.hi > L.hi) { L.hi = v.hi; L.hc = v.hc; } else if (v.hi === L.hi) L.hc = L.hc || v.hc;
+    } else out.push(v);
+  });
+  return out;
+}
+const igual = (a, b) => a.length === b.length && a.every((v, i) => v.lo === b[i].lo && v.hi === b[i].hi && !!v.lc === !!b[i].lc && !!v.hc === !!b[i].hc);
+const tx = v => v === Infinity ? '+∞' : v === -Infinity ? '−∞' : String(+v.toFixed(4)).replace('-', '−').replace('.', ',');
+function bonito(ivs) {
+  if (!ivs.length) return '∅';
+  if (ivs.length === 1 && ivs[0].lo === -Infinity && ivs[0].hi === Infinity) return '(−∞, +∞) = ℝ';
+  return ivs.map(v => v.lo === v.hi ? '{' + tx(v.lo) + '}' : (v.lc ? '[' : '(') + tx(v.lo) + ', ' + tx(v.hi) + (v.hc ? ']' : ')')).join(' ∪ ');
+}
+const texN = v => v === Infinity ? '+\\infty' : v === -Infinity ? '-\\infty' : String(v);
+const texIv = v => v.lo === v.hi ? '\\{' + texN(v.lo) + '\\}' : (v.lc ? '[' : '(') + texN(v.lo) + ',\\,' + texN(v.hi) + (v.hc ? ']' : ')');
+
+/* ---------------------------------------------------------------------
+   Ejercicios interactivos
+   --------------------------------------------------------------------- */
+const PRACT = [
+  {A: '[-2,4)', B: '(1,6]', U: '[-2,6]', I: '(1,4)', min: -4, max: 8,
+   pista: 'Para la intersección mira los extremos 1 y 4: ¿pertenecen a los dos intervalos a la vez?',
+   expl: 'A ∩ B empieza en 1 (no está en B: paréntesis) y acaba en 4 (no está en A: paréntesis). A ∪ B empieza en −2 (está en A: corchete) y acaba en 6 (está en B: corchete), sin huecos.'},
+  {A: '(-inf,0]', B: '(-3,2)', U: '(-inf,2)', I: '(-3,0]', min: -5, max: 4,
+   pista: 'El infinito siempre lleva paréntesis. Para la unión: ¿está el 2 en alguno de los dos?',
+   expl: 'A ∪ B llega hasta 2, que no está en B (paréntesis) ni en A. A ∩ B empieza en −3 (no está en B: paréntesis) y acaba en 0 (está en A y en B: corchete).'},
+  {A: '[0,2]', B: '(2,5)', U: '[0,5)', I: 'vacio', min: -2, max: 7,
+   pista: 'Mira el punto 2: ¿está en A? ¿está en B? Piensa si queda un hueco en la unión.',
+   expl: 'El 2 está en A pero no en B, y es el único punto donde se tocan: no hay puntos comunes (∅). En la unión no hay hueco porque el 2 sí está (en A): [0, 5).'},
+  {A: '(-6,-2)', B: '[-2,1]', U: '(-6,1]', I: 'vacio', min: -8, max: 3,
+   pista: 'Mira el punto −2: ¿está en A? ¿está en B?',
+   expl: 'El −2 está en B pero no en A: no hay puntos comunes (∅). La unión no tiene hueco porque el −2 sí está (en B): (−6, 1].'},
+  {A: '[3,inf)', B: '(-inf,3)', U: '(-inf,inf)', I: 'vacio', min: -2, max: 8,
+   pista: 'Los dos intervalos se tocan en el 3. ¿Falta algún punto en la unión? Para toda la recta puedes escribir R o (-inf, inf).',
+   expl: 'El 3 está en A, así que no falta ningún punto: la unión es toda la recta, ℝ. No hay puntos comunes porque el 3 no está en B.'},
+  {A: '(-4,3]', B: '[3,7)', U: '(-4,7)', I: '{3}', min: -6, max: 9,
+   pista: 'Los dos intervalos comparten el extremo 3. ¿Está en los dos? Un solo punto se escribe entre llaves: {3}.',
+   expl: 'El 3 está en A (corchete) y en B (corchete): es el único punto común, A ∩ B = {3}. La unión no tiene hueco: (−4, 7).'},
+  {A: '[-5,-2]', B: '(0,4]', U: '[-5,-2]U(0,4]', I: 'vacio', min: -7, max: 6,
+   pista: 'Entre −2 y 0 no hay nada dibujado. Si la unión no es un único intervalo, escribe los dos trozos con U.',
+   expl: 'Los intervalos no se tocan: A ∩ B = ∅. La unión no se puede escribir como un solo intervalo: [−5, −2] ∪ (0, 4].'},
+  {A: '(-1,5)', B: '[1,3]', U: '(-1,5)', I: '[1,3]', min: -3, max: 7,
+   pista: 'B está completamente dentro de A. ¿Qué intervalo es la unión? ¿Y la intersección?',
+   expl: 'Como B está dentro de A, A ∪ B = A = (−1, 5) y A ∩ B = B = [1, 3].'}
+];
+
+/* =====================================================================
+   REPASO TIPO EXAMEN · 4º ESO opción A
+   (antes de este bloque se inserta el código de rectas y del analizador de intervalos)
+   ===================================================================== */
+const K = {az: '#1414E6', na: '#E8730C', ve: '#1f9d3a', ro: '#E01E1E', mo: '#8E24AA'};
+const co = (c, x) => '\\textcolor{' + K[c] + '}{' + x + '}';
+/* el signo menos de a² − b²: rojo, en negrita y con recuadro, para que no se olvide */
+const MENOS = '\\;\\fcolorbox{#E01E1E}{#FFE0E0}{$\\boldsymbol{-}$}\\;';
+const NEG = x => co('ro', '\\boldsymbol{' + x + '}');
+const L10 = Math.log10;
+/* comprobación numérica con valores concretos de las letras */
+const chkL = (l, vl, r, vr, vals) => '<p class="nota">Comprobación con ' + vals + ': $' + l + '\\approx ' + D(vl, 3) +
+  '$ y $' + r + '\\approx ' + D(vr, 3) + '$.</p>';
+
+/* ---------------------------------------------------------------------
+   1 · Intervalos interactivos: si fallas, te pongo otro hasta que aciertes
+   --------------------------------------------------------------------- */
+const BANCO = PRACT.concat([
+  {A: '(-inf,2]', B: '[0,inf)', U: '(-inf,inf)', I: '[0,2]', min: -3, max: 5,
+   pista: '', expl: 'Los dos se solapan entre 0 y 2, y entre los dos cubren toda la recta: A ∩ B = [0, 2] (0 está en B y 2 está en A, así que los dos son corchetes) y A ∪ B = ℝ.'},
+  {A: '[-3,1)', B: '[-1,4)', U: '[-3,4)', I: '[-1,1)', min: -5, max: 6,
+   pista: '', expl: 'A ∩ B empieza en −1 (está en B: corchete) y acaba en 1 (no está en A: paréntesis). A ∪ B empieza en −3 (corchete, está en A) y acaba en 4 (paréntesis: no está en B).'},
+  {A: '(-5,-1)', B: '(-3,2]', U: '(-5,2]', I: '(-3,-1)', min: -7, max: 4,
+   pista: '', expl: 'A ∩ B empieza en −3 (no está en B) y acaba en −1 (no está en A): (−3, −1). A ∪ B va de −5 (paréntesis) a 2 (corchete, está en B).'},
+  {A: '[1,4)', B: '(4,8]', U: '[1,4)U(4,8]', I: 'vacio', min: -1, max: 10,
+   pista: '', expl: 'El 4 no está en A ni en B, así que hay un hueco en la unión: [1, 4) ∪ (4, 8]. No hay puntos comunes: A ∩ B = ∅.'}
+]);
+const EXI = {n: 1, ult: -1, bolsa: [], p: null, fase: 'pregunta', fallo: '', vals: {u: '', i: ''}};
+function sacarInt() {
+  if (!EXI.bolsa.length) {
+    EXI.bolsa = BANCO.map((_, i) => i).filter(i => i !== EXI.ult);
+    for (let i = EXI.bolsa.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [EXI.bolsa[i], EXI.bolsa[j]] = [EXI.bolsa[j], EXI.bolsa[i]]; }
+  }
+  EXI.ult = EXI.bolsa.pop();
+  EXI.p = BANCO[EXI.ult];
+}
+const dibujoInt = p => {
+  const a = parsear(p.A).ivs[0], b = parsear(p.B).ivs[0];
+  const guias = [a.lo, a.hi, b.lo, b.hi].filter(isFinite);
+  return {a, b, svg: recta({min: p.min, max: p.max, guias, filas: [Object.assign({etq: 'A', col: COL.A}, a), Object.assign({etq: 'B', col: COL.B}, b)]})};
+};
+function innerInt() {
+  if (!EXI.p) sacarInt();
+  if (EXI.fase === 'fallo') return EXI.fallo;
+  const p = EXI.p, d = dibujoInt(p), hecho = EXI.fase === 'hecho';
+  const campo = (id, tex) => '<div class="resp"><label>$' + tex + '=$</label>' +
+    '<input type="text" data-in="' + id + '" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" ' +
+    'placeholder="p. ej. [-2, 6)" value="' + (hecho ? EXI.vals[id] : '') + '"' + (hecho ? ' class="ok" disabled' : '') + '>' +
+    '<span class="fb' + (hecho ? ' ok' : '') + '" data-fb="' + id + '">' + (hecho ? '✔ Correcto' : '') + '</span></div>';
+  let h = '<p><b>Intento ' + EXI.n + '.</b> En la recta están dibujados los intervalos $A=' + texIv(d.a) + '$ y $B=' + texIv(d.b) + '$. Calcula:</p>' +
+    '<div class="ec">' + d.svg + '</div>' + campo('u', 'A\\cup B') + campo('i', 'A\\cap B');
+  if (hecho) {
+    h += '<div class="caja"><span class="titulo">¡Conseguido!</span><p>Lo has acertado en el intento <b>' + EXI.n + '</b>.</p><p>' + p.expl + '</p></div>' +
+      '<div class="acciones"><button type="button" data-int="otro">Practicar con otro</button></div>';
+  } else {
+    h += '<div class="acciones"><button type="button" data-int="chk">Comprobar</button>' +
+      '<span class="intentos">Si fallas, te propongo otro distinto.</span></div>' +
+      '<p class="nota">Cómo escribir: <b>inf</b> para ∞ (por ejemplo <b>(-inf, 3]</b>), <b>U</b> para la unión, ' +
+      '<b>vacio</b> si no hay ningún punto, <b>{3}</b> para un solo punto y <b>R</b> para toda la recta.</p>';
+  }
+  return h;
+}
+function renderInt() {
+  const w = document.getElementById('exint');
+  if (!w) return;
+  w.innerHTML = innerInt();
+  mate(w);
+  const f = w.querySelector(EXI.fase === 'pregunta' ? 'input' : 'button');
+  if (f) f.focus({preventScroll: true});
+}
+function compInt(w) {
+  if (EXI.fase !== 'pregunta') return;
+  const p = EXI.p;
+  const ent = {u: w.querySelector('input[data-in="u"]').value, i: w.querySelector('input[data-in="i"]').value};
+  const rs = {u: parsear(ent.u), i: parsear(ent.i)};
+  let err = false;
+  ['u', 'i'].forEach(id => {
+    const fb = w.querySelector('[data-fb="' + id + '"]');
+    fb.className = 'fb'; fb.textContent = '';
+    if (!rs[id].ok) { err = true; fb.className = 'fb mal'; fb.textContent = rs[id].msg; }
+  });
+  if (err) return;                         /* un error al escribir no cuenta como intento */
+  const esp = {u: canon(parsear(p.U).ivs), i: canon(parsear(p.I).ivs)};
+  const ok = id => !rs[id].infCerrado && igual(canon(rs[id].ivs), esp[id]);
+  if (ok('u') && ok('i')) {
+    EXI.fase = 'hecho'; EXI.vals = ent;
+  } else {
+    const d = dibujoInt(p);
+    const marca = id => ok(id) ? '<span class="fb ok">✔</span>' : '<span class="fb mal">✘</span>';
+    const esc = t => (t || '—').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    EXI.fallo = '<div class="caja"><span class="titulo">Intento ' + EXI.n + ': no era correcto</span>' +
+      '<p>Con $A=' + texIv(d.a) + '$ y $B=' + texIv(d.b) + '$:</p><div class="ec">' + d.svg + '</div>' +
+      '<p>$A\\cup B=' + esp.u.map(texIv).join('\\cup ') + '$ ' + marca('u') + ' <span class="nota">(escribiste: ' + esc(ent.u) + ')</span></p>' +
+      '<p>$A\\cap B=' + (esp.i.length ? esp.i.map(texIv).join('\\cup ') : '\\varnothing') + '$ ' + marca('i') + ' <span class="nota">(escribiste: ' + esc(ent.i) + ')</span></p>' +
+      (rs.u.infCerrado || rs.i.infCerrado ? '<p><b>Recuerda:</b> junto a ∞ siempre va paréntesis.</p>' : '') +
+      '<p>' + p.expl + '</p></div>' +
+      '<div class="acciones"><button type="button" data-int="sig">Probar con otro ejercicio</button></div>';
+    EXI.fase = 'fallo';
+  }
+  renderInt();
+}
+document.addEventListener('click', ev => {
+  const b = ev.target.closest && ev.target.closest('button[data-int]');
+  if (!b) return;
+  const w = b.closest('.inter'), k = b.dataset.int;
+  if (k === 'chk') { compInt(w); return; }
+  if (k === 'sig') EXI.n++; else EXI.n = 1;      /* 'sig': sigue contando intentos; 'otro': empieza de nuevo */
+  EXI.fase = 'pregunta'; EXI.p = null; renderInt();
+});
+document.addEventListener('keydown', ev => {
+  if (ev.key === 'Enter' && ev.target.matches && ev.target.matches('.inter input')) { ev.preventDefault(); compInt(ev.target.closest('.inter')); }
+});
+
+/* ---------------------------------------------------------------------
+   Tablas de "extraer factores"
+   --------------------------------------------------------------------- */
+const tabExt = filas => '<table class="res"><tr><th>Factor</th><th>Dividimos el exponente entre el índice</th><th>Sale</th><th>Se queda</th></tr>' +
+  filas.map(f => '<tr><td>$' + f[0] + '$</td><td>$' + f[1] + '$</td><td>' + (f[2] ? '$' + co('ve', f[2]) + '$' : '—') +
+    '</td><td>' + (f[3] ? '$' + co('ro', f[3]) + '$' : '—') + '</td></tr>').join('') + '</table>';
+const REGLA_EXT = String.raw`<p>En una raíz de índice $n$, a cada factor $x^m$ le hacemos la división $m:n$:</p>
+  <p>• el <b>cociente</b> es el exponente con el que <b>sale</b> de la raíz (en <b style="color:#1f9d3a">verde</b>);</p>
+  <p>• el <b>resto</b> es el exponente con el que <b>se queda</b> dentro (en <b style="color:#E01E1E">rojo</b>).</p>`;
+const REGLA_INT = String.raw`<p>Para meter un factor dentro de una raíz de índice $n$, lo <b>elevamos a $n$</b> (en <b style="color:#E8730C">naranja</b>) y lo multiplicamos con lo que ya había dentro:</p>`;
+
+/* ---------------------------------------------------------------------
+   Animación "extraer factores": ⁿ√(base^m) → m : n → cociente fuera, resto dentro
+   (la animación la lanza el CSS cuando el motor del libro muestra la unidad)
+   --------------------------------------------------------------------- */
+const supE = n => n === 1 ? '' : '<sup>' + n + '</sup>';
+function animExt(base, m, n) {
+  const c = Math.floor(m / n), r = m % n;
+  const b = /^\d+$/.test(base) ? base : '<i>' + base + '</i>';
+  const fuera = '<span class="fuera">' + (c ? b + supE(c) : '') + '</span>';
+  const radical = '<span class="rad' + (r ? '' : ' rad0') + '">' + '<sup class="idx">' + (n === 2 ? '' : n) + '</sup><span class="sig">√</span>' +
+    '<span class="cnt"><span class="antes">' + b + '<sup class="hl">' + m + '</sup></span>' +
+    '<span class="despues">' + (r ? b + supE(r) : '') + '</span></span></span>';
+  const div = '<div class="dv"><span class="dd">' + m + '</span><span class="ds">' + n + '</span><span class="dr">' + r + '</span><span class="dq">' + c + '</span></div>';
+  const cap = '<div class="cap"><span class="v">c = ' + c + '</span> ' + (c ? 'sale' : 'no sale') + ' &nbsp;·&nbsp; <span class="rj">r = ' + r + '</span> ' + (r ? 'se queda' : 'no queda nada') + '</div>';
+  return '<div class="ext"><div class="grupo">' + fuera + radical + '</div>' + div + cap + '</div>';
+}
+
+/* ---------------------------------------------------------------------
+   Extraer factores: tabla de divisiones y desarrollo seguido, un color por potencia
+   --------------------------------------------------------------------- */
+const PAL = ['#1414E6', '#E8730C', '#8E24AA', '#00897B'];
+const cp = (i, x) => '\\textcolor{' + PAL[i] + '}{' + x + '}';
+function ejExtraer(num, rad, n, fac) {
+  const pot = (b, e) => e === 1 ? b : b + '^{' + e + '}';
+  const idx = n === 2 ? '' : '[' + n + ']';
+  const F = fac.map((f, i) => ({i, b: f.b, m: f.m, c: Math.floor(f.m / n), r: f.m % n, num: /^\d+$/.test(f.b)}));
+  const A = F.map(f => cp(f.i, pot(f.b, f.m))).join('\\cdot ');
+  const cel = (f, x) => x ? '$' + cp(f.i, x) + '$' : '—';
+  const tabla = '<table class="res"><tr><th>Factor</th><th>Exponente : índice</th><th>Sale</th><th>Se queda</th></tr>' +
+    F.map(f => '<tr><td>$' + cp(f.i, pot(f.b, f.m)) + '$</td><td>$' + cp(f.i, f.m + ':' + n + '=' + f.c + ',\\ \\text{resto }' + f.r) + '$</td><td>' +
+      cel(f, f.c ? pot(f.b, f.c) : '') + '</td><td>' + cel(f, f.r ? pot(f.b, f.r) : '') + '</td></tr>').join('') + '</table>';
+  const fu = F.filter(f => f.c).map(f => cp(f.i, pot(f.b, f.c))).join('\\cdot ');
+  const de = F.filter(f => f.r).map(f => cp(f.i, pot(f.b, f.r))).join('\\cdot ');
+  const L1 = '$$\\sqrt' + idx + '{' + rad + '}=\\sqrt' + idx + '{' + A + '}$$';
+  const L3 = '$$=' + fu + '\\cdot\\sqrt' + idx + '{' + de + '}$$';
+  const val = (f, e) => f.num ? String(Math.pow(+f.b, e)) : pot(f.b, e);
+  const fu2 = F.filter(f => f.c).map(f => cp(f.i, val(f, f.c))).join('');
+  const de2 = F.filter(f => f.r).map(f => cp(f.i, val(f, f.r))).join('');
+  return {
+    titulo: 'Ejercicio ' + num + ' · Extraer factores', corto: String(num),
+    enunciado: '<p>Extrae factores del radical ($a,b>0$):</p>$$\\sqrt' + idx + '{' + rad + '}$$',
+    pasos: [
+      {titulo: '', html: L1 + tabla + L3},
+      {caja: 'Resultado', html: '$$\\sqrt' + idx + '{' + rad + '}=' + fu2 + '\\sqrt' + idx + '{' + de2 + '}$$'}
+    ]
+  };
+}
+/* desarrollo de las fracciones generatrices */
+const resta = (arriba, medio, abajo, res) => String.raw`$$\begin{array}{rcl}` + arriba + String.raw`\\` + medio + String.raw`\\ \hline ` + res + String.raw`\end{array}$$`;
+
+/* ---------------------------------------------------------------------
+   Utilidades v4: cadenas de un solo "=" por clic, extracción fila a fila, definición animada
+   --------------------------------------------------------------------- */
+/* cada unidad (= cada clic) muestra UN solo paso de igual a igual */
+const cad = (ini, ...pasos) => [ini].concat(pasos.map(p => '=' + p)).map(h => ({titulo: '', html: '$$' + h + '$$'}));
+const k2 = x => cp(0, x), k3 = x => cp(1, x), k5 = x => cp(2, x);
+
+/* extraer factores: a cada clic, a la izquierda la división de un factor y a la derecha el radical con lo ya extraído */
+function ejExt2(num, rad, n, fac) {
+  const pot = (b, e) => e === 1 ? b : b + '^{' + e + '}';
+  const idx = n === 2 ? '' : '[' + n + ']';
+  const F = fac.map((f, i) => ({i, b: f.b, m: f.m, c: Math.floor(f.m / n), r: f.m % n, num: /^\d+$/.test(f.b)}));
+  const ins = F.map(f => f.m), outs = F.map(() => 0);
+  const dentro = () => F.filter(f => ins[f.i] > 0).map(f => cp(f.i, pot(f.b, ins[f.i]))).join('\\cdot ');
+  const fuera = () => F.filter(f => outs[f.i] > 0).map(f => cp(f.i, pot(f.b, outs[f.i]))).join('\\cdot ');
+  const desc = '$$\\sqrt' + idx + '{' + rad + '}=\\sqrt' + idx + '{' + dentro() + '}$$';
+  let filas = '';
+  F.filter(f => f.c > 0).forEach(f => {
+    outs[f.i] = f.c; ins[f.i] = f.r;
+    filas += '<div class="fila-menores fila-ext p0"><div class="sub izq"><div class="cas" style="color:' + PAL[f.i] + '"><span class="dd">' + f.m + '</span><span class="ds">' + n +
+      '</span><span class="dr">' + f.r + '</span><span class="dq">' + f.c + '</span></div></div><div class="sub der">$$=' + fuera() + '\\cdot\\sqrt' + idx + '{' + dentro() + '}$$</div></div>';
+  });
+  const val = (f, e) => f.num ? String(Math.pow(+f.b, e)) : pot(f.b, e);
+  const fu2 = F.filter(f => f.c).map(f => cp(f.i, val(f, f.c))).join('');
+  const de2 = F.filter(f => f.r).map(f => cp(f.i, val(f, f.r))).join('');
+  return {
+    titulo: 'Ejercicio ' + num + ' · Extraer factores', corto: String(num),
+    enunciado: '<p>Extrae factores del radical ($a,b>0$):</p>$$\\sqrt' + idx + '{' + rad + '}$$',
+    pasos: [
+      {titulo: '', html: desc},
+      {titulo: '', html: filas},
+      {caja: 'Resultado', html: '$$\\sqrt' + idx + '{' + rad + '}=' + fu2 + '\\sqrt' + idx + '{' + de2 + '}$$'}
+    ]
+  };
+}
+
+/* definición de logaritmo que se construye sola: log_a b = c  ⟺  a^c = b */
+function defAnim(base, arg, res, impl) {
+  const k = .58, cw = 21;
+  const w = (t, s) => t.replace(/[{}\\]/g, '').length * cw * s;
+  const tk = t => /^[a-z]$/.test(t) ? '<i>' + t + '</i>' : t;
+  let x = 24;
+  const xLog = x; x += 66;
+  const xBL = x; if (!impl) x += w(base, k) + 6;
+  const xAL = x; x += w(arg, 1) + 16;
+  const xEL = x; x += 38;
+  const xRL = x; x += w(res, 1) + 34;
+  const xIff = x; x += 84;
+  const xBR = x; x += w(base, 1) + 2;
+  const xER = x; x += w(res, k) + 14;
+  const xEqR = x; x += 38;
+  const xAR = x; x += w(arg, 1) + 24;
+  const W = Math.round(x), yT = 34, yS = 56, yE = 14;
+  const sp = (cls, txt, l, t, fs, col, st) => '<span class="' + cls + '" style="left:' + Math.round(l) + 'px;top:' + t + 'px;' + (fs ? 'font-size:' + fs + '%;' : '') + (col ? 'color:' + col + ';' : '') + (st || '') + '">' + tk(txt) + '</span>';
+  const clon = (cls, txt, l, t, fs, col, l0, t0, s0, o0) => sp('vuela ' + cls, txt, l, t, fs, col, '--dx:' + Math.round(l0 - l) + 'px;--dy:' + (t0 - t) + 'px;--s:' + s0 + ';--o0:' + o0 + ';');
+  const AZ = K.az, NA = K.na, VE = K.ve;
+  return '<div class="defa" style="width:' + W + 'px">' +
+    sp('est', 'log', xLog, yT) +
+    (impl ? '' : sp('est', base, xBL, yS, k * 100, AZ)) +
+    sp('est', arg, xAL, yT, 0, VE) + sp('est', '=', xEL, yT) + sp('est', res, xRL, yT, 0, NA) +
+    clon('cb', base, xBR, yT, 0, AZ, xBL, yS, k, impl ? 0 : 1) +
+    clon('cr', res, xER, yE, k * 100, NA, xRL, yT, (1 / k).toFixed(3), 1) +
+    clon('ca', arg, xAR, yT, 0, VE, xAL, yT, 1, 1) +
+    sp('iff', '⟺', xIff, yT) + sp('eqr', '=', xEqR, yT) + '</div>';
+}
+
+const EJERCICIOS = [
+
+  /* ===================== 1 · INTERVALOS ===================== */
+  {
+    titulo: 'Ejercicio 1 · Intervalos',
+    corto: '1',
+    interactivo: true,
+    get enunciado() { return '<div class="inter" id="exint">' + innerInt() + '</div>'; },
+    pasos: []
+  },
+
+  /* ===================== 2-5 · RACIONALIZAR ===================== */
+  {
+    titulo: 'Ejercicio 2 · Racionalizar',
+    corto: '2',
+    enunciado: String.raw`<p>Racionaliza:</p>$$\dfrac{\sqrt2}{\sqrt7}$$`,
+    pasos: [
+      ...cad(String.raw`\dfrac{\sqrt2}{\sqrt7}=\dfrac{\sqrt2\cdot ${co('na', '\\sqrt7')}}{\sqrt7\cdot ${co('na', '\\sqrt7')}}`,
+                  String.raw`\dfrac{\sqrt{14}}{${co('ve', '7')}}`),
+      { caja: 'Resultado',
+        html: String.raw`$$\dfrac{\sqrt2}{\sqrt7}=${co('ve', '\\dfrac{\\sqrt{14}}{7}')}$$` }
+    ]
+  },
+  {
+    titulo: 'Ejercicio 3 · Racionalizar',
+    corto: '3',
+    enunciado: String.raw`<p>Racionaliza:</p>$$\dfrac{7}{\sqrt[3]{7}}$$`,
+    pasos: [
+      ...cad(String.raw`\dfrac{7}{\sqrt[3]{7}}=\dfrac{7\cdot ${co('na', '\\sqrt[3]{7^2}')}}{\sqrt[3]{7}\cdot ${co('na', '\\sqrt[3]{7^2}')}}`,
+                  String.raw`\dfrac{7\sqrt[3]{7^2}}{\sqrt[3]{7^{3}}}`,
+                  String.raw`\dfrac{7\sqrt[3]{49}}{${co('ve', '7')}}`),
+      { caja: 'Resultado',
+        html: String.raw`$$\dfrac{7}{\sqrt[3]{7}}=${co('ve', '\\sqrt[3]{49}')}$$` }
+    ]
+  },
+  {
+    titulo: 'Ejercicio 4 · Racionalizar',
+    corto: '4',
+    enunciado: String.raw`<p>Racionaliza:</p>$$\dfrac{\sqrt3}{2-\sqrt3}$$`,
+    pasos: [
+      ...cad(String.raw`\dfrac{\sqrt3}{2-\sqrt3}=\dfrac{\sqrt3\cdot ${co('na', '(2+\\sqrt3)')}}{(2-\sqrt3)\cdot ${co('na', '(2+\\sqrt3)')}}`,
+                  String.raw`\dfrac{2\sqrt3+3}{(2-\sqrt3)(2+\sqrt3)}`,
+                  String.raw`\dfrac{2\sqrt3+3}{${co('az', '2^2')}${MENOS}${co('mo', '(\\sqrt3)^2')}}`,
+                  String.raw`\dfrac{2\sqrt3+3}{${co('az', '4')}${MENOS}${co('mo', '3')}}`,
+                  String.raw`\dfrac{2\sqrt3+3}{${co('ve', '1')}}`),
+      { caja: 'Resultado',
+        html: String.raw`$$\dfrac{\sqrt3}{2-\sqrt3}=${co('ve', '3+2\\sqrt3')}$$` }
+    ]
+  },
+  {
+    titulo: 'Ejercicio 5 · Racionalizar',
+    corto: '5',
+    enunciado: String.raw`<p>Racionaliza:</p>$$\dfrac{4}{2\sqrt5+3\sqrt3}$$`,
+    pasos: [
+      ...cad(String.raw`\dfrac{4}{2\sqrt5+3\sqrt3}=\dfrac{4\cdot ${co('na', '(2\\sqrt5-3\\sqrt3)')}}{(2\sqrt5+3\sqrt3)\cdot ${co('na', '(2\\sqrt5-3\\sqrt3)')}}`,
+                  String.raw`\dfrac{8\sqrt5-12\sqrt3}{${co('az', '(2\\sqrt5)^2')}${MENOS}${co('mo', '(3\\sqrt3)^2')}}`,
+                  String.raw`\dfrac{8\sqrt5-12\sqrt3}{${co('az', '20')}${MENOS}${co('mo', '27')}}`,
+                  String.raw`\dfrac{8\sqrt5-12\sqrt3}{${NEG('-7')}}`,
+                  String.raw`\dfrac{${NEG('-')}8\sqrt5${NEG('+')}12\sqrt3}{7}`),
+      { caja: 'Resultado',
+        html: String.raw`$$\dfrac{4}{2\sqrt5+3\sqrt3}=${co('ve', '\\dfrac{12\\sqrt3-8\\sqrt5}{7}')}$$` }
+    ]
+  },
+
+  /* ===================== 6-8 · EXTRAER FACTORES ===================== */
+  ejExt2(6, '48a^5b^3', 2, [{b: '2', m: 4}, {b: '3', m: 1}, {b: 'a', m: 5}, {b: 'b', m: 3}]),
+  ejExt2(7, '40a^7b^5', 3, [{b: '2', m: 3}, {b: '5', m: 1}, {b: 'a', m: 7}, {b: 'b', m: 5}]),
+  ejExt2(8, '96a^8b^{11}', 5, [{b: '2', m: 5}, {b: '3', m: 1}, {b: 'a', m: 8}, {b: 'b', m: 11}]),
+
+  /* ===================== 9-10 · METER FACTORES ===================== */
+  {
+    titulo: 'Ejercicio 9 · Introducir factores',
+    corto: '9',
+    enunciado: String.raw`<p>Introduce los factores dentro de la raíz:</p>$$3\,x^2\,y\,\sqrt{2xy}$$`,
+    pasos: [
+      ...cad(String.raw`3x^2y\sqrt{2xy}=\sqrt{(${co('na', '3x^2y')})^{2}\cdot2xy}`,
+                  String.raw`\sqrt{${co('na', '9x^4y^2')}\cdot2xy}`),
+      { caja: 'Resultado',
+        html: String.raw`$$3x^2y\sqrt{2xy}=${co('ve', '\\sqrt{18x^5y^3}')}$$` }
+    ]
+  },
+  {
+    titulo: 'Ejercicio 10 · Introducir factores',
+    corto: '10',
+    enunciado: String.raw`<p>Introduce los factores dentro de la raíz:</p>$$2\,a\,b^2\,\sqrt[3]{3a^2b}$$`,
+    pasos: [
+      ...cad(String.raw`2ab^2\sqrt[3]{3a^2b}=\sqrt[3]{(${co('na', '2ab^2')})^{3}\cdot3a^2b}`,
+                  String.raw`\sqrt[3]{${co('na', '8a^3b^6')}\cdot3a^2b}`),
+      { caja: 'Resultado',
+        html: String.raw`$$2ab^2\sqrt[3]{3a^2b}=${co('ve', '\\sqrt[3]{24a^5b^7}')}$$` }
+    ]
+  },
+
+  /* ===================== 11-12 · UN ÚNICO LOGARITMO ===================== */
+  {
+    titulo: 'Ejercicio 11 · Un único logaritmo',
+    corto: '11',
+    enunciado: String.raw`<p>Expresa como un único logaritmo:</p>$$\dfrac12\log x+3\log y-\log z$$`,
+    pasos: [
+      ...cad(String.raw`\dfrac12\log x+3\log y-\log z=\log ${co('na', '\\sqrt x')}+\log y^{${co('na', '3')}}-\log z`,
+                  String.raw`\log(${co('ve', '\\sqrt x\\cdot y^3')})-\log z`),
+      { caja: 'Resultado',
+        html: String.raw`$$\dfrac12\log x+3\log y-\log z=\log\dfrac{${co('ve', '\\sqrt x\\cdot y^3')}}{${co('ro', 'z')}}$$` }
+    ]
+  },
+  {
+    titulo: 'Ejercicio 12 · Un único logaritmo',
+    corto: '12',
+    enunciado: String.raw`<p>Expresa como un único logaritmo:</p>$$3\log x-\log y+\log 5$$`,
+    pasos: [
+      ...cad(String.raw`3\log x-\log y+\log 5=\log x^{${co('na', '3')}}-\log y+\log 5`,
+                  String.raw`\log(${co('ve', 'x^3\\cdot5')})-\log y`),
+      { caja: 'Resultado',
+        html: String.raw`$$3\log x-\log y+\log 5=\log\dfrac{${co('ve', '5x^3')}}{${co('ro', 'y')}}$$` }
+    ]
+  },
+
+  /* ===================== 13-15 · CALCULAR x (definición animada) ===================== */
+  {
+    titulo: 'Ejercicio 13 · Calcular x',
+    corto: '13',
+    enunciado: String.raw`<p>Calcula $x$:</p>$$\log_x 16=4$$`,
+    pasos: [
+      { titulo: '', html: defAnim('x', '16', '4', false) },
+      { titulo: '', html: String.raw`$$x=\sqrt[4]{16}$$` },
+      { caja: 'Resultado', html: String.raw`$$x=${co('ve', '2')}$$` }
+    ]
+  },
+  {
+    titulo: 'Ejercicio 14 · Calcular x',
+    corto: '14',
+    enunciado: String.raw`<p>Calcula $x$:</p>$$\log_5 x=2$$`,
+    pasos: [
+      { titulo: '', html: defAnim('5', 'x', '2', false) },
+      { caja: 'Resultado', html: String.raw`$$x=5^2=${co('ve', '25')}$$` }
+    ]
+  },
+  {
+    titulo: 'Ejercicio 15 · Calcular x',
+    corto: '15',
+    enunciado: String.raw`<p>Calcula $x$:</p>$$\log 1000=x$$`,
+    pasos: [
+      { titulo: '', html: defAnim('10', '1000', 'x', true) },
+      { titulo: '', html: String.raw`$$10^x=10^3$$` },
+      { caja: 'Resultado', html: String.raw`$$x=${co('ve', '3')}$$` }
+    ]
+  },
+
+  /* ===================== 16-18 · SABIENDO log 2 y log 5 ===================== */
+  {
+    titulo: 'Ejercicio 16 · Sabiendo que…',
+    corto: '16',
+    enunciado: String.raw`<p>Sabiendo que $\log 2=0{,}301$ y $\log 5=0{,}699$, calcula:</p>$$\log 10$$`,
+    pasos: [
+      ...cad(String.raw`\log 10=\log(${co('az', '2')}\cdot${co('na', '5')})`,
+                  String.raw`\log ${co('az', '2')}+\log ${co('na', '5')}`,
+                  String.raw`${co('az', '0{,}301')}+${co('na', '0{,}699')}`),
+      { caja: 'Resultado', html: String.raw`$$\log 10=${co('ve', '1')}$$` }
+    ]
+  },
+  {
+    titulo: 'Ejercicio 17 · Sabiendo que…',
+    corto: '17',
+    enunciado: String.raw`<p>Sabiendo que $\log 2=0{,}301$ y $\log 5=0{,}699$, calcula:</p>$$\log 20$$`,
+    pasos: [
+      ...cad(String.raw`\log 20=\log(${co('az', '2^2')}\cdot${co('na', '5')})`,
+                  String.raw`${co('az', '2\\log 2')}+${co('na', '\\log 5')}`,
+                  String.raw`2\cdot${co('az', '0{,}301')}+${co('na', '0{,}699')}`,
+                  String.raw`0{,}602+0{,}699`),
+      { caja: 'Resultado', html: String.raw`$$\log 20=${co('ve', '1{,}301')}$$` }
+    ]
+  },
+  {
+    titulo: 'Ejercicio 18 · Sabiendo que…',
+    corto: '18',
+    enunciado: String.raw`<p>Sabiendo que $\log 2=0{,}301$ y $\log 5=0{,}699$, calcula:</p>$$\log 50$$`,
+    pasos: [
+      ...cad(String.raw`\log 50=\log(${co('az', '2')}\cdot${co('na', '5^2')})`,
+                  String.raw`${co('az', '\\log 2')}+${co('na', '2\\log 5')}`,
+                  String.raw`${co('az', '0{,}301')}+2\cdot${co('na', '0{,}699')}`,
+                  String.raw`0{,}301+1{,}398`),
+      { caja: 'Resultado', html: String.raw`$$\log 50=${co('ve', '1{,}699')}$$` }
+    ]
+  },
+
+  /* ===================== 19-20 · POTENCIAS ===================== */
+  {
+    titulo: 'Ejercicio 19 · Potencias',
+    corto: '19',
+    enunciado: String.raw`<p>Simplifica y deja el resultado factorizado:</p>$$\dfrac{3^3\cdot2^{-2}\cdot5^4}{128^{2}\cdot5^3\cdot3}$$`,
+    pasos: [
+      ...cad(String.raw`\dfrac{3^3\cdot2^{-2}\cdot5^4}{128^{2}\cdot5^3\cdot3}=\dfrac{${k3('3^3')}\cdot${k2('2^{-2}')}\cdot${k5('5^4')}}{(${k2('2^7')})^2\cdot${k5('5^3')}\cdot${k3('3')}}`,
+                  String.raw`\dfrac{${k3('3^3')}\cdot${k2('2^{-2}')}\cdot${k5('5^4')}}{${k2('2^{14}')}\cdot${k5('5^3')}\cdot${k3('3')}}`,
+                  String.raw`${k3('3^{3-1}')}\cdot${k2('2^{-2-14}')}\cdot${k5('5^{4-3}')}`,
+                  String.raw`${k3('3^2')}\cdot${k2('2^{-16}')}\cdot${k5('5')}`),
+      { caja: 'Resultado',
+        html: String.raw`$$\dfrac{3^3\cdot2^{-2}\cdot5^4}{128^{2}\cdot5^3\cdot3}=\dfrac{${k3('3^2')}\cdot${k5('5')}}{${k2('2^{16}')}}$$` }
+    ]
+  },
+  {
+    titulo: 'Ejercicio 20 · Potencias',
+    corto: '20',
+    enunciado: String.raw`<p>Simplifica y deja el resultado factorizado:</p>$$\left(\dfrac34\right)^{2}\cdot\left(\dfrac23\right)^{-3}\cdot5^2\cdot3^{-4}$$`,
+    pasos: [
+      ...cad(String.raw`\left(\dfrac34\right)^{2}\cdot\left(\dfrac23\right)^{-3}\cdot5^2\cdot3^{-4}=\dfrac{${k3('3^2')}}{4^2}\cdot\left(\dfrac{${k3('3')}}{${k2('2')}}\right)^{3}\cdot${k5('5^2')}\cdot${k3('3^{-4}')}`,
+                  String.raw`\dfrac{${k3('3^2')}}{(${k2('2^2')})^2}\cdot\dfrac{${k3('3^3')}}{${k2('2^3')}}\cdot${k5('5^2')}\cdot${k3('3^{-4}')}`,
+                  String.raw`\dfrac{${k3('3^2')}}{${k2('2^4')}}\cdot\dfrac{${k3('3^3')}}{${k2('2^3')}}\cdot${k5('5^2')}\cdot${k3('3^{-4}')}`,
+                  String.raw`${k3('3^2')}\cdot${k2('2^{-4}')}\cdot${k3('3^3')}\cdot${k2('2^{-3}')}\cdot${k5('5^2')}\cdot${k3('3^{-4}')}`,
+                  String.raw`${k3('3^{2+3-4}')}\cdot${k2('2^{-4-3}')}\cdot${k5('5^2')}`,
+                  String.raw`${k3('3')}\cdot${k2('2^{-7}')}\cdot${k5('5^2')}`),
+      { caja: 'Resultado',
+        html: String.raw`$$\left(\dfrac34\right)^{2}\cdot\left(\dfrac23\right)^{-3}\cdot5^2\cdot3^{-4}=\dfrac{${k3('3')}\cdot${k5('5^2')}}{${k2('2^7')}}$$` }
+    ]
+  },
+
+  /* ===================== 21-24 · FRACCIÓN GENERATRIZ ===================== */
+  {
+    titulo: 'Ejercicio 21 · Fracción generatriz',
+    corto: '21',
+    enunciado: String.raw`<p>Calcula la fracción generatriz de:</p>$$3{,}45$$`,
+    pasos: [
+      ...cad(String.raw`3{,}45=\dfrac{${co('az', '345')}}{${co('mo', '100')}}`, String.raw`\dfrac{69}{20}`),
+      { caja: 'Resultado', html: String.raw`$$3{,}45=${co('ve', '\\dfrac{69}{20}')}$$` }
+    ]
+  },
+  {
+    titulo: 'Ejercicio 22 · Fracción generatriz',
+    corto: '22',
+    enunciado: String.raw`<p>Calcula la fracción generatriz de:</p>$$4{,}\overset{\frown}{15}$$`,
+    pasos: [
+      ...cad(String.raw`4{,}\overset{\frown}{15}=\dfrac{${co('az', '415')}${co('na', '-4')}}{${co('mo', '99')}}`,
+                  String.raw`\dfrac{411}{99}`, String.raw`\dfrac{137}{33}`),
+      { caja: 'Resultado', html: String.raw`$$4{,}\overset{\frown}{15}=${co('ve', '\\dfrac{137}{33}')}$$` }
+    ]
+  },
+  {
+    titulo: 'Ejercicio 23 · Fracción generatriz',
+    corto: '23',
+    enunciado: String.raw`<p>Calcula la fracción generatriz de:</p>$$4{,}0\overset{\frown}{3}$$`,
+    pasos: [
+      ...cad(String.raw`4{,}0\overset{\frown}{3}=\dfrac{${co('az', '403')}${co('na', '-40')}}{${co('mo', '90')}}`,
+                  String.raw`\dfrac{363}{90}`, String.raw`\dfrac{121}{30}`),
+      { caja: 'Resultado', html: String.raw`$$4{,}0\overset{\frown}{3}=${co('ve', '\\dfrac{121}{30}')}$$` }
+    ]
+  },
+  {
+    titulo: 'Ejercicio 24 · Fracción generatriz',
+    corto: '24',
+    enunciado: String.raw`<p>Calcula la fracción generatriz de:</p>$$0{,}\overset{\frown}{95}$$`,
+    pasos: [
+      ...cad(String.raw`0{,}\overset{\frown}{95}=\dfrac{${co('az', '95')}${co('na', '-0')}}{${co('mo', '99')}}`,
+                  String.raw`\dfrac{95}{99}`),
+      { caja: 'Resultado', html: String.raw`$$0{,}\overset{\frown}{95}=${co('ve', '\\dfrac{95}{99}')}$$` }
+    ]
+  }
+];
+
+const OPCIONES_MATE = {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "$",  right: "$",  display: false}
+  ],
+  throwOnError: false
+};
+const $ = id => document.getElementById(id);
+function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
+
+/* ---------------------------------------------------------------------
+   MOTOR DEL LIBRO
+   - Cada ejercicio se trocea en "unidades" (un párrafo, una fórmula, una
+     matriz...). Cada clic escribe la siguiente unidad.
+   - Las unidades se reparten en páginas de tamaño fijo (como un libro).
+     Cada valor crítico ("Si a = ...") empieza en página nueva.
+   - Se ven dos páginas. Cuando se llena la de la derecha, pasa a ser la
+     de la izquierda y aparece una página nueva a la derecha.
+   --------------------------------------------------------------------- */
+const LW = 800;                     // ancho lógico de una página (px)
+let actual = 0;                     // ejercicio activo
+let s = 0;                          // unidades escritas
+let G = {};                         // geometría
+let libro = null;                   // {unidades, paginas}
+let Lprev = 0;
+
+function geometria() {
+  const W = $("libro").clientWidth, H = $("libro").clientHeight;
+  const Sw = W / 2, k = (Sw - 20) / LW;
+  G = { W, H, Sw, k, LH: (H - 20) / k };
+}
+
+/* trocea un ejercicio en secciones y unidades (se hace una sola vez) */
+function extraer(e) {
+  if (e._sec) return e._sec;
+  const stage = $("stage"), secs = [];
+  const add = (tipo, cab, html, salto, mismo) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    stage.appendChild(d);
+    mate(d);
+    const unidades = [];
+    d.childNodes.forEach(n => {
+      if (n.nodeType === 1) unidades.push(n);
+      else if (n.nodeType === 3 && n.textContent.trim()) {
+        const sp = document.createElement("span"); sp.textContent = n.textContent; unidades.push(sp);
+      }
+    });
+    let cabHTML = null;
+    if (cab) { const c = document.createElement("div"); c.innerHTML = cab; mate(c); cabHTML = c.innerHTML; }
+    secs.push({ tipo, cabHTML, unidades, salto: !!salto, mismo: !!mismo });
+  };
+  add("titulo", null, "<h1>" + e.titulo + "</h1>");
+  add("enun", null, e.enunciado, false, true);      // título y enunciado salen juntos con un clic
+  e.pasos.forEach(p => add(p.caja ? "caja" : "paso", p.caja || p.titulo, p.html, p.caja && /^Si /.test(p.caja)));
+  stage.innerHTML = "";
+  /* un "tic" = un clic. Cada sección es un bloque; dentro de una fila de menores
+     (.fila-menores) cada .sub sale con su propio clic */
+  let base = 0;
+  secs.forEach(sc => {
+    let cur = sc.mismo ? base : base + 1, nuevo = false;
+    sc.unidades = sc.unidades.map(n => {
+      if (nuevo) { cur++; nuevo = false; }
+      const o = { n, t: cur, subs: [] };
+      if (n.classList && n.classList.contains("fila-menores")) {
+        n.querySelectorAll(".sub").forEach((sb, k) => { if (!(k === 0 && n.classList.contains("p0"))) cur++; o.subs.push({ n: sb, t: cur }); });
+        nuevo = true;
+      }
+      return o;
+    });
+    base = cur;
+  });
+  e._T = base;
+  e._sec = secs;
+  return secs;
+}
+
+function crearCont(sc, sigue) {
+  const c = document.createElement("div");
+  c.className = "cont";
+  if (sc.tipo === "caja") {
+    c.classList.add("caja");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", '<span class="titulo">' + sc.cabHTML + "</span>");
+  } else if (sc.tipo === "paso") {
+    c.classList.add("paso");
+    if (!sigue && sc.cabHTML) c.insertAdjacentHTML("afterbegin", "<h4>" + sc.cabHTML + "</h4>");
+  } else if (sc.tipo === "enun") {
+    c.classList.add("caja", "enunciado");
+  }
+  if (sigue) c.classList.add("sigue");
+  return c;
+}
+
+/* una fórmula más ancha que la página se reduce hasta caber */
+function ajustar(u) {
+  if (u.classList && u.classList.contains("fila-menores")) {
+    u.style.zoom = "";
+    if (u.scrollWidth > u.clientWidth + 2) u.style.zoom = String(Math.max(.55, u.clientWidth / u.scrollWidth * .97));
+  }
+  u.querySelectorAll(".katex-display").forEach(d => {
+    const k = d.firstElementChild;
+    if (!k) return;
+    k.style.zoom = "";
+    if (d.scrollWidth > d.clientWidth + 2) k.style.zoom = String(Math.max(.55, d.clientWidth / d.scrollWidth * .98));
+  });
+}
+
+/* reparte las unidades en páginas del tamaño actual */
+function paginar(secs, T) {
+  secs.T = T;
+  const pista = $("pista");
+  pista.innerHTML = "";
+  const paginas = [], unidades = [];
+  const nueva = () => {
+    const hoja = document.createElement("div");
+    hoja.className = "hoja";
+    hoja.style.cssText = "left:" + (paginas.length * G.Sw) + "px;width:" + G.Sw + "px;height:" + G.H + "px";
+    const pag = document.createElement("div");
+    pag.className = "pag";
+    pag.style.cssText = "width:" + LW + "px;height:" + G.LH + "px;transform:scale(" + G.k + ")";
+    const cu = document.createElement("div");
+    cu.className = "cuerpo";
+    cu.style.height = (G.LH - 34 - 56) + "px";
+    const num = document.createElement("div");
+    num.className = "num"; num.textContent = paginas.length + 1;
+    pag.append(cu, num); hoja.appendChild(pag); pista.appendChild(hoja);
+    const o = { hoja, cu };
+    paginas.push(o);
+    return o;
+  };
+  let pg = nueva();
+  const desborda = () => pg.cu.scrollHeight > pg.cu.clientHeight + 1;
+  secs.forEach(sc => {
+    if (sc.salto && pg.cu.children.length) pg = nueva();
+    let cont = crearCont(sc, false), puestas = 0;
+    pg.cu.appendChild(cont);
+    /* un bloque (lo que sale con un clic) nunca se parte entre dos páginas */
+    const bloques = [];
+    sc.unidades.forEach(un => {
+      const ult = bloques[bloques.length - 1];
+      if (ult && ult[0].t === un.t) ult.push(un); else bloques.push([un]);
+    });
+    bloques.forEach(bl => {
+      bl.forEach(un => {
+        un.n.classList.add("u"); un.n.classList.remove("on");
+        un.subs.forEach(sb => { sb.n.classList.add("u"); sb.n.classList.remove("on"); });
+        cont.appendChild(un.n);
+      });
+      bl.forEach(un => ajustar(un.n));
+      if (desborda()) {
+        bl.forEach(un => cont.removeChild(un.n));
+        if (!puestas) pg.cu.removeChild(cont);
+        if (pg.cu.children.length) pg = nueva();     // página nueva solo si la actual ya tiene algo
+        cont = crearCont(sc, puestas > 0);
+        pg.cu.appendChild(cont);
+        bl.forEach(un => cont.appendChild(un.n));
+        bl.forEach(un => ajustar(un.n));
+      }
+      puestas += bl.length;
+      const pi = paginas.indexOf(pg);
+      bl.forEach(un => {
+        unidades.push({ u: un.n, cont, pag: pi, t: un.t, on: false });
+        un.subs.forEach(sb => unidades.push({ u: sb.n, cont, pag: pi, t: sb.t, on: false }));
+      });
+    });
+  });
+  libro = { unidades, paginas, T: secs.T };
+}
+
+/* pone al día lo que se ve según s */
+function aplicar(anim) {
+  const U = libro.unidades;
+  s = Math.max(0, Math.min(s, libro.T));
+  const conts = new Map();
+  U.forEach((o, i) => {
+    const on = o.t <= s;
+    if (on !== o.on) {
+      o.on = on;
+      if (on) { o.u.classList.remove("rapido"); o.u.classList.add("on"); }
+      else { o.u.classList.add("rapido"); o.u.classList.remove("on"); }
+    }
+    if (on) conts.set(o.cont, true); else if (!conts.has(o.cont)) conts.set(o.cont, false);
+  });
+  conts.forEach((v, c) => {
+    if (v) { c.classList.remove("rapido"); c.classList.add("on"); }
+    else { c.classList.add("rapido"); c.classList.remove("on"); }
+  });
+  let p = 0;
+  U.forEach(o => { if (o.t <= s) p = Math.max(p, o.pag); });
+  const L = Math.max(p - 1, 0);
+  const pista = $("pista");
+  pista.classList.toggle("anim", !!anim);
+  pista.style.transform = "translateX(" + (-L * G.Sw) + "px)";
+  if (anim && L > Lprev) {
+    const h = libro.paginas[p].hoja;
+    h.classList.remove("gira"); void h.offsetWidth; h.classList.add("gira");
+    setTimeout(() => h.classList.remove("gira"), 1000);
+  }
+  Lprev = L;
+  const n = libro.T;
+  $("contador").textContent = EJERCICIOS[actual].interactivo ? EJERCICIOS[actual].titulo : EJERCICIOS[actual].titulo + " · " + s + " / " + n;
+  $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
+  $("btnAtras").disabled = (actual === 0 && s <= 1);
+  $("btnAdelante").disabled = (actual === EJERCICIOS.length - 1 && s === n);
+}
+
+function pintarPestanas() {
+  const nav = $("pestanas");
+  nav.innerHTML = "";
+  EJERCICIOS.forEach((e, i) => {
+    const b = document.createElement("button");
+    b.textContent = e.corto || e.titulo.replace("Ejercicio ", "Ej. ");
+    b.setAttribute("aria-selected", i === actual);
+    b.onclick = ev => { ev.stopPropagation(); cargar(i, false); };
+    nav.appendChild(b);
+  });
+  const sel = nav.querySelector('[aria-selected="true"]');
+  if (sel) sel.scrollIntoView({ inline: "center", block: "nearest" });
+}
+
+function construir() {
+  geometria();
+  const e = EJERCICIOS[actual];
+  const secs = extraer(e);
+  paginar(secs, e._T);
+}
+
+async function cargar(i, alFinal) {
+  const lib = $("libro");
+  lib.classList.add("fuera");
+  await new Promise(r => setTimeout(r, 200));
+  actual = i;
+  document.body.classList.toggle("inter", !!EJERCICIOS[actual].interactivo);
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  construir();
+  s = alFinal ? libro.T : 1;          // al abrir un ejercicio ya se ve el enunciado
+  Lprev = 0;
+  pintarPestanas();
+  aplicar(false);
+  lib.classList.remove("fuera");
+}
+
+function avanzar() {
+  if (s < libro.T) { s++; aplicar(true); }
+  else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
+}
+function retroceder() {
+  if (s > 1) { s--; aplicar(true); }
+  else if (actual > 0) cargar(actual - 1, true);
+}
+
+/* clic: tercio izquierdo = atrás; resto = adelante */
+$("libro").addEventListener("click", ev => {
+  if (String(window.getSelection())) return;
+  if (EJERCICIOS[actual].interactivo || ev.target.closest("input,button,a,.inter")) return;
+  if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
+});
+$("btnAtras").onclick = ev => { ev.stopPropagation(); retroceder(); };
+$("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
+$("tira").onclick = ev => {
+  ev.stopPropagation();
+  const r = $("tira").getBoundingClientRect();
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * libro.T));
+  aplicar(true);
+};
+document.addEventListener("keydown", ev => {
+  if (ev.target.closest && ev.target.closest("input,textarea,button,select")) return;
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
+  else if (ev.key === "Home") { s = 1; aplicar(true); }
+  else if (ev.key === "End") { s = libro.T; aplicar(true); }
+});
+let tRes = null;
+window.addEventListener("resize", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); Lprev = 0; aplicar(false); } }, 150);
+});
+
+window.addEventListener("load", () => cargar(0, false));
+</script>
+</body>
+</html>
