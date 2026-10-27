@@ -399,7 +399,8 @@ const EJERCICIOS = [
     enunciado: '<p class="nota">Problema 19.4.1 (2 puntos)</p>' +
       '<p>Se considera el sistema de ecuaciones dependiente de un parámetro real $m$:</p>' +
       String.raw`$$\left\{\begin{array}{rcl} -x+y+z&=&0\\ x+my-z&=&0\\ x-y-mz&=&0 \end{array}\right.$$
-      <p style="margin-left:1.6em">a)&nbsp; Determínense los valores del parámetro real $m$ para que el sistema tenga soluciones diferentes a la solución trivial $x=y=z=0$.</p>`,
+      <p style="margin-left:1.6em">a)&nbsp; Determínense los valores del parámetro real $m$ para que el sistema tenga soluciones diferentes a la solución trivial $x=y=z=0$.</p>
+      <p style="margin-left:1.6em">b)&nbsp; Resuélvase el sistema para los valores de $m$ con infinitas soluciones.</p>`,
     pasos: [
       { titulo: "Escribimos el sistema en forma matricial",
         html: ec(mat([['-1','1','1'],['1','m','-1'],['1','-1','-m']]), mat([['x'],['y'],['z']]), f('='), mat([['0'],['0'],['0']])) +
@@ -497,7 +498,8 @@ const EJERCICIOS = [
     enunciado: '<p class="nota">Junio 2019 (coincidente) · Opción A · Problema 19.5.1 (2 puntos)</p>' +
       '<p>Se considera el sistema de ecuaciones lineales dependiente del parámetro $a\\in\\mathbb{R}$:</p>' +
       String.raw`$$\left\{\begin{array}{rcl} x+2y+(a+2)z&=&1\\ x+y+az&=&0\\ (a-1)x+2z&=&a+1 \end{array}\right.$$
-      <p style="margin-left:1.6em">a)&nbsp; Discútase el sistema para los diferentes valores de $a$.</p>`,
+      <p style="margin-left:1.6em">a)&nbsp; Discútase el sistema para los diferentes valores de $a$.</p>
+      <p style="margin-left:1.6em">b)&nbsp; Resuélvase el sistema para $a=1$ y para $a=0$.</p>`,
     pasos: [].concat(
       pasosInicio({
         A: [['1','2','a+2'],['1','1','a'],['a-1','0','2']],
