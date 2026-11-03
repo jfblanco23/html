@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reducción y Gauss: el mismo proceso</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#1414E6; --rojo:#E01E1E; --gris:#666;
+    --cB:#8FD3FF; --bB:#1E88D6;     /* azul     */
+    --cO:#FFC47A; --bO:#E07B00;     /* naranja  */
+    --cG:#9BE9A8; --bG:#2E9E2E;     /* verde    */
+    --cP:#CDB4FF; --bP:#7B4FD6;     /* morado (intercambio de filas) */
+    --cK:#FFA8D0; --bK:#E0508F;     /* rosa (vector solución b) */
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;overflow:hidden}
+  body{background:#fff;color:var(--texto);cursor:pointer;
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+
+  /* barras */
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:0 14px;display:flex;gap:14px;align-items:center;font-size:14px;color:var(--gris)}
+  .barra-sup .tit{font-weight:bold;color:#333;white-space:nowrap}
+  #menu{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;min-width:0}
+  #menu button{font:inherit;font-size:13px;padding:3px 9px;border-radius:8px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #ccc;color:#555}
+  #menu button:hover{border-color:#2e9e2e;color:#222}
+  #menu button[aria-selected=true]{background:#2e9e2e;border-color:#2e9e2e;color:#fff}
+  .barra-sup .reiniciar{margin-left:auto;font:inherit;font-size:13px;padding:3px 12px;border-radius:8px;cursor:pointer;
+    background:#fff;border:1.5px solid #bbb;color:#555}
+  .barra-sup .reiniciar:hover{border-color:#333;color:#333}
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:14px;color:var(--gris)}
+  .progreso .tira{position:relative;flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .tira b{position:absolute;top:0;bottom:0;width:3px;margin-left:-1px;background:#fff}
+  .progreso .nav{font:inherit;font-size:24px;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:12em;text-align:right;white-space:nowrap}
+
+  /* escenas: cada una ocupa toda la pantalla, sin scroll */
+  #escenas{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:hidden;background:#fff}
+  .escena{display:none;position:absolute;inset:0;flex-direction:column;padding:8px 26px 0}
+  .escena.activa{display:flex;animation:aparece .5s ease}
+  .esc-tit{flex:none;font-size:18px;font-weight:bold;color:#333;border-bottom:2px solid #ddd;padding-bottom:4px;margin:0 0 6px}
+  .cuerpo{flex:1 1 0;min-height:0;font-size:18px}
+  .cols2{display:flex}
+  .colw{flex:1 1 0;min-width:0;padding:0 24px}
+  .colw+.colw{border-left:1px solid #d0d0d0}
+  .n3 .colw{padding:0 14px}
+  .comp{display:grid;grid-template-columns:1fr 1fr;align-content:start;position:relative}
+  .comp::before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px solid #d0d0d0}
+  .comp>.bl,.comp>.ch{padding-left:24px;padding-right:24px}
+  .comp>.bl.span2{grid-column:1/-1}
+  .comp>.bl{margin-bottom:.4em}
+  .comp .fila .c{min-height:1.55em}
+  .comp .ecm{--h:1.45em}
+  .comp .mat{margin-top:.55em}
+  .comp .etq,.comp .pil{margin-top:.55em}
+  .comp .caja{margin:1em 0 .2em}
+  .ch{margin:0 0 .4em;font-size:18px;color:#333;font-weight:bold;border-bottom:2px solid #ddd;padding-bottom:4px}
+  @media (max-width:820px){
+    .cuerpo{overflow-y:auto}
+    .cols2{flex-direction:column}
+    .colw+.colw{border-left:0}
+    .comp{grid-template-columns:1fr}
+    .comp::before{display:none}
+  }
+
+  /* para medir y para precargar tipos de letra */
+  .medir .bl.on{animation:none !important;visibility:hidden}
+  .medir .leyB,.medir .leyG,.medir .leyP{display:block !important}
+  .precarga .escena{display:flex !important;left:-99999px;width:1200px;height:700px;visibility:hidden}
+  .precarga .bl{display:block !important}
+
+  /* bloques que van apareciendo */
+  .bl{display:none;margin:0 0 .75em;padding:2px 6px}
+  .bl.on{display:block;animation:entra .7s ease both}
+  .bl.d2.on{animation-delay:.6s}
+  @keyframes entra{from{opacity:0;clip-path:inset(-12px 100% -12px -12px)}to{opacity:1;clip-path:inset(-12px -12px -12px -12px)}}
+  @keyframes aparece{from{opacity:0}to{opacity:1}}
+  .bl h4{margin:.3em 0 .2em;font-size:1.02em}
+  .bl p{margin:.25em 0 .35em}
+  .nota{color:var(--gris);font-size:.86em}
+  .leyB,.leyG,.leyP{display:none}
+  .escena.vB .leyB,.escena.vG .leyG,.escena.vP .leyP{display:block}
+
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:1em 1em .4em;margin:1.2em 0 .5em}
+  .caja>.titulo{position:absolute;top:-.8em;left:12px;background:var(--verde-titulo);color:#fff;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.85em}
+  .caja.enun{color:var(--azul);margin-top:.4em;padding-top:.6em}
+  .circ{display:inline-block;border:2px solid var(--azul);border-radius:999px;padding:.03em .8em;color:var(--azul);margin:.15em 0}
+  .bl.on .circ-w,.bl.on .lin .circ{animation:aparece .6s ease 1.5s both}
+  .bl.on .fila.res{animation:aparece .6s ease 1s both}
+  .lin{display:flex;align-items:center;gap:.9em;flex-wrap:wrap}
+  .lin.rs{margin:.55em 0}
+  .lin.rs0{margin:.3em 0}
+  .n.fK{background:var(--cK)}
+
+  /* ecuaciones alineadas por columnas (como a mano) */
+  .eqw{display:flex;align-items:stretch;gap:.35em;margin:.25em 0 .15em}
+  .lw{position:relative;flex:none;width:.85em}
+  .llave{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
+  .eq{display:flex;flex-direction:column}
+  .fila{display:grid;grid-template-columns:3em 3.6em 3.6em 1.6em 3.1em 3.6em;align-items:stretch}
+  .comp .fila,.n3 .fila{grid-template-columns:2.6em 3.2em 3.2em 1.4em 2.7em 3em}
+  .fila .c{min-height:1.8em;padding:0 .1em;display:flex;align-items:center;justify-content:flex-end;white-space:nowrap}
+  .fila .c.ig{justify-content:center}
+  .fila .lab{color:var(--gris);font-size:.8em;padding-left:.6em}
+  .fila.sub .c{border-bottom:2px solid #111}
+  .fila.res{margin-top:.2em}
+  .fila.res .c{background:var(--verde-fondo);border-top:2px solid var(--verde-borde);border-bottom:2px solid var(--verde-borde)}
+  .fila.res .c:nth-child(1){border-left:2px solid var(--verde-borde);border-radius:6px 0 0 6px}
+  .fila.res .c:nth-child(5){border-right:2px solid var(--verde-borde);border-radius:0 6px 6px 0}
+  .ops{display:flex;gap:1.2em;flex-wrap:wrap;align-items:flex-start}
+  .cap{margin:0 0 .1em}
+
+  /* números marcados: relleno = se hará cero; borde = fila que se usa */
+  .n{display:inline-block;padding:.02em .3em;border-radius:7px;transition:background-color .5s ease,box-shadow .5s ease}
+  .escena.vB .kB,.n.fB{background:var(--cB)} .escena.vO .kO,.n.fO{background:var(--cO)}
+  .escena.vG .kG,.n.fG{background:var(--cG)} .escena.vP .kP{background:var(--cP)}
+  .escena.vB .pB{box-shadow:inset 0 0 0 2.5px var(--bB)}
+  .escena.vO .pO{box-shadow:inset 0 0 0 2.5px var(--bO)}
+  .escena.vG .pG{box-shadow:inset 0 0 0 2.5px var(--bG)}
+  .escena.vP .pP{box-shadow:inset 0 0 0 2.5px var(--bP)}
+  .escena.vB.vO .pB.pO{box-shadow:inset 0 0 0 2.5px var(--bB),inset 0 0 0 5px var(--bO)}
+
+  .pill{display:inline-block;padding:.02em .55em;border-radius:999px;font-size:.88em;white-space:nowrap}
+  .pill.qB{background:var(--cB);box-shadow:inset 0 0 0 2px var(--bB)}
+  .pill.qO{background:var(--cO);box-shadow:inset 0 0 0 2px var(--bO)}
+  .pill.qG{background:var(--cG);box-shadow:inset 0 0 0 2px var(--bG)}
+  .pill.qP{background:var(--cP);box-shadow:inset 0 0 0 2px var(--bP)}
+
+  /* matrices */
+  .ecm{--h:1.65em;display:flex;align-items:flex-start;justify-content:center;gap:.3em;margin:.1em 0}
+  .etq,.pil{margin-top:.9em;display:grid;grid-auto-rows:var(--h)}
+  .etq>span{display:flex;align-items:center;justify-content:flex-end;color:var(--gris);font-size:.85em;padding-right:.3em}
+  .pil>span{display:flex;align-items:center;padding-left:.2em}
+  .pil .pill{visibility:hidden}
+  .escena.vB .pil .pvB,.escena.vO .pil .pvO,.escena.vG .pil .pvG,.escena.vP .pil .pvP{visibility:visible}
+  .mat{--w:2.6em;position:relative;display:inline-grid;
+    grid-template-columns:repeat(var(--nc),var(--w));grid-auto-rows:var(--h);
+    margin:.9em .7em .15em;text-align:center}
+  .mat .c{display:flex;align-items:center;justify-content:center;white-space:nowrap}
+  .mat::before,.mat::after{content:"";position:absolute;top:-.15em;bottom:-.15em;width:.55em;border:2px solid #111}
+  .mat::before{left:-.7em;border-right:0;border-radius:60% 0 0 60%/50% 0 0 50%}
+  .mat::after{right:-.7em;border-left:0;border-radius:0 60% 60% 0/0 50% 50% 0}
+  .mat .bar{position:absolute;top:.1em;bottom:.1em;left:calc(var(--k) * var(--w));border-left:1.5px solid #111}
+  .flecha{text-align:center;font-size:1.2em;color:var(--gris);line-height:1;margin:.1em 0}
+  .katex-display{margin:.4em 0;overflow:visible}
+
+  /* Regla de Cramer: matrices y determinantes con columnas de color */
+  .mcw{--w:2.6em;display:inline-flex;flex-direction:column;align-items:stretch;margin:.1em .8em .1em .7em;vertical-align:top}
+  .mhead{display:grid;grid-template-columns:repeat(var(--nc),var(--w));text-align:center;font-size:.92em;line-height:1.35}
+  .mhead>span{border-radius:7px 7px 0 0}
+  .matc{--h:1.6em;position:relative;display:grid;grid-template-columns:repeat(var(--nc),var(--w));grid-auto-rows:var(--h);margin:.15em 0}
+  .matc .c{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;white-space:nowrap}
+  .band{position:absolute;top:0;bottom:0;left:calc(var(--i) * var(--w));width:var(--w);border-radius:0 0 7px 7px}
+  .bx{background:var(--cB)} .by{background:var(--cO)} .bz{background:var(--cG)} .bb{background:var(--cK)}
+  .matc::before,.matc::after{content:"";position:absolute;top:-.15em;bottom:-.15em;width:.55em;border:2px solid #111;z-index:2}
+  .matc::before{left:-.7em;border-right:0;border-radius:60% 0 0 60%/50% 0 0 50%}
+  .matc::after{right:-.7em;border-left:0;border-radius:0 60% 60% 0/0 50% 50% 0}
+  .matc.det::before,.matc.det::after{width:0;border-radius:0}
+  .matc.det::before{left:-.4em;border:0;border-left:2px solid #111}
+  .matc.det::after{right:-.4em;border:0;border-right:2px solid #111}
+  .boxc{position:absolute;top:-.08em;bottom:-.08em;left:calc(var(--i) * var(--w) - .08em);width:calc(var(--w) + .16em);
+    border:3px solid var(--bc);border-radius:8px;z-index:3;pointer-events:none}
+  .boxc.frB{--bc:var(--bB)} .boxc.frO{--bc:var(--bO)} .boxc.frG{--bc:var(--bG)}
+  .drow{display:flex;align-items:center;gap:.5em}
+  .drow .sar{margin:0 0 0 .5em}
+  .drow{flex-wrap:nowrap}
+  .drow .vl,.drow .vl .katex,.drow .vl .katex-html{white-space:nowrap}
+  .drow .vl{margin-left:.1em}
+  .bl.half.on{display:inline-block;width:49.5%;vertical-align:top;padding-right:.8em}
+  .dblk{margin:.1em 0 .5em}
+  .sar>div{white-space:nowrap}
+  .sar{margin:.15em 0 0;font-size:.95em;line-height:1.5}
+  .forma{display:flex;align-items:flex-start;gap:.2em}
+  .forma .op{padding-top:1.9em;font-size:1.1em}
+</style>
+</head>
+<body>
+<div class="barra-sup">
+  <span class="tit">Sistemas 3×3</span>
+  <nav id="menu"></nav>
+  <button class="reiniciar" id="btnReiniciar">Reiniciar</button>
+</div>
+
+<div id="escenas"></div>
+
+<div class="progreso">
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
+  <span id="contador"></span>
+</div>
+
+<script>
+/* =====================================================================
+   Ayudantes
+   ===================================================================== */
+const R = String.raw;
+
+/* celda: texto  o  [texto, clase] */
+const C = (v, extra = '') => {
+  if (v === '' || v == null) return '<span class="c"></span>';
+  const [t, k] = Array.isArray(v) ? v : [v, ''];
+  return '<span class="c' + extra + '"><span class="n ' + k + '">$' + t + '$</span></span>';
+};
+/* fila de ecuación: [x, y, z, '=', término independiente] */
+const fila = (c, lab = '', cls = '') =>
+  '<div class="fila ' + cls + '">' + C(c[0]) + C(c[1]) + C(c[2]) + C(c[3], ' ig') + C(c[4]) +
+  '<span class="lab">' + (lab ? '$' + lab + '$' : '') + '</span></div>';
+
+const llave = '<span class="lw"><svg class="llave" viewBox="0 0 10 100" preserveAspectRatio="none" aria-hidden="true">' +
+  '<path d="M9 1 C5 1 5 4 5 18 L5 38 C5 46 3 49 1 50 C3 51 5 54 5 62 L5 82 C5 96 5 99 9 99" ' +
+  'fill="none" stroke="#111" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg></span>';
+const sist = f => '<div class="eqw">' + llave + '<div class="eq">' + f.join('') + '</div></div>';
+const suma = f => '<div class="eqw"><div class="eq">' + f.join('') + '</div></div>';
+const circ = t => '<div class="circ-w"><span class="circ">$' + t + '$</span></div>';
+const lin = (calc, res) => '<div class="lin"><span>' + calc + '</span><span class="circ">$' + res + '$</span></div>';
+
+/* matriz ampliada con barra; celdas: texto o [texto, clases] */
+function mat(rows, bar) {
+  let h = '<span class="mat" style="--nc:' + rows[0].length + '">';
+  rows.forEach(r => r.forEach(c => {
+    const [t, k] = Array.isArray(c) ? c : [c, ''];
+    h += '<span class="c"><span class="n ' + k + '">$' + t + '$</span></span>';
+  }));
+  if (bar != null) h += '<span class="bar" style="--k:' + bar + '"></span>';
+  return h + '</span>';
+}
+const pill = (k, tex) => '<span class="pill q' + k + ' pv' + k + '">$' + tex + '$</span>';
+const matBlock = (rows, pills = []) =>
+  '<div class="ecm"><div class="etq"><span>$F_1$</span><span>$F_2$</span><span>$F_3$</span></div>' +
+  mat(rows, 3) +
+  '<div class="pil"><span>' + (pills[0] || '') + '</span><span>' + (pills[1] || '') + '</span><span>' + (pills[2] || '') + '</span></div></div>';
+const cap = p => '<div class="cap">' + p + '</div>';
+
+/* bloque: contenido, columna (0/1) y clases extra */
+const blk = (html, col = 0, cls = '', until = null) => ({ html, col, cls, until });
+
+/* =====================================================================
+   Matrices de Gauss
+   (relleno = número que se hará cero · borde = número de la fila que se usa)
+   ===================================================================== */
+const A = [
+  [['1', 'pB'], '-2', '3', '4'],
+  [['-1', 'kB pO'], '3', '-4', '-3'],
+  [['2', 'kO'], '-5', '1', '1']
+];
+const B = [
+  ['1', '-2', '3', '4'],
+  [['0', 'kB'], ['1', 'pG'], '-1', '1'],
+  [['0', 'kO'], ['1', 'kG'], '-7', '-5']
+];
+const B3 = [                                   /* para la comparación: solo los ceros ya hechos */
+  ['1', '-2', '3', '4'],
+  [['0', 'kB'], '1', '-1', '1'],
+  [['0', 'kO'], '1', '-7', '-5']
+];
+const Cm = [
+  ['1', '-2', '3', '4'],
+  [['0', 'kB'], '1', '-1', '1'],
+  [['0', 'kO'], ['0', 'kG'], '-6', '-6']
+];
+
+/* piezas de la reducción que se reutilizan */
+const sistema123 = (lab = true) => sist([
+  fila(['x', '-2y', '+3z', '=', '4'], lab ? '(E_1)' : ''),
+  fila(['-x', '+3y', '-4z', '=', '-3'], lab ? '(E_2)' : ''),
+  fila(['2x', '-5y', '+z', '=', '1'], lab ? '(E_3)' : '')]);
+const op1 = suma([
+  fila([['x', 'kB'], '-2y', '+3z', '=', '4'], 'E_1'),
+  fila([['-x', 'kB'], '+3y', '-4z', '=', '-3'], 'E_2', 'sub'),
+  fila(['', 'y', '-z', '=', '1'], '(E_4)', 'res')]);
+const op2 = suma([
+  fila([['-2x', 'kO'], '+6y', '-8z', '=', '-6'], '2E_2'),
+  fila([['2x', 'kO'], '-5y', '+z', '=', '1'], 'E_3', 'sub'),
+  fila(['', 'y', '-7z', '=', '-5'], '(E_5)', 'res')]);
+const op3 = suma([
+  fila(['', ['-y', 'kG'], '+z', '=', '-1'], '-E_4'),
+  fila(['', ['y', 'kG'], '-7z', '=', '-5'], 'E_5', 'sub'),
+  fila(['', '', '-6z', '=', '-6'], '', 'res')]);
+const solBox = '<div class="caja"><span class="titulo">Solución</span>' +
+  R`$$\left\{\begin{array}{l}x=5\\ y=2\\ z=1\end{array}\right.$$` + '</div>';
+
+/* =====================================================================
+   Ejercicios nuevos (Gauss) y regla de Cramer
+   ===================================================================== */
+const ley = {
+  B: '<p class="nota leyB">Queremos <b>ceros</b> debajo del $1$. <b>Relleno</b>: número que se hace $0$ · <b>borde</b>: el que usamos para conseguirlo.</p>',
+  G: '<p class="nota leyG">Segunda columna: queremos un $0$ debajo del $1$ de la fila 2.</p>',
+  P: '<p class="nota leyP"><b>Morado</b>: el pivote es $0$ (relleno); intercambiamos esa fila con otra que tenga un número distinto de $0$ (borde).</p>'
+};
+const flechaB = '<div class="flecha">$\\downarrow$</div>';
+const solBoxDe = (x, y, z) => '<div class="caja"><span class="titulo">Solución</span>' +
+  R`$$\left\{\begin{array}{l}x=` + x + R`\\ y=` + y + R`\\ z=` + z + R`\end{array}\right.$$` + '</div>';
+const solFila = (x, y, z) => '<div class="caja"><span class="titulo">Solución</span>' +
+  R`$$x=` + x + R`,\quad y=` + y + R`,\quad z=` + z + '$$</div>';
+const enun = f => '<div class="caja enun">' + sist(f) + '</div>';
+
+/* --- Ejercicio 2 --- */
+const MA0 = [[['1', 'pB pO'], '1', '-1', '4'], [['-2', 'kB'], '-4', '4', '-6'], [['3', 'kO'], '3', '-5', '10']];
+const MA1 = [['1', '1', '-1', '4'], [['0', 'kB'], '-2', '2', '2'], [['0', 'kO'], '0', '-2', '-2']];
+const sys2 = () => [fila(['x', '+y', '-z', '=', '4']), fila(['-2x', '-4y', '+4z', '=', '-6']), fila(['3x', '+3y', '-5z', '=', '10'])];
+/* --- Ejercicio 3 (pivotaje) --- */
+const MB0 = [[['0', 'kP'], '1', '1', '3'], ['-2', '3', '3', '9'], [['1', 'pP'], '-1', '4', '2']];
+const MB1 = [[['1', 'pB'], '-1', '4', '2'], [['-2', 'kB'], '3', '3', '9'], ['0', '1', '1', '3']];
+const MB2 = [['1', '-1', '4', '2'], [['0', 'kB'], ['1', 'pG'], '11', '13'], ['0', ['1', 'kG'], '1', '3']];
+const MB3 = [['1', '-1', '4', '2'], [['0', 'kB'], '1', '11', '13'], ['0', ['0', 'kG'], '-10', '-10']];
+const sys3 = () => [fila(['', 'y', '+z', '=', '3']), fila(['-2x', '+3y', '+3z', '=', '9']), fila(['x', '-y', '+4z', '=', '2'])];
+/* --- Ejercicio 4 (pivotaje en la segunda matriz) --- */
+const MC0 = [[['1', 'pB pO'], '1', '2', '9'], [['2', 'kB'], '2', '3', '15'], [['1', 'kO'], '3', '1', '10']];
+const MC1 = [['1', '1', '2', '9'], [['0', 'kB'], ['0', 'kP'], '-1', '-3'], [['0', 'kO'], ['2', 'pP'], '-1', '1']];
+const MC2 = [['1', '1', '2', '9'], [['0', 'kO'], '2', '-1', '1'], [['0', 'kB'], '0', '-1', '-3']];
+const sys4 = () => [fila(['x', '+y', '+2z', '=', '9']), fila(['2x', '+2y', '+3z', '=', '15']), fila(['x', '+3y', '+z', '=', '10'])];
+const RS = [
+  [['x', '-2y', '+3z', '=', '4'], ['-x', '+3y', '-4z', '=', '-3'], ['2x', '-5y', '+z', '=', '1']],
+  [['x', '+y', '-z', '=', '4'], ['-2x', '-4y', '+4z', '=', '-6'], ['3x', '+3y', '-5z', '=', '10']],
+  [['', 'y', '+z', '=', '3'], ['-2x', '+3y', '+3z', '=', '9'], ['x', '-y', '+4z', '=', '2']],
+  [['x', '+y', '+2z', '=', '9'], ['2x', '+2y', '+3z', '=', '15'], ['x', '+3y', '+z', '=', '10']]
+];
+const sys1 = () => [fila(['x', '-2y', '+3z', '=', '4']), fila(['-x', '+3y', '-4z', '=', '-3']), fila(['2x', '-5y', '+z', '=', '1'])];
+
+/* --- Regla de Cramer --- */
+const SYS = [
+  { A: [[1, -2, 3], [-1, 3, -4], [2, -5, 1]], b: [4, -3, 1], sol: [5, 2, 1], f: sys1 },
+  { A: [[1, 1, -1], [-2, -4, 4], [3, 3, -5]], b: [4, -6, 10], sol: [5, 0, 1], f: sys2 },
+  { A: [[0, 1, 1], [-2, 3, 3], [1, -1, 4]], b: [3, 9, 2], sol: [0, 2, 1], f: sys3 },
+  { A: [[1, 1, 2], [2, 2, 3], [1, 3, 1]], b: [9, 15, 10], sol: [1, 2, 3], f: sys4 }
+];
+const det3 = M => M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1]) - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0]) +
+  M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
+const repl = (A, b, j) => A.map((r, i) => r.map((v, c) => c === j ? b[i] : v));
+const sg = a => a.map((v, i) => i === 0 ? String(v) : (v < 0 ? '-' + (-v) : '+' + v)).join('');
+const par = v => v < 0 ? '(' + v + ')' : String(v);
+function sarrus(M, tex) {
+  const [[a, b, c], [d, e, f], [g, h, i]] = M;
+  const p = [a * e * i, b * f * g, c * d * h], n = [c * e * g, a * f * h, b * d * i];
+  const sp = p[0] + p[1] + p[2], sn = n[0] + n[1] + n[2];
+  return '<div class="sar"><div>$' + tex + '=(' + sg(p) + ')-(' + sg(n) + ')$</div><div>$=' + sp + '-' + par(sn) + '=' + (sp - sn) + '$</div></div>';
+}
+const VAR = ['x', 'y', 'z'], KS = ['B', 'O', 'G'], BAND = ['bx', 'by', 'bz'];
+/* matriz / determinante con columnas coloreadas */
+function matC(rows, o = {}) {
+  const nc = rows[0].length;
+  let h = '<span class="mcw">';
+  if (o.head) h += '<span class="mhead" style="--nc:' + nc + '">' +
+    o.head.map(([t, c]) => '<span class="' + c + '">' + (t ? '$' + t + '$' : '&nbsp;') + '</span>').join('') + '</span>';
+  h += '<span class="matc' + (o.det ? ' det' : '') + '" style="--nc:' + nc + '">';
+  (o.cols || []).forEach((c, i) => { if (c) h += '<span class="band ' + c + '" style="--i:' + i + '"></span>'; });
+  rows.forEach(r => r.forEach(v => {
+    const [t, k] = Array.isArray(v) ? v : [v, ''];
+    h += '<span class="c"><span class="n ' + k + '">$' + t + '$</span></span>';
+  }));
+  if (o.box) h += '<span class="boxc fr' + o.box.k + '" style="--i:' + o.box.i + '"></span>';
+  return h + '</span></span>';
+}
+const HEAD = [['x', 'bx'], ['y', 'by'], ['z', 'bz']];
+/* determinante D (j = null) o D_x, D_y, D_z (j = 0, 1, 2) */
+function detBlock(S, j, explicar) {
+  const M = j == null ? S.A : repl(S.A, S.b, j);
+  const tex = j == null ? 'D' : 'D_' + VAR[j];
+  const cols = BAND.slice(); if (j != null) cols[j] = 'bb';
+  const o = { det: true, cols };
+  if (j != null) o.box = { k: KS[j], i: j };
+  if (explicar) {
+    o.head = HEAD.map((h, c) => c === j ? ['b', 'bb'] : h);
+  }
+  const chip = j == null ? '<span>$D$</span>' : pill(KS[j], tex);
+  let txt = '';
+  if (explicar) {
+    txt = j == null ? 'Determinante de la matriz de coeficientes (regla de Sarrus).'
+      : 'Cambiamos la columna de $' + VAR[j] + '$ (' + ['azul', 'naranja', 'verde'][j] + ') por el vector solución $b$ (rosa).';
+  }
+  return (txt ? '<p class="nota cap">' + txt + '</p>' : '') +
+    '<div class="dblk"><div class="drow">' + chip + '<span>$=$</span>' + matC(M, o) + sarrus(M, tex) + '</div></div>';
+}
+function detVal(S, j, explicar) {
+  const M = j == null ? S.A : repl(S.A, S.b, j);
+  const cols = BAND.slice(); if (j != null) cols[j] = 'bb';
+  const o = { det: true, cols };
+  if (j != null) o.box = { k: KS[j], i: j };
+  if (explicar) o.head = HEAD.map((h, c) => c === j ? ['b', 'bb'] : h);
+  const chip = j == null ? '<span>$D$</span>' : pill(KS[j], 'D_' + VAR[j]);
+  return '<div class="dblk"><div class="drow">' + chip + '<span>$=$</span>' + matC(M, o) + '<span class="vl">$=' + det3(M) + '$</span></div></div>';
+}
+function formaMat(S) {
+  const A = matC(S.A, { head: HEAD, cols: BAND });
+  const X = matC([[['x', 'fB']], [['y', 'fO']], [['z', 'fG']]], { head: [['', '']] });
+  const b = matC(S.b.map(v => [v]), { head: [['b', 'bb']], cols: ['bb'] });
+  return '<div class="forma">' + A + '<span class="op">$\\cdot$</span>' + X + '<span class="op">$=$</span>' + b + '</div>' +
+    '<p class="nota">Cada incógnita multiplica a su columna (mismo color); $b$ es el <b>vector solución</b>. ' +
+    'En $D_x$, $D_y$, $D_z$ cambiamos la columna de esa incógnita por $b$.</p>';
+}
+function resultados(S) {
+  const D = det3(S.A);
+  const ds = [0, 1, 2].map(j => det3(repl(S.A, S.b, j)));
+  return [0, 1, 2].map(j => '<div class="lin rs">' + pill(KS[j], VAR[j]) + '<span>$=\\dfrac{D_' + VAR[j] + '}{D}=\\dfrac{' + ds[j] + '}{' + D + '}$</span>' +
+    '<span class="circ">$' + VAR[j] + '=' + S.sol[j] + '$</span></div>').join('');
+}
+/* sistema con el color de cada variable (x azul, y naranja, z verde) y términos independientes en rosa */
+const colorear = r => r.map((c, i) => !c ? c : i < 3 ? [c, 'f' + KS[i]] : i === 4 ? [c, 'fK'] : c);
+const enunC = rows => '<div class="caja enun">' + sist(rows.map(r => fila(colorear(r)))) + '</div>';
+const resumen = (S, j) => '<div class="lin rs0">' + (j == null ? '<span>$D$</span>' : pill(KS[j], 'D_' + VAR[j])) +
+  '<span>$=' + (j == null ? det3(S.A) : det3(repl(S.A, S.b, j))) + '$</span></div>';
+function cramerScene(k) {
+  const S = SYS[k], ex = k === 0;
+  const stmt = enunC(RS[k]);
+  const rs = () => resultados(S);
+  const sol = () => solFila(S.sol[0], S.sol[1], S.sol[2]);
+  const nombre = 'Cramer ' + (k + 1);
+  const tit = (7 + k) + ' · Regla de Cramer · sistema del ejercicio ' + (k + 1);
+  const pasosDet = e => [
+    { blocks: [blk(detVal(S, null, e), 0)] },
+    { blocks: [blk(detVal(S, 0, e), 1, 'half')] },
+    { blocks: [blk(detVal(S, 1, e), 1, 'half')] },
+    { blocks: [blk(detVal(S, 2, e), 1)] },
+    { blocks: [blk(rs() + sol(), 1)] }
+  ];
+  const ini = ex ? [{ blocks: [blk(stmt, 0)] }, { blocks: [blk('<h4>Forma matricial: $A\\cdot X=b$</h4>' + formaMat(S), 0)] }]
+                 : [{ blocks: [blk(stmt, 0)] }];
+  return { nombre, corto: nombre, tit, kind: 'cols', steps: ini.concat(pasosDet(ex)) };
+}
+
+/* =====================================================================
+   ESCENAS Y PASOS (cada clic descubre el siguiente paso)
+   state: clases que se activan al llegar a ese paso (v1: primeras marcas, v3: segunda marca)
+   ===================================================================== */
+const SCENES = [
+
+  /* ---------- 1 · Reducción, a dos columnas ---------- */
+  { nombre: 'Reducción', corto: '1 · Reducción', tit: '1 · Resolución por reducción', kind: 'cols', steps: [
+    { blocks: [blk('<div class="caja enun"><p>Resuelve el sistema:</p>' + sistema123() + '</div>', 0)] },
+    { blocks: [blk('<h4>Eliminamos la $x$: sumamos $E_1$ y $E_2$</h4>' + op1, 0)] },
+    { blocks: [blk('<h4>Multiplicamos $E_2$ por $2$ y sumamos $E_3$</h4>' + op2, 0)] },
+    { blocks: [blk('<h4>Queda un sistema de dos ecuaciones con dos incógnitas</h4>' + sist([
+        fila(['', 'y', '-z', '=', '1'], '(E_4)'),
+        fila(['', 'y', '-7z', '=', '-5'], '(E_5)')]), 0)] },
+    { blocks: [blk('<h4>Multiplicamos $E_4$ por $-1$ y sumamos $E_5$</h4>' + op3 + circ('z=1'), 1)] },
+    { blocks: [blk('<h4>Sustituimos $z=1$ en $E_5$ y hallamos $y$</h4>' +
+        '<p>' + R`$y-7z=-5\;\Rightarrow\;y=7\cdot1-5=2$` + '</p>' + circ('y=2'), 1)] },
+    { blocks: [blk('<h4>Sustituimos $y=2$ y $z=1$ en $E_1$ y hallamos $x$</h4>' +
+        '<p>' + R`$x-2\cdot2+3\cdot1=4\;\Rightarrow\;x-4+3=4\;\Rightarrow\;x=5$` + '</p>' + circ('x=5'), 1)] },
+    { blocks: [blk(solBox, 1)] }
+  ]},
+
+  /* ---------- 2 · Gauss, a dos columnas ---------- */
+  { nombre: 'Gauss', corto: '2 · Gauss', tit: '2 · Método de Gauss', kind: 'cols', steps: [
+    { blocks: [blk('<h4>Matriz ampliada: el mismo sistema, sin escribir las letras</h4>' +
+        matBlock(A, ['', pill('B', 'F_2+F_1'), pill('O', R`F_3+2F_2`)]) +
+        '<p class="nota leyB">Queremos <b>ceros</b> debajo del $1$. <b>Relleno</b>: número que se hace $0$ · ' +
+        '<b>borde</b>: el que usamos para conseguirlo.</p>', 0)] },
+    { state: 'vB vO', blocks: [] },
+    { blocks: [blk('<p class="nota">Las dos operaciones, con las filas de la matriz anterior.</p>' +
+        '<div class="flecha">$\\downarrow$</div>' +
+        matBlock(B, ['', '', pill('G', R`F_3+(-1)\cdot F_2`)]) +
+        '<p class="nota leyG">Segunda columna: queremos un $0$ debajo del $1$ de la fila 2.</p>', 0)] },
+    { state: 'vG', blocks: [] },
+    { blocks: [blk('<p class="nota">Sumamos en vez de restar: multiplicamos $F_2$ por $-1$ y sumamos.</p>' +
+        '<div class="flecha">$\\downarrow$</div>' + matBlock(Cm), 0)] },
+    { blocks: [blk('<h4>Matriz escalonada: volvemos a escribir el sistema</h4>' + sist([
+        fila(['x', '-2y', '+3z', '=', '4'], 'E_1'),
+        fila(['', 'y', '-z', '=', '1'], 'E_4'),
+        fila(['', '', '-6z', '=', '-6'], '')]) + circ('z=1'), 1)] },
+    { blocks: [blk('<h4>Sustitución hacia atrás: calculamos $y$</h4>' +
+        '<p>' + R`$y-z=1\;\Rightarrow\;y=1+z=1+1=2$` + '</p>' + circ('y=2'), 1)] },
+    { blocks: [blk('<h4>Y por último $x$</h4>' +
+        '<p>' + R`$x-2y+3z=4\;\Rightarrow\;x=4+2y-3z=4+4-3=5$` + '</p>' + circ('x=5'), 1)] },
+    { blocks: [blk(solBox, 1)] }
+  ]},
+
+  /* ---------- 3 · Lado a lado, sin explicaciones ---------- */
+  { nombre: 'Comparación', corto: '3 · Lado a lado', tit: '3 · Reducción y Gauss, lado a lado', kind: 'comp', steps: [
+    { state: 'vB vO vG', blocks: [blk(sistema123(), 0), blk(matBlock(A), 1, 'd2')] },
+    { blocks: [
+        blk('<div class="ops"><div>' + cap(pill('B', 'E_1+E_2')) + op1 + '</div><div>' + cap(pill('O', R`2E_2+E_3`)) + op2 + '</div></div>', 0),
+        blk(matBlock(B3, ['', pill('B', 'F_2+F_1'), pill('O', R`F_3+2F_2`)]), 1, 'd2')] },
+    { blocks: [
+        blk('<div class="ops"><div>' + cap(pill('G', R`(-1)\cdot E_4+E_5`)) + op3 + '</div></div>', 0),
+        blk(matBlock(Cm, ['', '', pill('G', R`F_3+(-1)\cdot F_2`)]), 1, 'd2')] },
+    { blocks: [
+        blk(lin(R`$-6z=-6\Rightarrow z=1$`, 'z=1'), 0),
+        blk(lin(R`$-6z=-6\Rightarrow z=1$`, 'z=1'), 1, 'd2')] },
+    { blocks: [
+        blk(lin(R`$y-7z=-5\Rightarrow y=7\cdot1-5=2$`, 'y=2'), 0),
+        blk(lin(R`$y-z=1\Rightarrow y=1+1=2$`, 'y=2'), 1, 'd2')] },
+    { blocks: [
+        blk(lin(R`$x-2\cdot2+3\cdot1=4\Rightarrow x=5$`, 'x=5'), 0),
+        blk(lin(R`$x-2y+3z=4\Rightarrow x=4+4-3=5$`, 'x=5'), 1, 'd2')] },
+    { blocks: [blk('<div class="caja"><span class="titulo">Solución</span>' +
+        R`$$x=5,\qquad y=2,\qquad z=1$$` + '</div>', 0, 'span2')] }
+  ]},
+
+  /* ---------- 4 · Ejercicio 2, solo Gauss ---------- */
+  { nombre: 'Ejercicio 2', corto: 'Ej. 2 · Gauss', tit: '4 · Ejercicio 2 · Método de Gauss', kind: 'cols', steps: [
+    { blocks: [blk('<div class="caja enun"><p>Resuelve por Gauss:</p>' + sist(sys2().map((f, i) => f)) + '</div>', 0)] },
+    { blocks: [blk('<h4>Matriz ampliada</h4>' +
+        matBlock(MA0, ['', pill('B', R`F_2+2F_1`), pill('O', R`F_3+(-3)F_1`)]) + ley.B, 0)] },
+    { state: 'vB vO', blocks: [] },
+    { blocks: [blk('<p class="nota">Sumamos en vez de restar: multiplicamos $F_1$ por $2$ y por $-3$ y sumamos.</p>' +
+        flechaB + matBlock(MA1), 0)] },
+    { blocks: [blk('<h4>Matriz escalonada: volvemos a escribir el sistema</h4>' + sist([
+        fila(['x', '+y', '-z', '=', '4']), fila(['', '-2y', '+2z', '=', '2']), fila(['', '', '-2z', '=', '-2'])]) + circ('z=1'), 1)] },
+    { blocks: [blk('<h4>Sustitución hacia atrás: calculamos $y$</h4>' +
+        '<p>' + R`$-2y+2z=2\;\Rightarrow\;-2y+2\cdot1=2\;\Rightarrow\;y=0$` + '</p>' + circ('y=0'), 1)] },
+    { blocks: [blk('<h4>Y por último $x$</h4>' +
+        '<p>' + R`$x+y-z=4\;\Rightarrow\;x+0-1=4\;\Rightarrow\;x=5$` + '</p>' + circ('x=5'), 1)] },
+    { blocks: [blk(solBoxDe(5, 0, 1), 1)] }
+  ]},
+
+  /* ---------- 5 · Ejercicio 3, Gauss con pivotaje ---------- */
+  { nombre: 'Ejercicio 3', corto: 'Ej. 3 · Pivotaje', tit: '5 · Ejercicio 3 · Gauss con pivotaje', kind: 'cols', steps: [
+    { blocks: [blk('<div class="caja enun"><p>Resuelve por Gauss:</p>' + sist(sys3()) + '</div>', 0, '', 8)] },
+    { blocks: [blk('<h4>Matriz ampliada</h4>' +
+        matBlock(MB0, [pill('P', R`F_1\leftrightarrow F_3`), '', pill('P', R`F_3\leftrightarrow F_1`)]) + ley.P, 0, '', 8)] },
+    { state: 'vP', blocks: [] },
+    { blocks: [blk('<p class="nota">Intercambiamos las filas 1 y 3. Ahora ceros debajo del $1$.</p>' + flechaB +
+        matBlock(MB1, ['', pill('B', R`F_2+2F_1`), '']) + ley.B, 0, '', 8)] },
+    { state: 'vB', blocks: [] },
+    { blocks: [blk('<p class="nota">$F_3$ ya tiene un $0$. Segunda columna:</p>' +
+        matBlock(MB2, ['', '', pill('G', R`F_3+(-1)F_2`)]) + ley.G, 1, '', 8)] },
+    { state: 'vG', blocks: [] },
+    { blocks: [blk('<p class="nota">Multiplicamos $F_2$ por $-1$ y sumamos.</p>' + flechaB + matBlock(MB3), 1)] },
+    { blocks: [blk('<h4>Volvemos a escribir el sistema</h4>' + sist([
+        fila(['x', '-y', '+4z', '=', '2']), fila(['', 'y', '+11z', '=', '13']), fila(['', '', '-10z', '=', '-10'])]), 0)] },
+    { blocks: [blk('<h4>Sustitución hacia atrás</h4>' + lin(R`$-10z=-10\Rightarrow z=1$`, 'z=1'), 0)] },
+    { blocks: [blk(lin(R`$y+11\cdot1=13\Rightarrow y=2$`, 'y=2'), 0)] },
+    { blocks: [blk(lin(R`$x-2+4\cdot1=2\Rightarrow x=0$`, 'x=0'), 0)] },
+    { blocks: [blk(solBoxDe(0, 2, 1), 1)] }
+  ]},
+
+  /* ---------- 6 · Ejercicio 4, pivotaje en la segunda matriz ---------- */
+  { nombre: 'Ejercicio 4', corto: 'Ej. 4 · Pivotaje', tit: '6 · Ejercicio 4 · Gauss: pivotaje en la segunda matriz', kind: 'cols', steps: [
+    { blocks: [blk('<div class="caja enun"><p>Resuelve por Gauss:</p>' + sist(sys4()) + '</div>', 0, '', 6)] },
+    { blocks: [blk('<h4>Matriz ampliada</h4>' +
+        matBlock(MC0, ['', pill('B', R`F_2+(-2)F_1`), pill('O', R`F_3+(-1)F_1`)]) + ley.B, 0, '', 6)] },
+    { state: 'vB vO', blocks: [] },
+    { blocks: [blk('<p class="nota">Hacemos los ceros de la primera columna.</p>' + flechaB +
+        matBlock(MC1, ['', pill('P', R`F_2\leftrightarrow F_3`), pill('P', R`F_3\leftrightarrow F_2`)]) + ley.P, 1, '', 6)] },
+    { state: 'vP', blocks: [] },
+    { blocks: [blk('<p class="nota">Intercambiamos las filas 2 y 3 (conservan su color).</p>' + flechaB + matBlock(MC2), 1)] },
+    { blocks: [blk('<h4>Matriz escalonada: volvemos a escribir el sistema</h4>' + sist([
+        fila(['x', '+y', '+2z', '=', '9']), fila(['', '2y', '-z', '=', '1']), fila(['', '', '-z', '=', '-3'])]), 0)] },
+    { blocks: [blk('<h4>Sustitución hacia atrás</h4>' + lin(R`$-z=-3\Rightarrow z=3$`, 'z=3'), 0)] },
+    { blocks: [blk(lin(R`$2y-3=1\Rightarrow y=2$`, 'y=2'), 0)] },
+    { blocks: [blk(lin(R`$x+2+2\cdot3=9\Rightarrow x=1$`, 'x=1'), 0)] },
+    { blocks: [blk(solBoxDe(1, 2, 3), 1)] }
+  ]},
+
+  /* ---------- 7–10 · Regla de Cramer ---------- */
+  cramerScene(0), cramerScene(1), cramerScene(2), cramerScene(3)
+
+];
+
+/* ===================== MOTOR ===================== */
+const FLAT = [];
+SCENES.forEach((sc, i) => { sc.first = FLAT.length + 1; sc.steps.forEach((st, j) => FLAT.push(Object.assign(st, { sc: i, j }))); });
+const T = FLAT.length;
+let s = 1;
+const $ = id => document.getElementById(id);
+const OPC = { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }],
+              throwOnError: false, strict: false };
+const estrecha = () => window.innerWidth < 820;
+
+function montar() {
+  SCENES.forEach(sc => {
+    const el = document.createElement('section');
+    el.className = 'escena';
+    el.innerHTML = sc.kind === 'cols' ? '<h2 class="esc-tit">' + sc.tit + '</h2>' : '';
+    const cuerpo = document.createElement('div');
+    sc.ncols = sc.ncols || 2;
+    cuerpo.className = 'cuerpo ' + (sc.kind === 'cols' ? 'cols2 n' + sc.ncols : 'comp');
+    el.appendChild(cuerpo);
+    sc.el = el; sc.cuerpo = cuerpo; sc.ajustar = true; sc.idx = SCENES.indexOf(sc);
+    if (sc.kind === 'cols') {
+      sc.colw = Array.from({ length: sc.ncols }, () => { const c = document.createElement('div'); c.className = 'colw'; cuerpo.appendChild(c); return c; });
+    } else {
+      cuerpo.insertAdjacentHTML('beforeend', '<h3 class="ch">Reducción</h3><h3 class="ch">Gauss</h3>');
+    }
+    $('escenas').appendChild(el);
+  });
+  FLAT.forEach(st => {
+    const sc = SCENES[st.sc];
+    st.els = st.blocks.map(b => {
+      const d = document.createElement('div');
+      d.className = 'bl ' + (b.cls || '');
+      d.innerHTML = b.html; d._u = b.until;
+      (sc.kind === 'cols' ? sc.colw[b.col] : sc.cuerpo).appendChild(d);
+      return d;
+    });
+  });
+  if (window.renderMathInElement) renderMathInElement($('escenas'), OPC);
+
+  /* marcas de cambio de escena en la barra de progreso */
+  SCENES.forEach((sc, i) => {
+    const b = document.createElement('button'); b.textContent = sc.corto || sc.nombre; b.dataset.i = i;
+    b.onclick = ev => { ev.stopPropagation(); s = sc.first; aplicar(); };
+    $('menu').appendChild(b);
+  });
+  let acum = 0;
+  SCENES.slice(0, -1).forEach(sc => {
+    acum += sc.steps.length;
+    const m = document.createElement('b'); m.style.left = (acum / T * 100) + '%'; $('tira').appendChild(m);
+  });
+}
+
+/* busca el mayor tamaño de letra con el que todo cabe en pantalla (sin scroll) */
+function ajustar(sc) {
+  const c = sc.cuerpo;
+  if (estrecha()) { c.style.fontSize = '17px'; return; }
+  const pasos = FLAT.filter(x => x.sc === sc.idx);
+  const cabe1 = () => {
+    const anchos = [...c.querySelectorAll('.bl.on')].every(b => b.scrollWidth <= b.clientWidth + 1);
+    if (sc.kind === 'cols') return anchos && sc.colw.every(w => w.scrollHeight <= w.clientHeight + 1 && w.scrollWidth <= w.clientWidth + 1);
+    return c.scrollHeight <= c.clientHeight + 1 &&
+      [...c.querySelectorAll('.bl.on')].every(b => b.scrollWidth <= b.clientWidth + 1);
+  };
+  /* comprueba cada paso tal como se verá (algunos bloques desaparecen después) */
+  const cabe = () => pasos.every((_, j) => {
+    pasos.forEach((st, k) => st.els.forEach(e => e.classList.toggle('on', k <= j && !(e._u != null && j >= e._u))));
+    return cabe1();
+  });
+  c.classList.add('medir');
+  let lo = 11, hi = 28;
+  for (let i = 0; i < 9; i++) {
+    const mid = (lo + hi) / 2;
+    c.style.fontSize = mid + 'px';
+    if (cabe()) lo = mid; else hi = mid;
+  }
+  c.style.fontSize = lo + 'px';
+  pasos.forEach(st => st.els.forEach(e => e.classList.remove('on')));
+  c.classList.remove('medir');
+  sc.ajustar = false;
+}
+
+function aplicar() {
+  s = Math.max(1, Math.min(s, T));
+  const cur = FLAT[s - 1];
+  SCENES.forEach((sc, i) => sc.el.classList.toggle('activa', i === cur.sc));
+  const sc = SCENES[cur.sc];
+  if (sc.ajustar) ajustar(sc);
+  FLAT.forEach((st, i) => st.els.forEach(e => {
+    const jc = st.sc === cur.sc ? cur.j : (st.sc < cur.sc ? Infinity : -1);
+    e.classList.toggle('on', i < s && !(e._u != null && jc >= e._u));
+  }));
+  SCENES.forEach((q, i) => {
+    const est = new Set();
+    FLAT.slice(0, s).filter(x => x.sc === i).forEach(x => (x.state || '').split(' ').filter(Boolean).forEach(k => est.add(k)));
+    ['vB', 'vO', 'vG', 'vP'].forEach(k => q.el.classList.toggle(k, est.has(k)));
+  });
+  [...$('menu').children].forEach((b, i) => { b.setAttribute('aria-selected', i === cur.sc); if (i === cur.sc) b.scrollIntoView({ block: 'nearest', inline: 'nearest' }); });
+  $('contador').textContent = sc.nombre + ' · ' + (cur.j + 1) + ' / ' + sc.steps.length;
+  $('relleno').style.width = (s / T * 100) + '%';
+  $('btnAtras').disabled = (s <= 1);
+  $('btnAdelante').disabled = (s >= T);
+}
+const adelante = () => { if (s < T) { s++; aplicar(); } };
+const atras = () => { if (s > 1) { s--; aplicar(); } };
+
+$('escenas').addEventListener('click', () => { if (String(window.getSelection())) return; adelante(); });
+$('btnAdelante').onclick = ev => { ev.stopPropagation(); adelante(); };
+$('btnAtras').onclick = ev => { ev.stopPropagation(); atras(); };
+$('btnReiniciar').onclick = ev => { ev.stopPropagation(); s = 1; aplicar(); };
+$('tira').onclick = ev => {
+  ev.stopPropagation();
+  const r = $('tira').getBoundingClientRect();
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * T));
+  aplicar();
+};
+document.addEventListener('keydown', ev => {
+  if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(ev.key)) { ev.preventDefault(); adelante(); }
+  else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(ev.key)) { ev.preventDefault(); atras(); }
+  else if (ev.key === 'Home') { s = 1; aplicar(); }
+  else if (ev.key === 'End') { s = T; aplicar(); }
+});
+
+const reajustar = () => { SCENES.forEach(sc => sc.ajustar = true); aplicar(); };
+let tRes = null;
+window.addEventListener('resize', () => { clearTimeout(tRes); tRes = setTimeout(reajustar, 150); });
+
+window.addEventListener('load', async () => {
+  montar();
+  document.body.classList.add('precarga');        // fuerza la carga de los tipos de letra de las fórmulas
+  void document.body.offsetHeight;
+  if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) {} }
+  await new Promise(r => setTimeout(r, 150));
+  document.body.classList.remove('precarga');
+  reajustar();
+  if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => {
+    clearTimeout(tRes); tRes = setTimeout(reajustar, 80);
+  });
+});
+</script>
+</body>
+</html>

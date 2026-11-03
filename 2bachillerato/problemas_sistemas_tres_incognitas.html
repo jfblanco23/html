@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Problemas de sistemas con tres incógnitas</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#1414E6; --rojo:#E01E1E; --gris:#666;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;color:var(--texto);cursor:pointer;
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:20px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+
+  html,body{overflow:hidden}
+  body{background:#fff}
+
+  /* barra superior */
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:0 14px;display:flex;gap:14px;align-items:center;font-size:.85rem;color:var(--gris)}
+  .barra-sup .tit{font-weight:bold;color:#333;white-space:nowrap}
+  .barra-sup .ayuda{white-space:nowrap;font-size:.8rem;color:#888}
+  @media (max-width:1100px){.barra-sup .ayuda{display:none}}
+  .barra-sup .borrar{font:inherit;font-size:.8rem;padding:3px 10px;border-radius:8px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #bbb;color:#555}
+  .barra-sup .borrar:hover{border-color:#333;color:#333}
+  .pestanas{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #333;color:#333}
+  .pestanas button[aria-selected="true"]{background:#333;color:#fff}
+
+  /* barra inferior: botones grandes (pizarra digital) y progreso */
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:.85rem;color:var(--gris)}
+  .progreso .tira{flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .nav{font:inherit;font-size:1.5rem;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:9.5em;text-align:right;white-space:nowrap}
+
+  /* el libro: dos páginas, separadas solo por una línea fina */
+  #libro{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:hidden;background:#fff;transition:opacity .25s ease}
+  #libro.fuera{opacity:0}
+  #pista{position:absolute;left:0;top:0;height:100%;will-change:transform}
+  #pista.anim{transition:transform .9s cubic-bezier(.65,.05,.25,1)}
+  .hoja{position:absolute;top:0;padding:6px 8px}
+  .pag{position:relative;background:#fff;transform-origin:0 0;padding:30px 40px 0}
+  .pag .cuerpo{display:flow-root;overflow:hidden}
+  .pag .num{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#bbb;font-size:.8rem}
+  #lomo{position:absolute;left:50%;top:14px;bottom:14px;width:0;border-left:1px solid #c9c9c9;pointer-events:none;z-index:2}
+  .hoja.gira .pag{animation:gira .9s ease both}
+  @keyframes gira{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#pista.anim{transition:none}.hoja.gira .pag{animation:none}}
+
+  /* lo que se va escribiendo */
+  .cont{opacity:0;transition:opacity .35s ease}
+  .cont.on{opacity:1}
+  .u{opacity:0;clip-path:inset(-40px 100% -40px -40px);transition:opacity .25s ease,clip-path .85s ease}
+  span.u{display:block}
+  .u.on{opacity:1;clip-path:inset(-40px -40px -40px -40px)}
+  .u.rapido,.cont.rapido{transition:none}
+  .cont.sigue{margin-top:0;padding-top:14px;border-top-left-radius:0;border-top-right-radius:0}
+  h1{margin:0 0 6px;font-size:2.1rem;line-height:1.2}
+  h4{margin:16px 0 6px;font-size:1.18rem}
+
+  /* cajas verdes del modelo */
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:20px 20px 10px;margin:26px 0 14px}
+  .caja>.titulo{position:absolute;top:-13px;left:12px;background:var(--verde-titulo);color:#fff;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.92rem}
+  .caja.enunciado{color:var(--azul);margin-top:6px;padding-top:12px}
+  .caja p{margin:.3em 0 .5em}
+  .paso{margin:6px 0 10px}
+
+  /* frases del enunciado: subrayador (al pasar el ratón; doble clic = se queda fijado) */
+  .fr{border-radius:4px;padding:1px 1px;cursor:pointer;transition:background-color .15s ease;
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;
+    -webkit-box-decoration-break:clone;box-decoration-break:clone}
+  .fr.c1{--hl:#FFE066} .fr.c2{--hl:#9BE9A8} .fr.c3{--hl:#8FD3FF}
+  .fr.c4{--hl:#FFA8D0} .fr.c5{--hl:#FFC47A} .fr.c6{--hl:#CDB4FF}
+  .fr.hov,.fr.fija{background-color:var(--hl)}
+
+  /* matrices con menores marcados en caja roja */
+  .ec{display:flex;align-items:center;justify-content:center;gap:.5em;margin:.6em 0;flex-wrap:wrap}
+  .mat{--w:2.5em;--h:1.7em;position:relative;display:inline-grid;
+    grid-template-columns:repeat(var(--nc),var(--w));grid-auto-rows:var(--h);
+    margin:1.1em .7em .2em;text-align:center}
+  .mat .c{display:flex;align-items:center;justify-content:center;white-space:nowrap}
+  .mat::before,.mat::after{content:"";position:absolute;top:-.15em;bottom:-.15em;width:.55em;border:2px solid #111}
+  .mat::before{left:-.7em;border-right:0;border-radius:60% 0 0 60%/50% 0 0 50%}
+  .mat::after{right:-.7em;border-left:0;border-radius:0 60% 60% 0/0 50% 50% 0}
+  .mat .bar{position:absolute;top:.1em;bottom:.1em;left:calc(var(--k) * var(--w));border-left:1.5px solid #111}
+  .nota{color:var(--gris);font-size:.9em}
+  b.res{color:var(--rojo)}
+  .katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden}
+</style>
+</head>
+<body>
+<div class="barra-sup">
+  <span class="tit">Sistemas · tres incógnitas</span>
+  <span class="ayuda">Pasa el ratón por el enunciado · doble clic para fijar el subrayado</span>
+  <button class="borrar" id="btnBorrar" title="Quitar todos los subrayados fijados">Quitar subrayados</button>
+  <nav class="pestanas" id="pestanas" aria-label="Problemas"></nav>
+</div>
+<div id="libro"><div id="pista"></div><div id="lomo"></div></div>
+<div id="stage" style="position:absolute;left:-99999px;top:0;width:720px;visibility:hidden"></div>
+<div class="progreso">
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
+  <span id="contador"></span>
+</div>
+
+<script>
+/* ---------------------------------------------------------------------
+   Matriz con barra opcional.
+   rows: filas (cadenas LaTeX); opts.bar = nº de columnas antes de la barra;
+   opts.w = ancho de columna en em
+   --------------------------------------------------------------------- */
+function mat(rows, opts = {}) {
+  const nr = rows.length, nc = rows[0].length;
+  const largo = Math.max(...rows.map(r => Math.max(...r.map(c => String(c).replace(/\\[a-zA-Z]+|[{}\s]/g, '').length))));
+  const ancho = opts.w || Math.max(2.5, 1.0 + 0.55 * largo);
+  let h = '<span class="mat" style="--nc:' + nc + ';--nr:' + nr + ';--w:' + ancho.toFixed(2) + 'em">';
+  rows.forEach(r => r.forEach(c => { h += '<span class="c">$' + c + '$</span>'; }));
+  if (opts.bar != null) h += '<span class="bar" style="--k:' + opts.bar + '"></span>';
+  return h + '</span>';
+}
+const ec = (...partes) => '<div class="ec">' + partes.join('') + '</div>';
+const ecp = (...partes) => '<div class="ec" style="font-size:.85em">' + partes.join('') + '</div>';   // algo más pequeño
+const f = s => '<span>$' + s + '$</span>';
+
+/* ---------------------------------------------------------------------
+   Ayudantes numéricos
+   --------------------------------------------------------------------- */
+const strs = M => M.map(r => r.map(String));
+const detTex = filas => '\\begin{vmatrix} ' + filas.map(r => r.join('&')).join('\\\\ ') + ' \\end{vmatrix}';
+const det3 = M => M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1])
+                - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0])
+                + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
+const suma = t => t.map((x, i) => (i && x >= 0) ? '+' + x : String(x)).join('');
+function sarrusTex(M0) {
+  const a = M0.map(r => r.map(Number));
+  const p = [a[0][0] * a[1][1] * a[2][2], a[0][1] * a[1][2] * a[2][0], a[0][2] * a[1][0] * a[2][1]];
+  const n = [a[0][2] * a[1][1] * a[2][0], a[0][0] * a[1][2] * a[2][1], a[0][1] * a[1][0] * a[2][2]];
+  return '(' + suma(p) + ')-(' + suma(n) + ')=' + det3(a);
+}
+
+/* ---------------------------------------------------------------------
+   Frases del enunciado y ecuaciones con el mismo color
+   fr(k, texto): frase que se subraya (las frases con el mismo k forman un grupo)
+   ce(k, tex):   la ecuación que sale de esa frase, con el mismo color de fondo
+   --------------------------------------------------------------------- */
+const HL = ['', '#FFE066', '#9BE9A8', '#8FD3FF', '#FFA8D0', '#FFC47A', '#CDB4FF'];
+const fr = (k, t) => '<span class="fr c' + k + '" data-g="' + k + '">' + t + '</span>';
+const ce = (k, tex) => '\\colorbox{' + HL[k] + '}{$\\,' + tex + '\\,$}';
+const sis = filas => '$$\\left\\{\\begin{array}{l}' + filas.join('\\\\[2mm]') + '\\end{array}\\right.$$';
+
+/* Regla de Cramer: forma matricial, D, Dx, Dy, Dz y valores */
+const sustCol = (A, j, b) => A.map((r, i) => r.map((v, k) => k === j ? b[i] : v));
+const detCompleto = M => '$$' + detTex(M) + '=' + sarrusTex(M) + '$$';
+function pasosCramer(A, b) {
+  const nom = ['x', 'y', 'z'];
+  const num = M => M.map(r => r.map(Number));
+  const D = det3(num(A));
+  const Ds = [0, 1, 2].map(j => det3(num(sustCol(A, j, b))));
+  const pasos = [
+    { titulo: 'Escribimos el sistema en forma matricial',
+      html: ec(mat(A), mat([['x'], ['y'], ['z']]), f('='), mat(b.map(v => [v]))) },
+    { titulo: 'Regla de Cramer: determinante del sistema',
+      html: '<p>Calculamos $D=|A|$ con la regla de Sarrus:</p>' + detCompleto(A) +
+            '<p>Como $D\\neq0$, el sistema es compatible determinado y podemos aplicar la regla de Cramer.</p>' }
+  ];
+  [0, 1, 2].forEach(j => pasos.push({
+    titulo: 'Determinante $D_' + nom[j] + '$',
+    html: '<p>Sustituimos la columna de $' + nom[j] + '$ por la columna de los términos independientes:</p>' + detCompleto(sustCol(A, j, b))
+  }));
+  pasos.push({ caja: 'Regla de Cramer',
+    html: '$$' + [0, 1, 2].map(j => nom[j] + '=\\dfrac{D_' + nom[j] + '}{D}=\\dfrac{' + Ds[j] + '}{' + D + '}=' + (Ds[j] / D)).join('\\qquad\\;') + '$$' });
+  return pasos;
+}
+
+/* =====================================================================
+   PROBLEMAS
+   ===================================================================== */
+const A1 = [['6','5','2'],['5','4','1'],['2','3','3']], b1 = ['225','163','166'];
+const A10 = [['1','1','1'],['2','0','-1'],['0','1','-1']], b10 = ['130','0','-20'];
+
+const EJERCICIOS = [
+
+  /* ===================== PROBLEMA 1 · Cramer ===================== */
+  {
+    titulo: "Problema 1",
+    enunciado: '<p>' + fr(1, 'Seis camisetas, cinco gorras y dos pantalones cuestan 225 euros.') + ' ' +
+      fr(2, 'Cinco camisetas, cuatro gorras y un pantalón cuestan 163 euros.') + ' ' +
+      fr(3, 'Dos camisetas, tres gorras y tres pantalones cuestan 166 euros.') +
+      ' Halla el precio de una camiseta, de una gorra y de un pantalón.</p>',
+    pasos: [].concat([
+      { titulo: 'Planteamiento',
+        html: '<p>Sean $x$ el precio de una camiseta, $y$ el de una gorra y $z$ el de un pantalón. Cada frase del enunciado nos da una ecuación (cantidad × precio):</p>' +
+              sis([ce(1, '6x+5y+2z=225'), ce(2, '5x+4y+z=163'), ce(3, '2x+3y+3z=166')]) }
+      ],
+      pasosCramer(A1, b1),
+      [
+      { caja: 'Solución',
+        html: String.raw`$$x=20,\qquad y=7,\qquad z=35$$
+          <p><b class="res">Una camiseta cuesta 20 €, una gorra 7 € y un pantalón 35 €.</b></p>` },
+      { titulo: 'Comprobación',
+        html: String.raw`<p>$6\cdot20+5\cdot7+2\cdot35=120+35+70=225$ ✓</p>
+          <p>$5\cdot20+4\cdot7+35=100+28+35=163$ ✓</p>
+          <p>$2\cdot20+3\cdot7+3\cdot35=40+21+105=166$ ✓</p>` }
+      ])
+  },
+
+  /* ===================== PROBLEMA 2 · sustitución + reducción ===================== */
+  {
+    titulo: "Problema 2",
+    enunciado: '<p>He comprado ' + fr(2, 'un cuaderno que costaba 3 euros') + ' y ' +
+      fr(1, 'para pagarlo he utilizado ocho monedas') + ', ' +
+      fr(2, 'unas de 20 céntimos, otras de 50 céntimos y otras de 1 euro') + '. Sabiendo que ' +
+      fr(3, 'he usado el doble de monedas de 50 céntimos que de 1 euro') +
+      ', ¿cuántas monedas de cada clase he utilizado?</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sean $x$ las monedas de 20 céntimos, $y$ las de 50 céntimos y $z$ las de 1 euro. El cuaderno cuesta $3$ € $=300$ céntimos.</p>' +
+              sis([ce(1, 'x+y+z=8'), ce(2, '20x+50y+100z=300'), ce(3, 'y=2z')]) +
+              '<p>Dividimos la segunda ecuación entre $10$:</p>' +
+              sis([ce(1, 'x+y+z=8'), ce(2, '2x+5y+10z=30'), ce(3, 'y=2z')]) },
+      { titulo: 'Sustituimos $y=2z$ en las otras dos ecuaciones',
+        html: String.raw`$$x+2z+z=8\;\Rightarrow\;x+3z=8$$
+          $$2x+5(2z)+10z=30\;\Rightarrow\;2x+20z=30\;\Rightarrow\;x+10z=15$$` },
+      { titulo: 'Sistema de dos ecuaciones con dos incógnitas: reducción',
+        html: String.raw`$$\left\{\begin{array}{l}x+3z=8\\ x+10z=15\end{array}\right.$$
+          <p>Restamos la segunda ecuación menos la primera (se elimina $x$):</p>
+          $$7z=7\;\Rightarrow\;z=1$$` },
+      { titulo: 'Volvemos atrás',
+        html: String.raw`$$x=8-3z=8-3=5$$
+          $$y=2z=2$$` },
+      { caja: 'Solución',
+        html: String.raw`$$x=5,\qquad y=2,\qquad z=1$$
+          <p><b class="res">5 monedas de 20 céntimos, 2 de 50 céntimos y 1 de 1 euro.</b></p>` },
+      { titulo: 'Comprobación',
+        html: String.raw`<p>$5+2+1=8$ monedas ✓</p>
+          <p>$5\cdot20+2\cdot50+1\cdot100=100+100+100=300$ céntimos ✓</p>
+          <p>$2=2\cdot1$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== PROBLEMA 3 · Gauss ===================== */
+  {
+    titulo: "Problema 3",
+    enunciado: '<p>En ' + fr(1, 'un examen tipo test de 30 preguntas') + ' ' +
+      fr(2, 'se obtienen 0,75 puntos por cada respuesta correcta, se restan 0,25 por cada error y las preguntas en blanco no puntúan') +
+      '. Si un alumno ' + fr(2, 'ha sacado 10 puntos') + ' y ' + fr(3, 'ha tenido el doble de aciertos que de errores') +
+      ', ¿cuántas preguntas ha acertado, cuántas ha fallado y cuántas ha dejado en blanco?</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sean $x$ los aciertos, $y$ los errores y $z$ las preguntas en blanco.</p>' +
+              sis([ce(1, 'x+y+z=30'), ce(2, '0{,}75x-0{,}25y=10'), ce(3, 'x=2y')]) +
+              '<p>Multiplicamos la segunda ecuación por $4$ y pasamos las incógnitas al primer miembro:</p>' +
+              sis([ce(1, 'x+y+z=30'), ce(2, '3x-y=40'), ce(3, 'x-2y=0')]) },
+      { titulo: 'Matriz ampliada',
+        html: '<p>La incógnita $z$ no aparece en las ecuaciones 2 y 3: su coeficiente es $0$.</p>' +
+              ec(mat([['1','1','1','30'],['3','-1','0','40'],['1','-2','0','0']], {bar: 3})) },
+      { titulo: 'Método de Gauss: hacemos ceros debajo del primer elemento',
+        html: ec(mat([['1','1','1','30'],['3','-1','0','40'],['1','-2','0','0']], {bar: 3}),
+                 f('\\xrightarrow[\\;F_3-F_1\\;]{\\;F_2-3F_1\\;}'),
+                 mat([['1','1','1','30'],['0','-4','-3','-50'],['0','-3','-1','-30']], {bar: 3})) },
+      { titulo: 'Hacemos cero el elemento de la tercera fila y segunda columna',
+        html: ec(mat([['1','1','1','30'],['0','-4','-3','-50'],['0','-3','-1','-30']], {bar: 3}),
+                 f('\\xrightarrow{\\;4F_3-3F_2\\;}'),
+                 mat([['1','1','1','30'],['0','-4','-3','-50'],['0','0','5','30']], {bar: 3})) },
+      { titulo: 'Resolvemos de abajo hacia arriba',
+        html: String.raw`$$5z=30\;\Rightarrow\;z=6$$
+          $$-4y-3z=-50\;\Rightarrow\;-4y-18=-50\;\Rightarrow\;y=8$$
+          $$x+y+z=30\;\Rightarrow\;x+8+6=30\;\Rightarrow\;x=16$$` },
+      { caja: 'Solución',
+        html: String.raw`$$x=16,\qquad y=8,\qquad z=6$$
+          <p><b class="res">16 aciertos, 8 errores y 6 preguntas en blanco.</b></p>` },
+      { titulo: 'Comprobación',
+        html: String.raw`<p>$16+8+6=30$ preguntas ✓</p>
+          <p>$0{,}75\cdot16-0{,}25\cdot8=12-2=10$ puntos ✓</p>
+          <p>$16=2\cdot8$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== PROBLEMA 4 · sustitución + reducción ===================== */
+  {
+    titulo: "Problema 4",
+    enunciado: '<p>Calcula tres números ' + fr(1, 'cuya suma sea 191') + ', sabiendo que ' +
+      fr(2, 'la diferencia entre el primero y el segundo es 18') + ' y ' +
+      fr(3, 'la diferencia entre el segundo y el tercero es 13') + '.</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sean $x$, $y$ y $z$ el primer, el segundo y el tercer número.</p>' +
+              sis([ce(1, 'x+y+z=191'), ce(2, 'x-y=18'), ce(3, 'y-z=13')]) },
+      { titulo: 'Sustituimos',
+        html: String.raw`<p>De la segunda ecuación, $x=y+18$. Lo sustituimos en la primera:</p>
+          $$(y+18)+y+z=191\;\Rightarrow\;2y+z=173$$` },
+      { titulo: 'Sistema de dos ecuaciones con dos incógnitas: reducción',
+        html: String.raw`$$\left\{\begin{array}{l}2y+z=173\\ y-z=13\end{array}\right.$$
+          <p>Sumamos las dos ecuaciones (se elimina $z$):</p>
+          $$3y=186\;\Rightarrow\;y=62$$` },
+      { titulo: 'Volvemos atrás',
+        html: String.raw`$$z=y-13=62-13=49$$
+          $$x=y+18=62+18=80$$` },
+      { caja: 'Solución',
+        html: String.raw`$$x=80,\qquad y=62,\qquad z=49$$
+          <p><b class="res">Los números son 80, 62 y 49.</b></p>` },
+      { titulo: 'Comprobación',
+        html: String.raw`<p>$80+62+49=191$ ✓</p>
+          <p>$80-62=18$ ✓</p>
+          <p>$62-49=13$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== PROBLEMA 5 · reducción (misma incógnita) ===================== */
+  {
+    titulo: "Problema 5",
+    enunciado: '<p>' + fr(1, 'La diferencia entre los dos primeros de tres números es 14') + ', ' +
+      fr(2, 'la cuarta parte de la suma de los tres es 15') + ' y ' +
+      fr(3, 'el tercero es 11 unidades menor que el segundo') + '. Halla dichos números.</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sean $x$, $y$ y $z$ el primer, el segundo y el tercer número.</p>' +
+              sis([ce(1, 'x-y=14'), ce(2, '\\dfrac{x+y+z}{4}=15'), ce(3, 'z=y-11')]) +
+              '<p>Quitamos el denominador y pasamos las incógnitas al primer miembro:</p>' +
+              sis([ce(1, 'x-y=14') + '\\;(E_1)', ce(2, 'x+y+z=60') + '\\;(E_2)', ce(3, 'y-z=11') + '\\;(E_3)']) },
+      { titulo: 'Eliminamos la incógnita $y$ en dos parejas de ecuaciones',
+        html: String.raw`<p>La incógnita $y$ aparece en las tres ecuaciones. La eliminamos sumando:</p>
+          $$E_1+E_2:\quad (x-y)+(x+y+z)=14+60\;\Rightarrow\;2x+z=74$$
+          $$E_1+E_3:\quad (x-y)+(y-z)=14+11\;\Rightarrow\;x-z=25$$` },
+      { titulo: 'Sistema de dos ecuaciones con dos incógnitas: reducción',
+        html: String.raw`$$\left\{\begin{array}{l}2x+z=74\\ x-z=25\end{array}\right.$$
+          <p>Sumamos las dos ecuaciones (se elimina $z$):</p>
+          $$3x=99\;\Rightarrow\;x=33$$` },
+      { titulo: 'Volvemos atrás',
+        html: String.raw`$$z=x-25=33-25=8$$
+          $$y=x-14=33-14=19$$` },
+      { caja: 'Solución',
+        html: String.raw`$$x=33,\qquad y=19,\qquad z=8$$
+          <p><b class="res">Los números son 33, 19 y 8.</b></p>` },
+      { titulo: 'Comprobación',
+        html: String.raw`<p>$33-19=14$ ✓</p>
+          <p>$\dfrac{33+19+8}{4}=\dfrac{60}{4}=15$ ✓</p>
+          <p>$19-8=11$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== PROBLEMA 6 · Gauss ===================== */
+  {
+    titulo: "Problema 6",
+    enunciado: '<p>Tres números ' + fr(1, 'suman 30') + '. ' +
+      fr(2, 'Si el primero lo dividimos entre 3 y le restamos la sexta parte del segundo, nos da 1') +
+      '. Además, ' + fr(3, 'el segundo excede al tercero en 3 unidades') +
+      '. Halla el valor de los tres números.</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sean $x$, $y$ y $z$ el primer, el segundo y el tercer número.</p>' +
+              sis([ce(1, 'x+y+z=30'), ce(2, '\\dfrac{x}{3}-\\dfrac{y}{6}=1'), ce(3, 'y-z=3')]) +
+              '<p>Multiplicamos la segunda ecuación por $6$:</p>' +
+              sis([ce(1, 'x+y+z=30'), ce(2, '2x-y=6'), ce(3, 'y-z=3')]) },
+      { titulo: 'Matriz ampliada',
+        html: ec(mat([['1','1','1','30'],['2','-1','0','6'],['0','1','-1','3']], {bar: 3})) },
+      { titulo: 'Método de Gauss: hacemos cero el elemento de la segunda fila y primera columna',
+        html: ec(mat([['1','1','1','30'],['2','-1','0','6'],['0','1','-1','3']], {bar: 3}),
+                 f('\\xrightarrow{\\;F_2-2F_1\\;}'),
+                 mat([['1','1','1','30'],['0','-3','-2','-54'],['0','1','-1','3']], {bar: 3})) },
+      { titulo: 'Hacemos cero el elemento de la tercera fila y segunda columna',
+        html: ec(mat([['1','1','1','30'],['0','-3','-2','-54'],['0','1','-1','3']], {bar: 3}),
+                 f('\\xrightarrow{\\;3F_3+F_2\\;}'),
+                 mat([['1','1','1','30'],['0','-3','-2','-54'],['0','0','-5','-45']], {bar: 3})) },
+      { titulo: 'Resolvemos de abajo hacia arriba',
+        html: String.raw`$$-5z=-45\;\Rightarrow\;z=9$$
+          $$-3y-2z=-54\;\Rightarrow\;-3y-18=-54\;\Rightarrow\;y=12$$
+          $$x+y+z=30\;\Rightarrow\;x+12+9=30\;\Rightarrow\;x=9$$` },
+      { caja: 'Solución',
+        html: String.raw`$$x=9,\qquad y=12,\qquad z=9$$
+          <p><b class="res">Los números son 9, 12 y 9.</b></p>` },
+      { titulo: 'Comprobación',
+        html: String.raw`<p>$9+12+9=30$ ✓</p>
+          <p>$\dfrac{9}{3}-\dfrac{12}{6}=3-2=1$ ✓</p>
+          <p>$12-9=3$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== PROBLEMA 7 · sustitución ===================== */
+  {
+    titulo: "Problema 7",
+    enunciado: `<p>Entre María, Pedro y Luis ${fr(1, "tienen un total de 100 CD's")}. Sabemos que ` +
+      fr(2, "Pedro tiene 7 CD's más que María") + ' y que ' + fr(3, 'Luis tiene 1 CD menos que Pedro') +
+      `. ¿Cuántos CD's tiene cada uno?</p>`,
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: "<p>Sean $x$, $y$ y $z$ los CD's de María, Pedro y Luis.</p>" +
+              sis([ce(1, 'x+y+z=100'), ce(2, 'y=x+7'), ce(3, 'z=y-1')]) },
+      { titulo: 'Sustituimos $y$ en la tercera ecuación',
+        html: String.raw`$$z=y-1=(x+7)-1=x+6$$` },
+      { titulo: 'Sustituimos $y$ y $z$ en la primera ecuación',
+        html: String.raw`$$x+(x+7)+(x+6)=100\;\Rightarrow\;3x+13=100\;\Rightarrow\;3x=87\;\Rightarrow\;x=29$$` },
+      { titulo: 'Volvemos atrás',
+        html: String.raw`$$y=x+7=29+7=36$$
+          $$z=x+6=29+6=35$$` },
+      { caja: 'Solución',
+        html: String.raw`$$x=29,\qquad y=36,\qquad z=35$$
+          <p><b class="res">María tiene 29 CD's, Pedro 36 y Luis 35.</b></p>` },
+      { titulo: 'Comprobación',
+        html: String.raw`<p>$29+36+35=100$ ✓</p>
+          <p>$36-29=7$ ✓</p>
+          <p>$36-35=1$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== PROBLEMA 8 · reducción (misma incógnita) ===================== */
+  {
+    titulo: "Problema 8",
+    enunciado: '<p>En 3.º A, 3.º B y 3.º C ' + fr(1, 'hay en total 72 alumnos') + '. Se sabe que ' +
+      fr(2, 'si se pasan 8 alumnos de 3.º A a 3.º B, ambas aulas tendrán el mismo número de alumnos') +
+      ', y que ' + fr(3, 'en 3.º C hay 8 alumnos más que en 3.º B') +
+      '. ¿Cuántos alumnos hay en cada aula?</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sean $x$, $y$ y $z$ los alumnos de 3.º A, 3.º B y 3.º C.</p>' +
+              sis([ce(1, 'x+y+z=72'), ce(2, 'x-8=y+8'), ce(3, 'z=y+8')]) +
+              '<p>Pasamos las incógnitas al primer miembro:</p>' +
+              sis([ce(1, 'x+y+z=72') + '\\;(E_1)', ce(2, 'x-y=16') + '\\;(E_2)', ce(3, '-y+z=8') + '\\;(E_3)']) },
+      { titulo: 'Eliminamos la incógnita $y$ en dos parejas de ecuaciones',
+        html: String.raw`<p>Sumamos $E_1$ con $E_2$ y $E_1$ con $E_3$:</p>
+          $$E_1+E_2:\quad (x+y+z)+(x-y)=72+16\;\Rightarrow\;2x+z=88$$
+          $$E_1+E_3:\quad (x+y+z)+(-y+z)=72+8\;\Rightarrow\;x+2z=80$$` },
+      { titulo: 'Sistema de dos ecuaciones con dos incógnitas: reducción',
+        html: String.raw`$$\left\{\begin{array}{l}2x+z=88\\ x+2z=80\end{array}\right.$$
+          <p>Multiplicamos la segunda ecuación por $-2$ y sumamos (se elimina $x$):</p>
+          $$\left\{\begin{array}{l}2x+z=88\\ -2x-4z=-160\end{array}\right.\;\Rightarrow\;-3z=-72\;\Rightarrow\;z=24$$` },
+      { titulo: 'Volvemos atrás',
+        html: String.raw`$$2x+24=88\;\Rightarrow\;2x=64\;\Rightarrow\;x=32$$
+          $$y=x-16=32-16=16$$` },
+      { caja: 'Solución',
+        html: String.raw`$$x=32,\qquad y=16,\qquad z=24$$
+          <p><b class="res">En 3.º A hay 32 alumnos, en 3.º B hay 16 y en 3.º C hay 24.</b></p>` },
+      { titulo: 'Comprobación',
+        html: String.raw`<p>$32+16+24=72$ ✓</p>
+          <p>$32-8=24$ y $16+8=24$ ✓</p>
+          <p>$24=16+8$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== PROBLEMA 9 · Gauss ===================== */
+  {
+    titulo: "Problema 9",
+    enunciado: '<p>Javier dispone de ' + fr(1, 'un capital de 8000 euros') + ', del que ' +
+      fr(2, 'una parte la mete en un depósito al 5&nbsp;% anual, otra al 6&nbsp;% anual y otra al 4&nbsp;% anual') +
+      '. Calcula las tres partes sabiendo que ' + fr(2, 'el capital acumulado al cabo de un año es de 8420 euros') +
+      ' y que ' + fr(3, 'la cantidad colocada al 4&nbsp;% es la mitad de la colocada al 5&nbsp;%') + '.</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sean $x$, $y$ y $z$ los euros colocados al $5\\,\\%$, al $6\\,\\%$ y al $4\\,\\%$. Los intereses de un año son $8420-8000=420$ euros.</p>' +
+              sis([ce(1, 'x+y+z=8000'), ce(2, '0{,}05x+0{,}06y+0{,}04z=420'), ce(3, 'z=\\dfrac{x}{2}')]) +
+              '<p>Multiplicamos la segunda ecuación por $100$ y pasamos las incógnitas al primer miembro:</p>' +
+              sis([ce(1, 'x+y+z=8000'), ce(2, '5x+6y+4z=42000'), ce(3, 'x-2z=0')]) },
+      { titulo: 'Matriz ampliada',
+        html: '<p>La incógnita $y$ no aparece en la tercera ecuación: su coeficiente es $0$.</p>' +
+              ecp(mat([['1','1','1','8000'],['5','6','4','42000'],['1','0','-2','0']], {bar: 3, w: 3.2})) },
+      { titulo: 'Método de Gauss: hacemos ceros debajo del primer elemento',
+        html: ecp(mat([['1','1','1','8000'],['5','6','4','42000'],['1','0','-2','0']], {bar: 3, w: 3.2}),
+                  f('\\xrightarrow[\\;F_3-F_1\\;]{\\;F_2-5F_1\\;}'),
+                  mat([['1','1','1','8000'],['0','1','-1','2000'],['0','-1','-3','-8000']], {bar: 3, w: 3.2})) },
+      { titulo: 'Hacemos cero el elemento de la tercera fila y segunda columna',
+        html: ecp(mat([['1','1','1','8000'],['0','1','-1','2000'],['0','-1','-3','-8000']], {bar: 3, w: 3.2}),
+                  f('\\xrightarrow{\\;F_3+F_2\\;}'),
+                  mat([['1','1','1','8000'],['0','1','-1','2000'],['0','0','-4','-6000']], {bar: 3, w: 3.2})) },
+      { titulo: 'Resolvemos de abajo hacia arriba',
+        html: String.raw`$$-4z=-6000\;\Rightarrow\;z=1500$$
+          $$y-z=2000\;\Rightarrow\;y-1500=2000\;\Rightarrow\;y=3500$$
+          $$x+y+z=8000\;\Rightarrow\;x+3500+1500=8000\;\Rightarrow\;x=3000$$` },
+      { caja: 'Solución',
+        html: String.raw`$$x=3000,\qquad y=3500,\qquad z=1500$$
+          <p><b class="res">3000 € al 5 %, 3500 € al 6 % y 1500 € al 4 %.</b></p>` },
+      { titulo: 'Comprobación',
+        html: String.raw`<p>$3000+3500+1500=8000$ € ✓</p>
+          <p>$0{,}05\cdot3000+0{,}06\cdot3500+0{,}04\cdot1500=150+210+60=420$ € ✓</p>
+          <p>$1500=\dfrac{3000}{2}$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== PROBLEMA 10 · Cramer ===================== */
+  {
+    titulo: "Problema 10",
+    enunciado: '<p>Compramos tres entradas para tres actividades: una para el teatro, otra para un partido de baloncesto y otra para un concierto. ' +
+      fr(1, 'Tras descontarnos el 10&nbsp;% del precio total, hemos pagado 117 euros por todas las entradas') +
+      '. Sabiendo que ' + fr(2, 'el precio de la entrada al concierto es el doble que el precio de la entrada al teatro') +
+      ' y que ' + fr(3, 'la entrada al concierto es 20 euros más cara que la entrada del partido de baloncesto') +
+      ', determinar el precio de la entrada a cada actividad.</p>',
+    pasos: [].concat([
+      { titulo: 'Planteamiento',
+        html: '<p>Sean $x$, $y$ y $z$ el precio de la entrada del teatro, del baloncesto y del concierto. Pagamos el $90\\,\\%$ del total:</p>' +
+              sis([ce(1, '0{,}9\\,(x+y+z)=117'), ce(2, 'z=2x'), ce(3, 'z=y+20')]) +
+              '<p>Dividimos la primera ecuación entre $0{,}9$ y pasamos las incógnitas al primer miembro:</p>' +
+              sis([ce(1, 'x+y+z=130'), ce(2, '2x-z=0'), ce(3, 'y-z=-20')]) }
+      ],
+      pasosCramer(A10, b10),
+      [
+      { caja: 'Solución',
+        html: String.raw`$$x=30,\qquad y=40,\qquad z=60$$
+          <p><b class="res">Teatro: 30 €, baloncesto: 40 € y concierto: 60 €.</b></p>` },
+      { titulo: 'Comprobación',
+        html: String.raw`<p>$30+40+60=130$ y $0{,}9\cdot130=117$ ✓</p>
+          <p>$60=2\cdot30$ ✓</p>
+          <p>$60=40+20$ ✓</p>` }
+      ])
+  },
+
+  /* ===================== PROBLEMA 11 · reducción (misma incógnita) ===================== */
+  {
+    titulo: "Problema 11",
+    enunciado: '<p>Durante una liga de fútbol ' + fr(1, 'se jugaron un total de 38 partidos') + '. El campeón ' +
+      fr(2, 'obtuvo 86 puntos, después de sumar 3 puntos por cada victoria, 1 punto por cada empate y ninguno por la derrota') +
+      '. Sabiendo que ' + fr(3, 'el triple de los partidos empatados más los perdidos exceden en 2 a los partidos ganados') +
+      ', ¿cuántos partidos ganó, empató y perdió el campeón de esa liga?</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sean $x$ los partidos ganados, $y$ los empatados y $z$ los perdidos. «$3y+z$ excede en 2 a $x$» significa $3y+z=x+2$.</p>' +
+              sis([ce(1, 'x+y+z=38'), ce(2, '3x+y=86'), ce(3, '3y+z=x+2')]) +
+              '<p>Pasamos las incógnitas al primer miembro:</p>' +
+              sis([ce(1, 'x+y+z=38') + '\\;(E_1)', ce(2, '3x+y=86') + '\\;(E_2)', ce(3, '-x+3y+z=2') + '\\;(E_3)']) },
+      { titulo: 'Eliminamos la incógnita $y$ en dos parejas de ecuaciones',
+        html: String.raw`<p>Restamos $E_1-E_2$ y $E_3-3E_1$:</p>
+          $$E_1-E_2:\quad (x+y+z)-(3x+y)=38-86\;\Rightarrow\;-2x+z=-48$$
+          $$E_3-3E_1:\quad (-x+3y+z)-3(x+y+z)=2-114\;\Rightarrow\;-4x-2z=-112\;\Rightarrow\;2x+z=56$$
+          <p class="nota">En la segunda hemos dividido entre $-2$.</p>` },
+      { titulo: 'Sistema de dos ecuaciones con dos incógnitas: reducción',
+        html: String.raw`$$\left\{\begin{array}{l}-2x+z=-48\\ 2x+z=56\end{array}\right.$$
+          <p>Sumamos las dos ecuaciones (se elimina $x$):</p>
+          $$2z=8\;\Rightarrow\;z=4$$` },
+      { titulo: 'Volvemos atrás',
+        html: String.raw`$$2x+4=56\;\Rightarrow\;2x=52\;\Rightarrow\;x=26$$
+          $$y=86-3x=86-78=8$$` },
+      { caja: 'Solución',
+        html: String.raw`$$x=26,\qquad y=8,\qquad z=4$$
+          <p><b class="res">El campeón ganó 26 partidos, empató 8 y perdió 4.</b></p>` },
+      { titulo: 'Comprobación',
+        html: String.raw`<p>$26+8+4=38$ partidos ✓</p>
+          <p>$3\cdot26+8=86$ puntos ✓</p>
+          <p>$3\cdot8+4=28=26+2$ ✓</p>` }
+    ]
+  }
+];
+
+/* ===================================================================== */
+const OPCIONES_MATE = {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "$",  right: "$",  display: false}
+  ],
+  throwOnError: false,
+  strict: false
+};
+const $ = id => document.getElementById(id);
+function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
+
+/* ---------------------------------------------------------------------
+   MOTOR DEL LIBRO
+   - Cada ejercicio se trocea en "unidades" (un párrafo, una fórmula, una
+     matriz...). Cada clic escribe la siguiente sección.
+   - Las unidades se reparten en páginas de tamaño fijo (como un libro).
+   - Se ven dos páginas. Cuando se llena la de la derecha, pasa a ser la
+     de la izquierda y aparece una página nueva a la derecha.
+   --------------------------------------------------------------------- */
+const LW = 800;                     // ancho lógico de una página (px)
+let actual = 0;                     // ejercicio activo
+let s = 0;                          // unidades escritas
+let G = {};                         // geometría
+let libro = null;                   // {unidades, paginas}
+let Lprev = 0;
+
+function geometria() {
+  const W = $("libro").clientWidth, H = $("libro").clientHeight;
+  const Sw = W / 2, k = (Sw - 20) / LW;
+  G = { W, H, Sw, k, LH: (H - 20) / k };
+}
+
+/* trocea un ejercicio en secciones y unidades (se hace una sola vez) */
+function extraer(e) {
+  if (e._sec) return e._sec;
+  const stage = $("stage"), secs = [];
+  const add = (tipo, cab, html, salto, mismo) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    stage.appendChild(d);
+    mate(d);
+    const unidades = [];
+    d.childNodes.forEach(n => {
+      if (n.nodeType === 1) unidades.push(n);
+      else if (n.nodeType === 3 && n.textContent.trim()) {
+        const sp = document.createElement("span"); sp.textContent = n.textContent; unidades.push(sp);
+      }
+    });
+    let cabHTML = null;
+    if (cab) { const c = document.createElement("div"); c.innerHTML = cab; mate(c); cabHTML = c.innerHTML; }
+    secs.push({ tipo, cabHTML, unidades, salto: !!salto, mismo: !!mismo });
+  };
+  add("titulo", null, "<h1>" + e.titulo + "</h1>");
+  add("enun", null, e.enunciado, false, true);      // título y enunciado salen juntos con un clic
+  e.pasos.forEach(p => add(p.caja ? "caja" : "paso", p.caja || p.titulo, p.html, p.caja && /^Si /.test(p.caja)));
+  stage.innerHTML = "";
+  /* un "tic" = un clic. Cada sección es un bloque; dentro de una fila de menores
+     (.fila-menores) cada .sub sale con su propio clic */
+  let base = 0;
+  secs.forEach(sc => {
+    let cur = sc.mismo ? base : base + 1, nuevo = false;
+    sc.unidades = sc.unidades.map(n => {
+      if (nuevo) { cur++; nuevo = false; }
+      const o = { n, t: cur, subs: [] };
+      if (n.classList && n.classList.contains("fila-menores")) {
+        n.querySelectorAll(".sub").forEach(sb => { cur++; o.subs.push({ n: sb, t: cur }); });
+        nuevo = true;
+      }
+      return o;
+    });
+    base = cur;
+  });
+  e._T = base;
+  e._sec = secs;
+  return secs;
+}
+
+function crearCont(sc, sigue) {
+  const c = document.createElement("div");
+  c.className = "cont";
+  if (sc.tipo === "caja") {
+    c.classList.add("caja");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", '<span class="titulo">' + sc.cabHTML + "</span>");
+  } else if (sc.tipo === "paso") {
+    c.classList.add("paso");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", "<h4>" + sc.cabHTML + "</h4>");
+  } else if (sc.tipo === "enun") {
+    c.classList.add("caja", "enunciado");
+  }
+  if (sigue) c.classList.add("sigue");
+  return c;
+}
+
+/* una fórmula más ancha que la página se reduce hasta caber */
+function ajustar(u) {
+  if (u.classList && u.classList.contains("fila-menores")) {
+    u.style.zoom = "";
+    if (u.scrollWidth > u.clientWidth + 2) u.style.zoom = String(Math.max(.55, u.clientWidth / u.scrollWidth * .97));
+  }
+  u.querySelectorAll(".katex-display").forEach(d => {
+    const k = d.firstElementChild;
+    if (!k) return;
+    k.style.zoom = "";
+    if (d.scrollWidth > d.clientWidth + 2) k.style.zoom = String(Math.max(.55, d.clientWidth / d.scrollWidth * .98));
+  });
+}
+
+/* reparte las unidades en páginas del tamaño actual */
+function paginar(secs, T) {
+  secs.T = T;
+  const pista = $("pista");
+  pista.innerHTML = "";
+  const paginas = [], unidades = [];
+  const nueva = () => {
+    const hoja = document.createElement("div");
+    hoja.className = "hoja";
+    hoja.style.cssText = "left:" + (paginas.length * G.Sw) + "px;width:" + G.Sw + "px;height:" + G.H + "px";
+    const pag = document.createElement("div");
+    pag.className = "pag";
+    pag.style.cssText = "width:" + LW + "px;height:" + G.LH + "px;transform:scale(" + G.k + ")";
+    const cu = document.createElement("div");
+    cu.className = "cuerpo";
+    cu.style.height = (G.LH - 34 - 56) + "px";
+    const num = document.createElement("div");
+    num.className = "num"; num.textContent = paginas.length + 1;
+    pag.append(cu, num); hoja.appendChild(pag); pista.appendChild(hoja);
+    const o = { hoja, cu };
+    paginas.push(o);
+    return o;
+  };
+  let pg = nueva();
+  const desborda = () => pg.cu.scrollHeight > pg.cu.clientHeight + 1;
+  secs.forEach(sc => {
+    if (sc.salto && pg.cu.children.length) pg = nueva();
+    let cont = crearCont(sc, false), puestas = 0;
+    pg.cu.appendChild(cont);
+    /* un bloque (lo que sale con un clic) nunca se parte entre dos páginas */
+    const bloques = [];
+    sc.unidades.forEach(un => {
+      const ult = bloques[bloques.length - 1];
+      if (ult && ult[0].t === un.t) ult.push(un); else bloques.push([un]);
+    });
+    bloques.forEach(bl => {
+      bl.forEach(un => {
+        un.n.classList.add("u"); un.n.classList.remove("on");
+        un.subs.forEach(sb => { sb.n.classList.add("u"); sb.n.classList.remove("on"); });
+        cont.appendChild(un.n);
+      });
+      bl.forEach(un => ajustar(un.n));
+      if (desborda()) {
+        bl.forEach(un => cont.removeChild(un.n));
+        if (!puestas) pg.cu.removeChild(cont);
+        if (pg.cu.children.length) pg = nueva();     // página nueva solo si la actual ya tiene algo
+        cont = crearCont(sc, puestas > 0);
+        pg.cu.appendChild(cont);
+        bl.forEach(un => cont.appendChild(un.n));
+        bl.forEach(un => ajustar(un.n));
+      }
+      puestas += bl.length;
+      const pi = paginas.indexOf(pg);
+      bl.forEach(un => {
+        unidades.push({ u: un.n, cont, pag: pi, t: un.t, on: false });
+        un.subs.forEach(sb => unidades.push({ u: sb.n, cont, pag: pi, t: sb.t, on: false }));
+      });
+    });
+  });
+  libro = { unidades, paginas, T: secs.T };
+}
+
+/* pone al día lo que se ve según s */
+function aplicar(anim) {
+  const U = libro.unidades;
+  s = Math.max(0, Math.min(s, libro.T));
+  const conts = new Map();
+  U.forEach((o, i) => {
+    const on = o.t <= s;
+    if (on !== o.on) {
+      o.on = on;
+      if (on) { o.u.classList.remove("rapido"); o.u.classList.add("on"); }
+      else { o.u.classList.add("rapido"); o.u.classList.remove("on"); }
+    }
+    if (on) conts.set(o.cont, true); else if (!conts.has(o.cont)) conts.set(o.cont, false);
+  });
+  conts.forEach((v, c) => {
+    if (v) { c.classList.remove("rapido"); c.classList.add("on"); }
+    else { c.classList.add("rapido"); c.classList.remove("on"); }
+  });
+  let p = 0;
+  U.forEach(o => { if (o.t <= s) p = Math.max(p, o.pag); });
+  const L = Math.max(p - 1, 0);
+  const pista = $("pista");
+  pista.classList.toggle("anim", !!anim);
+  pista.style.transform = "translateX(" + (-L * G.Sw) + "px)";
+  if (anim && L > Lprev) {
+    const h = libro.paginas[p].hoja;
+    h.classList.remove("gira"); void h.offsetWidth; h.classList.add("gira");
+    setTimeout(() => h.classList.remove("gira"), 1000);
+  }
+  Lprev = L;
+  const n = libro.T;
+  $("contador").textContent = EJERCICIOS[actual].titulo + " · " + s + " / " + n;
+  $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
+  $("btnAtras").disabled = (actual === 0 && s <= 1);
+  $("btnAdelante").disabled = (actual === EJERCICIOS.length - 1 && s === n);
+}
+
+function pintarPestanas() {
+  const nav = $("pestanas");
+  nav.innerHTML = "";
+  EJERCICIOS.forEach((e, i) => {
+    const b = document.createElement("button");
+    b.textContent = e.titulo.replace("Problema ", "P. ");
+    b.setAttribute("aria-selected", i === actual);
+    b.onclick = ev => { ev.stopPropagation(); cargar(i, false); };
+    nav.appendChild(b);
+  });
+  const sel = nav.querySelector('[aria-selected="true"]');
+  if (sel) sel.scrollIntoView({ inline: "center", block: "nearest" });
+}
+
+function construir() {
+  geometria();
+  const e = EJERCICIOS[actual];
+  const secs = extraer(e);
+  paginar(secs, e._T);
+}
+
+async function cargar(i, alFinal) {
+  const lib = $("libro");
+  lib.classList.add("fuera");
+  await new Promise(r => setTimeout(r, 200));
+  actual = i;
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  construir();
+  s = alFinal ? libro.T : 1;          // al abrir un ejercicio ya se ve el enunciado
+  Lprev = 0;
+  pintarPestanas();
+  aplicar(false);
+  lib.classList.remove("fuera");
+}
+
+function avanzar() {
+  if (s < libro.T) { s++; aplicar(true); }
+  else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
+}
+function retroceder() {
+  if (s > 1) { s--; aplicar(true); }
+  else if (actual > 0) cargar(actual - 1, true);
+}
+
+/* ---------------------------------------------------------------------
+   SUBRAYADOR de las frases del enunciado
+   - al pasar el ratón por una frase se colorea (cada frase, su color;
+     si la ecuación sale de varios trozos, se colorean todos a la vez)
+   - doble clic: queda fijada, como con un rotulador; otro doble clic la quita
+   - en pantallas táctiles: un toque la colorea y un doble toque la fija
+   --------------------------------------------------------------------- */
+const frDe = ev => (ev.target && ev.target.closest) ? ev.target.closest(".fr") : null;
+const grupoDe = fr => {
+  const cont = fr.closest(".enunciado");
+  return cont ? cont.querySelectorAll('.fr[data-g="' + fr.dataset.g + '"]') : [fr];
+};
+function alternarFija(fr) {
+  const poner = !fr.classList.contains("fija");
+  grupoDe(fr).forEach(n => n.classList.toggle("fija", poner));
+}
+let tipoPuntero = "mouse", ultimoToque = { el: null, t: 0 };
+$("libro").addEventListener("mouseover", ev => {
+  const fr = frDe(ev);
+  if (fr) grupoDe(fr).forEach(n => n.classList.add("hov"));
+});
+$("libro").addEventListener("mouseout", ev => {
+  const fr = frDe(ev);
+  if (!fr) return;
+  const a = ev.relatedTarget && ev.relatedTarget.closest ? ev.relatedTarget.closest(".fr") : null;
+  if (a && a.dataset.g === fr.dataset.g && a.closest(".enunciado") === fr.closest(".enunciado")) return;
+  grupoDe(fr).forEach(n => n.classList.remove("hov"));
+});
+$("libro").addEventListener("pointerdown", ev => { tipoPuntero = ev.pointerType || "mouse"; }, true);
+$("libro").addEventListener("dblclick", ev => {
+  const fr = frDe(ev);
+  if (!fr) return;
+  ev.preventDefault();
+  if (tipoPuntero === "mouse") alternarFija(fr);
+});
+$("libro").addEventListener("pointerup", ev => {
+  if (ev.pointerType === "mouse") return;
+  const fr = frDe(ev);
+  if (!fr) return;
+  const ahora = Date.now();
+  if (ultimoToque.el === fr && ahora - ultimoToque.t < 400) {
+    alternarFija(fr);
+    ultimoToque = { el: null, t: 0 };
+  } else {
+    document.querySelectorAll(".fr.hov").forEach(n => n.classList.remove("hov"));
+    grupoDe(fr).forEach(n => n.classList.add("hov"));
+    ultimoToque = { el: fr, t: ahora };
+  }
+});
+$("btnBorrar").onclick = ev => {
+  ev.stopPropagation();
+  document.querySelectorAll(".fr.fija, .fr.hov").forEach(n => n.classList.remove("fija", "hov"));
+};
+
+/* clic: tercio izquierdo = atrás; resto = adelante (sobre una frase del enunciado no avanza) */
+$("libro").addEventListener("click", ev => {
+  if (frDe(ev)) return;
+  if (String(window.getSelection())) return;
+  if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
+});
+$("btnAtras").onclick = ev => { ev.stopPropagation(); retroceder(); };
+$("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
+$("tira").onclick = ev => {
+  ev.stopPropagation();
+  const r = $("tira").getBoundingClientRect();
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * libro.T));
+  aplicar(true);
+};
+document.addEventListener("keydown", ev => {
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
+  else if (ev.key === "Home") { s = 1; aplicar(true); }
+  else if (ev.key === "End") { s = libro.T; aplicar(true); }
+});
+let tRes = null;
+window.addEventListener("resize", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); Lprev = 0; aplicar(false); } }, 150);
+});
+
+window.addEventListener("load", () => cargar(0, false));
+if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); aplicar(false); } }, 60);
+});
+</script>
+</body>
+</html>
