@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inecuaciones de segundo grado</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#1414E6; --rojo:#E01E1E; --gris:#666; --naranja:#E67E00;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;color:var(--texto);cursor:pointer;
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:20px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+
+  html,body{overflow:hidden}
+  body{background:#fff}
+
+  /* barra superior: tipo de parábola, ejercicio y método de resolución */
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:84px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:5px 14px;display:flex;flex-direction:column;justify-content:center;gap:6px;font-size:.85rem;color:var(--gris)}
+  .fila{display:flex;align-items:center;gap:12px;min-width:0}
+  .fila .tit{font-weight:bold;color:#333;white-space:nowrap}
+  .fila .etq{white-space:nowrap}
+  .fila .ayuda{margin-left:auto;white-space:nowrap}
+  .pestanas{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #333;color:#333}
+  .pestanas button[aria-selected="true"]{background:#333;color:#fff}
+  .metodos{display:flex;gap:8px;margin-left:auto}
+  .metodos button{font:inherit;font-size:.95rem;font-weight:bold;padding:4px 16px;border-radius:10px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .metodos button[aria-selected="true"]{background:#2e9e2e;color:#fff}
+
+  /* barra inferior: botones grandes (pizarra digital) y progreso */
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:.85rem;color:var(--gris)}
+  .progreso .tira{flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .nav{font:inherit;font-size:1.5rem;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:15em;text-align:right;white-space:nowrap}
+
+  /* el libro: dos páginas, separadas solo por una línea fina */
+  #libro{position:fixed;left:0;right:0;top:84px;bottom:52px;overflow:hidden;background:#fff;transition:opacity .25s ease}
+  #libro.fuera{opacity:0}
+  #pista{position:absolute;left:0;top:0;height:100%;will-change:transform}
+  #pista.anim{transition:transform .9s cubic-bezier(.65,.05,.25,1)}
+  .hoja{position:absolute;top:0;padding:6px 8px}
+  .pag{position:relative;background:#fff;transform-origin:0 0;padding:30px 40px 0}
+  .pag .cuerpo{display:flow-root;overflow:hidden}
+  .pag .num{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#bbb;font-size:.8rem}
+  #lomo{position:absolute;left:50%;top:14px;bottom:14px;width:0;border-left:1px solid #c9c9c9;pointer-events:none;z-index:2}
+  .hoja.gira .pag{animation:gira .9s ease both}
+  @keyframes gira{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#pista.anim{transition:none}.hoja.gira .pag{animation:none}}
+
+  /* lo que se va escribiendo */
+  .cont{opacity:0;transition:opacity .35s ease}
+  .cont.on{opacity:1}
+  .u{opacity:0;clip-path:inset(-40px 100% -40px -40px);transition:opacity .25s ease,clip-path .85s ease}
+  span.u{display:block}
+  .u.on{opacity:1;clip-path:inset(-40px -40px -40px -40px)}
+  .u.rapido,.cont.rapido{transition:none}
+  .cont.sigue{margin-top:0;padding-top:14px;border-top-left-radius:0;border-top-right-radius:0}
+  .fila-menores{display:flex;justify-content:space-around;align-items:center;gap:.4em;margin:.8em 0}
+  .fila-menores .sub{display:block;white-space:nowrap;text-align:center}
+  .fila-menores.col{flex-direction:column;align-items:center;gap:.45em;margin:.5em 0}
+  h1{margin:0 0 6px;font-size:2.1rem;line-height:1.2}
+  h4{margin:16px 0 6px;font-size:1.18rem}
+
+  /* cajas verdes del modelo */
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:20px 20px 10px;margin:26px 0 14px}
+  .caja>.titulo{position:absolute;top:-13px;left:12px;background:var(--verde-titulo);color:#fff;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.92rem}
+  .caja.enunciado{color:var(--azul);margin-top:6px;padding-top:12px}
+  .caja p{margin:.3em 0 .5em}
+  .paso{margin:6px 0 10px}
+  .nota{color:var(--gris);font-size:.9em}
+  b.res{color:var(--rojo)}
+  .katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden}
+
+  /* gráficos (parábola y tabla de signos) */
+  .grafico{margin:.5em 0}
+  .grafico svg{display:block;width:100%;height:auto}
+  .grafico text{font-family:inherit}
+  .fila .pestanas{min-width:0}
+
+  /* tabla de signos por factores */
+  table.tf{border-collapse:collapse;margin:.7em auto;width:100%;font-size:.95em}
+  table.tf th,table.tf td{border:1px solid #d6d6d6;padding:5px 8px;text-align:center}
+  table.tf th{font-weight:normal;background:#fafafa}
+  table.tf td.f{background:#fafafa;min-width:6.5em}
+  table.tf td.mas,table.tf td.menos{font-size:1.5em;font-weight:bold;line-height:1.1}
+  table.tf td.mas{color:var(--azul)}
+  table.tf td.menos{color:var(--naranja)}
+  table.tf tr.pr td{border-top:2px solid #111}
+  table.tf .sol{background:#ffd6d6}
+</style>
+</head>
+<body>
+<div class="barra-sup">
+  <div class="fila">
+    <span class="tit">Inecuaciones de 2.º grado</span>
+    <div class="metodos" id="metodos">
+      <button data-m="par" title="Dibujar la parábola">Con la parábola</button>
+      <button data-m="tab" title="Tabla de signos por factores">Con tabla de signos</button>
+      <button data-m="rec" title="Recta real y sustitución en P(x)">Con la recta y P(x)</button>
+    </div>
+  </div>
+  <div class="fila">
+    <span class="etq">Ejercicio:</span>
+    <nav class="pestanas" id="pestanas" aria-label="Ejercicios"></nav>
+    <span class="ayuda">Clic o → para avanzar · ← para retroceder</span>
+  </div>
+</div>
+<div id="libro"><div id="pista"></div><div id="lomo"></div></div>
+<div id="stage" style="position:absolute;left:-99999px;top:0;width:720px;visibility:hidden"></div>
+<div class="progreso">
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
+  <span id="contador"></span>
+</div>
+
+<script id="datos">
+/* =====================================================================
+   DATOS Y CÁLCULO (todo sale de a, b, c y del signo de la desigualdad)
+   ===================================================================== */
+const gcd = (a, b) => b ? gcd(b, a % b) : Math.abs(a);
+const fr = (n, d) => { if (d < 0) { n = -n; d = -d; } const g = gcd(n, d) || 1; return { n: n / g, d: d / g }; };
+const frVal = q => q.n / q.d;
+const frTex = q => q.d === 1 ? String(q.n) : (q.n < 0 ? '-' : '') + '\\frac{' + Math.abs(q.n) + '}{' + q.d + '}';
+const frTxt = q => (q.n < 0 ? '−' : '') + Math.abs(q.n) + (q.d === 1 ? '' : '/' + q.d);
+const pn = v => v < 0 ? '(' + v + ')' : String(v);
+const sg = v => v >= 0 ? '+' + v : String(v);
+
+const SYM = { lt: '\\lt ', le: '\\le ', gt: '\\gt ', ge: '\\ge ' };
+
+/* polinomio ax^2+bx+c en LaTeX */
+function polyTex(a, b, c) {
+  let t = '';
+  const add = (v, x) => {
+    if (!v) return;
+    const abs = Math.abs(v);
+    t += (v < 0 ? '-' : (t ? '+' : '')) + ((abs === 1 && x) ? '' : String(abs)) + x;
+  };
+  add(a, 'x^2'); add(b, 'x'); add(c, '');
+  return t || '0';
+}
+
+/* valor de prueba (entero) estrictamente dentro del intervalo (lo,hi) */
+function prueba(lo, hi) {
+  if (lo < 0 && 0 < hi) return 0;
+  if (lo === -Infinity) return Math.ceil(hi) - 1;
+  if (hi === Infinity) return Math.floor(lo) + 1;
+  const mid = (lo + hi) / 2;
+  let best = null;
+  for (let k = Math.floor(lo) + 1; k < hi; k++) if (best === null || Math.abs(k - mid) < Math.abs(best - mid)) best = k;
+  if (best === null) throw new Error('No hay entero en (' + lo + ',' + hi + ')');
+  return best;
+}
+
+/* P(t) sustituido, con letras primero y números después */
+function subsTex(a, b, c, k) {
+  const K = pn(k);
+  let t = (a === 1 ? '' : a === -1 ? '-' : a + '\\cdot ') + K + '^2';
+  if (b) t += (b > 0 ? '+' : '-') + (Math.abs(b) === 1 ? '' : Math.abs(b) + '\\cdot ') + K;
+  if (c) t += (c > 0 ? '+' : '-') + Math.abs(c);
+  return t;
+}
+function calculoTex(a, b, c, t, val) {
+  const cmp = val > 0 ? '>0' : '\\lt 0';
+  if (t === 0) return 'P(0)=' + c + cmp;
+  const inter = String(a * t * t) + (b ? sg(b * t) : '') + (c ? sg(c) : '');
+  return 'P(' + t + ')=' + subsTex(a, b, c, t) + '=' + inter + (inter === String(val) ? '' : '=' + val) + cmp;
+}
+
+/* análisis completo de una inecuación ax^2+bx+c (sym) 0 */
+function analizar(e) {
+  const { a, b, c } = e, D = b * b - 4 * a * c;
+  const o = { a, b, c, D, sa: Math.sign(a), sym: e.sym, symTex: SYM[e.sym] };
+  o.want = (e.sym === 'gt' || e.sym === 'ge') ? 1 : -1;
+  o.incl = (e.sym === 'ge' || e.sym === 'le');
+  o.poly = polyTex(a, b, c);
+  o.r = [];
+  if (D > 0) {
+    const s = Math.round(Math.sqrt(D));
+    if (s * s !== D) throw new Error('Raíz no exacta: ' + polyTex(a, b, c));
+    o.s = s;
+    o.sig = [a > 0 ? '-' : '+', a > 0 ? '+' : '-'];      // con a>0 la raíz menor usa "−"; con a<0, "+"
+    o.Ns = o.sig.map(g => -b + (g === '+' ? s : -s));
+    o.r = o.Ns.map(N => fr(N, 2 * a));
+  } else if (D === 0) {
+    o.Ns = [-b];
+    o.r = [fr(-b, 2 * a)];
+  }
+  o.nr = o.r.length;
+  o.rv = o.r.map(frVal);
+
+  /* intervalos que determinan las raíces y signo de P en cada uno */
+  o.cells = [];
+  for (let k = 0; k <= o.nr; k++) {
+    const lo = k > 0 ? o.rv[k - 1] : -Infinity, hi = k < o.nr ? o.rv[k] : Infinity;
+    const t = prueba(lo, hi), val = a * t * t + b * t + c;
+    o.cells.push({ lo, hi, t, val, sign: Math.sign(val),
+      loT: k > 0 ? frTex(o.r[k - 1]) : '-\\infty', hiT: k < o.nr ? frTex(o.r[k]) : '+\\infty' });
+  }
+
+  /* conjunto solución */
+  const T = q => ({ v: frVal(q), t: frTex(q) });
+  const sol = { seg: [], pts: [], full: false, empty: false, menosPunto: false };
+  const inc = o.incl;
+  if (D > 0) {
+    const r1 = T(o.r[0]), r2 = T(o.r[1]);
+    if (o.want === -o.sa) sol.seg.push({ lo: r1, hi: r2, loC: inc, hiC: inc });
+    else { sol.seg.push({ lo: null, hi: r1, loC: false, hiC: inc }); sol.seg.push({ lo: r2, hi: null, loC: inc, hiC: false }); }
+  } else if (D === 0) {
+    const r = T(o.r[0]);
+    if (o.want === o.sa) {
+      if (inc) { sol.full = true; sol.seg.push({ lo: null, hi: null, loC: false, hiC: false }); }
+      else { sol.seg.push({ lo: null, hi: r, loC: false, hiC: false }); sol.seg.push({ lo: r, hi: null, loC: false, hiC: false }); sol.menosPunto = true; }
+    } else {
+      if (inc) sol.pts.push(r); else sol.empty = true;
+    }
+  } else {
+    if (o.want === o.sa) { sol.full = true; sol.seg.push({ lo: null, hi: null, loC: false, hiC: false }); }
+    else sol.empty = true;
+  }
+  o.sol = sol;
+  return o;
+}
+
+const intervaloTex = g => (g.lo ? (g.loC ? '[' : '(') + g.lo.t : '(-\\infty') + ',' + (g.hi ? g.hi.t + (g.hiC ? ']' : ')') : '+\\infty)');
+function solTex(s) {
+  if (s.full) return '(-\\infty,+\\infty)=\\mathbb{R}';
+  if (s.empty) return '\\varnothing';
+  let t = s.seg.map(intervaloTex).concat(s.pts.map(p => '\\{' + p.t + '\\}')).join('\\cup ');
+  if (s.menosPunto) t += '=\\mathbb{R}\\setminus\\{' + s.seg[0].hi.t + '\\}';
+  return t;
+}
+function ineqTex(s) {
+  if (s.full || s.empty) return '';
+  if (s.menosPunto) return 'x\\neq ' + s.seg[0].hi.t;
+  return s.seg.map(g => {
+    if (g.lo && g.hi) return g.lo.t + (g.loC ? '\\le ' : '\\lt ') + 'x' + (g.hiC ? '\\le ' : '\\lt ') + g.hi.t;
+    if (g.hi) return 'x' + (g.hiC ? '\\le ' : '\\lt ') + g.hi.t;
+    return 'x' + (g.loC ? '\\ge ' : '\\gt ') + g.lo.t;
+  }).concat(s.pts.map(p => 'x=' + p.t)).join('\\ \\text{ o }\\ ');
+}
+
+/* =====================================================================
+   GRÁFICOS SVG
+   ===================================================================== */
+const COL_AZUL = '#1414E6', COL_ROJO = '#E01E1E', COL_NARANJA = '#E67E00';
+const f1 = v => v.toFixed(1);
+
+/* parábola esbozada: las raíces están a escala en el eje X; la altura es solo un esbozo */
+function svgParabola(o, hl) {
+  const sol = o.sol, sa = o.sa, rv = o.rv, W = 780, xl = 140, xr = 640;
+  let xmin, xmax, vf;
+  if (o.D > 0) {
+    const m = (rv[0] + rv[1]) / 2, h = (rv[1] - rv[0]) / 2;
+    xmin = m - 1.85 * h; xmax = m + 1.85 * h;
+    vf = x => sa * (Math.pow((x - m) / h, 2) - 1) * 70;
+  } else if (o.D === 0) {
+    const r = rv[0]; xmin = r - 3; xmax = r + 3;
+    vf = x => sa * Math.pow((x - r) / 3, 2) * 150;
+  } else {
+    const x0 = -o.b / (2 * o.a); xmin = x0 - 3; xmax = x0 + 3;
+    vf = x => sa * (25 + 135 * Math.pow((x - x0) / 3, 2));
+  }
+  const N = 160, vs = [];
+  for (let i = 0; i <= N; i++) vs.push(vf(xmin + (xmax - xmin) * i / N));
+  const top = Math.max(34, ...vs) + 14, bot = Math.max(34, ...vs.map(v => -v)) + 14;
+  const y0 = top, H = top + bot;
+  const X = x => xl + (x - xmin) / (xmax - xmin) * (xr - xl), Y = v => y0 - v;
+  const trazo = (p, q) => {
+    const n = Math.max(6, Math.ceil(N * (q - p) / (xmax - xmin)));
+    let d = '';
+    for (let i = 0; i <= n; i++) { const x = p + (q - p) * i / n; d += (i ? 'L' : 'M') + f1(X(x)) + ' ' + f1(Y(vf(x))); }
+    return d;
+  };
+  const rango = g => [g.lo ? g.lo.v : xmin, g.hi ? g.hi.v : xmax];
+  let g = '';
+
+  /* zona entre la parábola y el eje, en rojo claro */
+  if (hl) sol.seg.forEach(sg_ => {
+    const [p, q] = rango(sg_);
+    g += '<path d="M' + f1(X(p)) + ' ' + f1(y0) + ' ' + trazo(p, q).replace(/^M/, 'L') + ' L' + f1(X(q)) + ' ' + f1(y0) +
+         ' Z" fill="' + COL_ROJO + '" fill-opacity=".13" stroke="none"/>';
+  });
+
+  /* eje X */
+  g += '<line x1="14" y1="' + f1(y0) + '" x2="744" y2="' + f1(y0) + '" stroke="#222" stroke-width="2"/>' +
+       '<polygon points="754,' + f1(y0) + ' 740,' + f1(y0 - 6) + ' 740,' + f1(y0 + 6) + '" fill="#222"/>' +
+       '<text x="762" y="' + f1(y0 + 7) + '" font-size="21" font-style="italic">x</text>';
+
+  /* parábola */
+  g += '<path d="' + trazo(xmin, xmax) + '" fill="none" stroke="' + (hl ? '#a9a9ef' : COL_AZUL) + '" stroke-width="3.5" stroke-linecap="round"/>';
+
+  /* parte de la parábola y del eje que cumple la inecuación */
+  if (hl) sol.seg.forEach(sg_ => {
+    const [p, q] = rango(sg_);
+    g += '<path d="' + trazo(p, q) + '" fill="none" stroke="' + COL_ROJO + '" stroke-width="4.5" stroke-linecap="round"/>';
+    g += '<line x1="' + f1(sg_.lo ? X(sg_.lo.v) : 20) + '" y1="' + f1(y0) + '" x2="' + f1(sg_.hi ? X(sg_.hi.v) : 746) + '" y2="' + f1(y0) +
+         '" stroke="' + COL_ROJO + '" stroke-width="8"/>';
+  });
+
+  /* raíces: punto y valor */
+  o.rv.forEach((r, i) => {
+    const cx = X(r);
+    let fill = '#111', st = '#111';
+    if (hl) { st = sol.empty ? '#111' : COL_ROJO; fill = o.incl ? st : '#fff'; }
+    g += '<circle cx="' + f1(cx) + '" cy="' + f1(y0) + '" r="7.5" fill="' + fill + '" stroke="' + st + '" stroke-width="3"/>';
+    const debajo = !(o.D === 0 && sa < 0), ly = debajo ? y0 + 29 : y0 - 17;
+    let anc = 'middle', dx = 0;
+    if (o.D > 0) {
+      const fuera = sa > 0, izq = i === 0;
+      anc = (fuera === izq) ? 'end' : 'start';
+      dx = anc === 'end' ? -10 : 10;
+    }
+    g += '<text x="' + f1(cx + dx) + '" y="' + f1(ly) + '" text-anchor="' + anc + '" font-size="23" font-weight="bold">' + frTxt(o.r[i]) + '</text>';
+  });
+
+  return '<div class="grafico"><svg viewBox="0 0 ' + W + ' ' + f1(H) + '" xmlns="http://www.w3.org/2000/svg" style="aspect-ratio:' + W + '/' + f1(H) + '">' + g + '</svg></div>';
+}
+
+/* recta real de -∞ a +∞ con las raíces, el signo de cada intervalo y la solución */
+function svgRecta(o, opt) {
+  const n = o.nr, W = 780, xl = 40, xr = 740, y = opt.signos ? 62 : 24, H = opt.signos ? 116 : 80;
+  const B = i => xl + (xr - xl) * i / (n + 1);
+  const ini = k => k === 0 ? 20 : B(k), fin = k => k === n ? 760 : B(k + 1);
+  let g = '';
+  if (opt.resalta) o.cells.forEach((c, k) => {
+    if (c.sign === o.want) g += '<rect x="' + f1(ini(k)) + '" y="14" width="' + f1(fin(k) - ini(k)) + '" height="' + (y - 14) + '" fill="#ffd6d6"/>';
+  });
+  g += '<line x1="22" y1="' + y + '" x2="758" y2="' + y + '" stroke="#222" stroke-width="2.5"/>' +
+       '<polygon points="12,' + y + ' 26,' + (y - 7) + ' 26,' + (y + 7) + '" fill="#222"/>' +
+       '<polygon points="768,' + y + ' 754,' + (y - 7) + ' 754,' + (y + 7) + '" fill="#222"/>' +
+       '<text x="26" y="' + (y + 32) + '" font-size="17" fill="#666">−∞</text>' +
+       '<text x="754" y="' + (y + 32) + '" text-anchor="end" font-size="17" fill="#666">+∞</text>';
+  if (opt.signos) o.cells.forEach((c, k) => {
+    g += '<text x="' + f1((ini(k) + fin(k)) / 2) + '" y="' + (y - 18) + '" text-anchor="middle" font-size="40" font-weight="bold" fill="' +
+         (c.sign > 0 ? COL_AZUL : COL_NARANJA) + '">' + (c.sign > 0 ? '+' : '−') + '</text>';
+  });
+  if (opt.resalta) o.cells.forEach((c, k) => {
+    if (c.sign === o.want) g += '<line x1="' + f1(ini(k) + 2) + '" y1="' + y + '" x2="' + f1(fin(k) - 2) + '" y2="' + y + '" stroke="' + COL_ROJO + '" stroke-width="8"/>';
+  });
+  for (let i = 1; i <= n; i++) {
+    let fill = '#111', st = '#111';
+    if (opt.resalta) { st = o.sol.empty ? '#111' : COL_ROJO; fill = o.incl ? st : '#fff'; }
+    g += '<circle cx="' + f1(B(i)) + '" cy="' + y + '" r="9" fill="' + fill + '" stroke="' + st + '" stroke-width="3.5"/>' +
+         '<text x="' + f1(B(i)) + '" y="' + (y + 42) + '" text-anchor="middle" font-size="23" font-weight="bold">' + frTxt(o.r[i - 1]) + '</text>';
+  }
+  return '<div class="grafico"><svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" style="aspect-ratio:' + W + '/' + H + '">' + g + '</svg></div>';
+}
+
+/* =====================================================================
+   TEXTO DE LAS RESOLUCIONES
+   ===================================================================== */
+function conclusion(o) {
+  const s = o.sol, pos = o.want > 0, zona = pos ? 'por encima' : 'por debajo';
+  let h = s.empty ? '<p><b class="res">No hay solución: $x\\in\\varnothing$.</b></p>'
+                  : '<p><b class="res">$x\\in ' + solTex(s) + '$</b></p>';
+  let nota = '';
+  if (o.D === 0) {
+    const r = '$x=' + frTex(o.r[0]) + '$';
+    if (o.want === o.sa) nota = o.incl
+      ? 'La parábola solo toca al eje en ' + r + ' y nunca está ' + (pos ? 'por debajo' : 'por encima') + ' de él: se cumple siempre.'
+      : 'En ' + r + ' vale $0$ y no cumple la desigualdad estricta: se excluye ese punto.';
+    else nota = o.incl
+      ? 'Solo se cumple en ' + r + ', donde $P(x)=0$.'
+      : 'La parábola nunca está ' + zona + ' del eje: no hay solución.';
+  } else if (o.D < 0) {
+    nota = s.full ? 'La parábola no corta al eje X y queda siempre ' + zona + ' de él: se cumple para todo $x$.'
+                  : 'La parábola no corta al eje X y queda siempre ' + (o.sa > 0 ? 'por encima' : 'por debajo') + ' de él: nunca está ' + zona + ' del eje.';
+  }
+  if (nota) h += '<p class="nota">' + nota + '</p>';
+  const iq = ineqTex(s);
+  if (iq) h += '<p class="nota">Es decir: $' + iq + '$.</p>';
+  return h;
+}
+
+/* factor (x - r) escrito como x-3 o x+2 */
+const facTex = q => 'x' + (q.n > 0 ? '-' + frTex(q) : '+' + frTex(fr(-q.n, q.d)));
+
+/* signos de cada factor en cada intervalo (tabla como la de los apuntes) */
+function signosFactores(o) {
+  const cells = o.cells, filas = [];
+  const raices = o.D > 0 ? [0, 1] : o.D === 0 ? [0, 0] : [];
+  raices.forEach((ri, j) => filas.push({ lab: facTex(o.r[ri]), s: cells.map((c, k) => k <= (o.D > 0 ? j : 0) ? -1 : 1) }));
+  if (o.a < 0 && o.D >= 0) filas.push({ lab: String(o.a), s: cells.map(() => -1) });
+  const prod = o.D >= 0 ? cells.map((c, k) => filas.reduce((p, f) => p * f.s[k], 1)) : cells.map(() => o.sa);
+  return { filas, prod };
+}
+function tablaFactores(o, opt) {
+  const { filas, prod } = signosFactores(o), cells = o.cells;
+  const sol = k => (opt.resalta && prod[k] === o.want) ? ' sol' : '';
+  const cel = (v, k) => '<td class="' + (v > 0 ? 'mas' : 'menos') + sol(k) + '">' + (v > 0 ? '+' : '−') + '</td>';
+  let h = '<table class="tf"><tr><th></th>' + cells.map((c, k) => '<th class="' + sol(k).trim() + '">$(' + c.loT + ',' + c.hiT + ')$</th>').join('') + '</tr>';
+  filas.forEach(f => { h += '<tr><td class="f">$' + f.lab + '$</td>' + f.s.map(cel).join('') + '</tr>'; });
+  if (opt.producto) h += '<tr class="pr"><td class="f">$P(x)$</td>' + prod.map(cel).join('') + '</tr>';
+  return h + '</table>';
+}
+
+function pasos(e, metodo) {
+  const o = e.o, a = o.a, b = o.b, c = o.c, D = o.D, out = [];
+  let n = 0;
+  const P = (t, h) => out.push({ titulo: 'Paso ' + (++n) + ': ' + t, html: h });
+  const CAJA = (t, h) => out.push({ caja: t, html: h });
+  const sym = o.symTex, arriba = o.sa > 0, pos = o.want > 0;
+
+  if (e.dado) P('Pasamos todo a un miembro',
+    '$$' +
+    e.dado.izq + '\\;' + sym + '\\;' + e.dado.der + '\\;\\Longleftrightarrow\\;' + o.poly + '\\;' + sym + '\\;0$$');
+
+  /* resolver P(x)=0 en pocas líneas: fórmula con letras = con números, y las dos raíces */
+  const N0 = -b, Dn = 2 * a;
+  const resolver = () => {
+    let h = '$$x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}=\\frac{' + N0 + '\\pm\\sqrt{' + (b * b) + sg(-4 * a * c) + '}}{' + Dn + '}=\\frac{' + N0 + '\\pm\\sqrt{' + D + '}}{' + Dn + '}';
+    if (D > 0) {
+      h += '=\\frac{' + N0 + '\\pm ' + o.s + '}{' + Dn + '}$$';
+      h += '<div class="fila-menores">' + [0, 1].map(i => {
+        const num = N0 + (o.sig[i] === '+' ? '+' : '-') + o.s;
+        return '<span class="sub">$\\displaystyle x_' + (i + 1) + '=\\frac{' + num + '}{' + Dn + '}=' + frTex(o.r[i]) + '$</span>';
+      }).join('') + '</div>';
+    } else if (D === 0) {
+      h += '=\\frac{' + N0 + '}{' + Dn + '}=' + frTex(o.r[0]) + '$$';
+    } else {
+      h += '$$<p>Como $\\sqrt{' + D + '}$ no existe en $\\mathbb{R}$, <b>no hay raíces reales</b>.</p>';
+    }
+    return h;
+  };
+
+  let ext = '';
+  if (D >= 0) ext = o.incl ? ' Como la desigualdad no es estricta, entran también las raíces (allí $P(x)=0$).'
+                           : ' Como la desigualdad es estricta, las raíces no entran (allí $P(x)=0$).';
+  if (!o.cells.some(cl => cl.sign === o.want)) ext += o.sol.pts.length ? ' Ningún intervalo tiene ese signo: la única solución es la raíz.' : ' Ningún intervalo tiene ese signo.';
+  let extCorto = '';
+  if (D >= 0) extCorto = o.incl ? ' Las raíces entran (círculo relleno).' : ' Las raíces no entran (círculo vacío).';
+  if (!o.cells.some(cl => cl.sign === o.want)) extCorto += o.sol.pts.length ? ' Ningún intervalo cumple: solo vale la raíz.' : ' Ningún intervalo cumple.';
+  const iv = o.cells.map(cl => '$(' + cl.loT + ',' + cl.hiT + ')$');
+
+  /* --- método 1: la parábola --- (página izquierda: forma y raíces; derecha: dibujo con la solución) */
+  if (metodo === 'par') {
+    P('Forma de la parábola y raíces',
+      '<p>Como $a=' + a + (arriba ? '>0' : '\\lt 0') + '$, la parábola tiene forma de ' + (arriba ? '$\\cup$ (U).' : '$\\cap$ (U invertida).') +
+      ' Resolvemos $' + o.poly + '=0$:</p>' + resolver());
+    const txt = D > 0 ? 'La parábola corta al eje X en $x_1=' + frTex(o.r[0]) + '$ y $x_2=' + frTex(o.r[1]) + '$.'
+              : D === 0 ? 'La parábola toca al eje X solo en $x=' + frTex(o.r[0]) + '$ (su vértice).'
+              : 'La parábola no llega a tocar al eje X.';
+    let nota = '';
+    if (D >= 0) nota = o.incl
+      ? '<p class="nota">Círculo relleno (●): la raíz entra, porque la desigualdad es no estricta ($\\le$ o $\\ge$).</p>'
+      : '<p class="nota">Círculo vacío (○): la raíz no entra, porque la desigualdad es estricta ($\\lt$ o $\\gt$).</p>';
+    P('Dibujamos la parábola y buscamos $P(x)' + sym + '0$',
+      '<p>' + txt + ' Buscamos los $x$ para los que está ' + (pos ? 'por encima' : 'por debajo') + ' del eje X' + (o.incl ? ' o sobre él' : '') + ':</p>' +
+      svgParabola(o, true) + nota);
+    CAJA('Conclusión', conclusion(o));
+  }
+
+  /* --- método 2: tabla de signos por factores --- */
+  if (metodo === 'tab') {
+    P('Resolvemos $' + o.poly + '=0$', resolver());
+    if (D >= 0) {
+      const co = a === 1 ? '' : a === -1 ? '-' : String(a);
+      const cte = a < 0 ? '<p class="nota">El factor $' + a + '$ es negativo: le dedicamos una fila.</p>'
+                : a > 1 ? '<p class="nota">El factor $' + a + '$ es positivo: no cambia ningún signo y no necesita fila.</p>' : '';
+      P('Factorizamos $P(x)$', D > 0
+        ? '$$' + o.poly + '=' + co + '(' + facTex(o.r[0]) + ')(' + facTex(o.r[1]) + ')$$' + cte
+        : '$$' + o.poly + '=' + co + '(' + facTex(o.r[0]) + ')^2$$' + cte);
+      P('Tabla de signos',
+        '<p>Buscamos $P(x)' + sym + '0$: nos quedamos con los intervalos de signo $' + (pos ? '(+)' : '(-)') + '$.' + ext + '</p>' +
+        tablaFactores(o, { producto: true, resalta: true }));
+    } else {
+      P('Tabla de signos',
+        '<p>Sin raíces no hay factores ni cambios de signo: $P(x)$ tiene en toda la recta el signo de $a=' + a + '$. Buscamos $P(x)' + sym + '0$:' + ext + '</p>' +
+        tablaFactores(o, { producto: true, resalta: true }));
+    }
+    CAJA('Conclusión', conclusion(o));
+  }
+
+  /* --- método 3: recta real y sustitución en P(x) --- */
+  if (metodo === 'rec') {
+    P('Resolvemos $' + o.poly + '=0$', resolver());
+    const txt = D > 0 ? 'Las raíces dividen la recta en tres intervalos. Probamos un valor de cada uno:'
+              : D === 0 ? 'La raíz divide la recta en dos intervalos. Probamos un valor de cada uno:'
+              : 'Sin raíces, la recta es un único intervalo. Probamos un valor:';
+    const subs = o.cells.map(cl =>
+      '<span class="sub">Si $x=' + cl.t + '$: $\\displaystyle ' + calculoTex(a, b, c, cl.t, cl.val) + '\\;\\Rightarrow\\;' + (cl.sign > 0 ? '(+)' : '(-)') + '$</span>');
+    P('Recta real y sustitución en $P(x)$',
+      '<p>' + txt + '</p>' + svgRecta(o, {}) + '<div class="fila-menores col">' + subs.join('') + '</div>' +
+      '<p>Buscamos $P(x)' + sym + '0$.' + extCorto + '</p>' + svgRecta(o, { signos: true, resalta: true }));
+    CAJA('Conclusión', conclusion(o));
+  }
+  return out;
+}
+
+/* =====================================================================
+   LOS 18 EJERCICIOS (mezclados: el tipo de parábola no se anuncia)
+   ===================================================================== */
+const LISTA = [
+  { a: 1,  b: -5, c: 4,   sym: 'gt' },
+  { a: 1,  b: 1,  c: 1,   sym: 'gt' },
+  { a: 1,  b: -6, c: 9,   sym: 'gt' },
+  { a: -1, b: 4,  c: -3,  sym: 'ge', dado: { izq: '-x^2+4x', der: '3' } },
+  { a: 1,  b: 4,  c: 4,   sym: 'le' },
+  { a: 1,  b: -2, c: 5,   sym: 'le', dado: { izq: 'x^2+5', der: '2x' } },
+  { a: 1,  b: -1, c: -12, sym: 'le' },
+  { a: -1, b: 2,  c: -1,  sym: 'lt' },
+  { a: -1, b: 2,  c: -3,  sym: 'lt' },
+  { a: 2,  b: 1,  c: -6,  sym: 'lt', dado: { izq: '2x^2+x', der: '6' } },
+  { a: -2, b: 1,  c: -1,  sym: 'ge' },
+  { a: 4,  b: -4, c: 1,   sym: 'ge', dado: { izq: '4x^2+1', der: '4x' } },
+  { a: -1, b: -2, c: 8,   sym: 'lt' },
+  { a: -1, b: -6, c: -9,  sym: 'ge' },
+  { a: 2,  b: -3, c: 4,   sym: 'ge', dado: { izq: '2x^2+4', der: '3x' } },
+  { a: 3,  b: -7, c: 2,   sym: 'ge', dado: { izq: '3x^2+2', der: '7x' } },
+  { a: 9,  b: 12, c: 4,   sym: 'lt' },
+  { a: -1, b: 4,  c: -10, sym: 'gt' }
+];
+const EJERCICIOS = [];
+LISTA.forEach((d, i) => {
+  const e = Object.assign({}, d, { num: i + 1, titulo: 'Ejercicio ' + (i + 1) });
+  e.o = analizar(e);
+  const enun = d.dado ? d.dado.izq + '\\;' + e.o.symTex + '\\;' + d.dado.der : e.o.poly + '\\;' + e.o.symTex + '\\;0';
+  e.enunciado = '<p>Resuelve la inecuación:</p>$$' + enun + '$$';
+  EJERCICIOS.push(e);
+});
+</script>
+
+<script id="motor">
+/* ===================================================================== */
+const OPCIONES_MATE = {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "$",  right: "$",  display: false}
+  ],
+  throwOnError: false
+};
+const $ = id => document.getElementById(id);
+function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
+
+/* ---------------------------------------------------------------------
+   MOTOR DEL LIBRO
+   - Cada ejercicio se trocea en "unidades" (un párrafo, una fórmula, un
+     gráfico...). Cada clic escribe la siguiente unidad.
+   - Las unidades se reparten en páginas de tamaño fijo (como un libro).
+   - Se ven dos páginas. Cuando se llena la de la derecha, pasa a ser la
+     de la izquierda y aparece una página nueva a la derecha.
+   - Cada ejercicio tiene dos resoluciones: 'par' (parábola) y 'tab' (tabla).
+   --------------------------------------------------------------------- */
+const LW = 800;                     // ancho lógico de una página (px)
+const NOMBRE = { par: 'parábola', tab: 'tabla de signos', rec: 'recta y P(x)' };
+let metodo = 'par';                 // método de resolución activo
+let actual = 0;                     // ejercicio activo
+let s = 0;                          // unidades escritas
+let G = {};                         // geometría
+let libro = null;                   // {unidades, paginas}
+let Lprev = 0;
+
+function geometria() {
+  const W = $("libro").clientWidth, H = $("libro").clientHeight;
+  const Sw = W / 2, k = (Sw - 20) / LW;
+  G = { W, H, Sw, k, LH: (H - 20) / k };
+}
+
+/* trocea un ejercicio en secciones y unidades (una sola vez por método) */
+function extraer(e) {
+  e._sec = e._sec || {};
+  if (e._sec[metodo]) return e._sec[metodo];
+  const stage = $("stage"), secs = [];
+  const add = (tipo, cab, html, salto, mismo) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    stage.appendChild(d);
+    mate(d);
+    const unidades = [];
+    d.childNodes.forEach(n => {
+      if (n.nodeType === 1) unidades.push(n);
+      else if (n.nodeType === 3 && n.textContent.trim()) {
+        const sp = document.createElement("span"); sp.textContent = n.textContent; unidades.push(sp);
+      }
+    });
+    let cabHTML = null;
+    if (cab) { const c = document.createElement("div"); c.innerHTML = cab; mate(c); cabHTML = c.innerHTML; }
+    secs.push({ tipo, cabHTML, unidades, salto: !!salto, mismo: !!mismo });
+  };
+  add("titulo", null, "<h1>" + e.titulo + "</h1>");
+  add("enun", null, e.enunciado, false, true);      // título y enunciado salen juntos con un clic
+  pasos(e, metodo).forEach(p => add(p.caja ? "caja" : "paso", p.caja || p.titulo, p.html, p.caja && /^Si /.test(p.caja)));
+  stage.innerHTML = "";
+  /* un "tic" = un clic. Cada sección es un bloque; dentro de una fila de menores
+     (.fila-menores) cada .sub sale con su propio clic */
+  let base = 0;
+  secs.forEach(sc => {
+    let cur = sc.mismo ? base : base + 1, nuevo = false;
+    sc.unidades = sc.unidades.map(n => {
+      if (nuevo) { cur++; nuevo = false; }
+      const o = { n, t: cur, subs: [] };
+      if (n.classList && n.classList.contains("fila-menores")) {
+        n.querySelectorAll(".sub").forEach(sb => { cur++; o.subs.push({ n: sb, t: cur }); });
+        nuevo = true;
+      }
+      return o;
+    });
+    base = cur;
+  });
+  secs.T = base;
+  e._sec[metodo] = secs;
+  return secs;
+}
+
+function crearCont(sc, sigue) {
+  const c = document.createElement("div");
+  c.className = "cont";
+  if (sc.tipo === "caja") {
+    c.classList.add("caja");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", '<span class="titulo">' + sc.cabHTML + "</span>");
+  } else if (sc.tipo === "paso") {
+    c.classList.add("paso");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", "<h4>" + sc.cabHTML + "</h4>");
+  } else if (sc.tipo === "enun") {
+    c.classList.add("caja", "enunciado");
+  }
+  if (sigue) c.classList.add("sigue");
+  return c;
+}
+
+/* una fórmula más ancha que la página se reduce hasta caber */
+function ajustar(u) {
+  if (u.classList && u.classList.contains("fila-menores")) {
+    u.style.zoom = "";
+    const wmax = Math.max(u.scrollWidth, ...[...u.querySelectorAll(".sub")].map(sb => sb.offsetWidth));
+    if (wmax > u.clientWidth + 2) u.style.zoom = String(Math.max(.55, u.clientWidth / wmax * .97));
+  }
+  u.querySelectorAll(".katex-display").forEach(d => {
+    const k = d.firstElementChild;
+    if (!k) return;
+    k.style.zoom = "";
+    if (d.scrollWidth > d.clientWidth + 2) k.style.zoom = String(Math.max(.55, d.clientWidth / d.scrollWidth * .98));
+  });
+}
+
+/* reparte las unidades en páginas del tamaño actual */
+function paginar(secs, T) {
+  secs.T = T;
+  const pista = $("pista");
+  pista.innerHTML = "";
+  const paginas = [], unidades = [];
+  const nueva = () => {
+    const hoja = document.createElement("div");
+    hoja.className = "hoja";
+    hoja.style.cssText = "left:" + (paginas.length * G.Sw) + "px;width:" + G.Sw + "px;height:" + G.H + "px";
+    const pag = document.createElement("div");
+    pag.className = "pag";
+    pag.style.cssText = "width:" + LW + "px;height:" + G.LH + "px;transform:scale(" + G.k + ")";
+    const cu = document.createElement("div");
+    cu.className = "cuerpo";
+    cu.style.height = (G.LH - 34 - 56) + "px";
+    const num = document.createElement("div");
+    num.className = "num"; num.textContent = paginas.length + 1;
+    pag.append(cu, num); hoja.appendChild(pag); pista.appendChild(hoja);
+    const o = { hoja, cu };
+    paginas.push(o);
+    return o;
+  };
+  let pg = nueva();
+  const desborda = () => pg.cu.scrollHeight > pg.cu.clientHeight + 1;
+  secs.forEach(sc => {
+    if (sc.salto && pg.cu.children.length) pg = nueva();
+    let cont = crearCont(sc, false), puestas = 0;
+    pg.cu.appendChild(cont);
+    /* un bloque (lo que sale con un clic) nunca se parte entre dos páginas */
+    const bloques = [];
+    sc.unidades.forEach(un => {
+      const ult = bloques[bloques.length - 1];
+      if (ult && ult[0].t === un.t) ult.push(un); else bloques.push([un]);
+    });
+    bloques.forEach(bl => {
+      bl.forEach(un => {
+        un.n.classList.add("u"); un.n.classList.remove("on");
+        un.subs.forEach(sb => { sb.n.classList.add("u"); sb.n.classList.remove("on"); });
+        cont.appendChild(un.n);
+      });
+      bl.forEach(un => ajustar(un.n));
+      if (desborda()) {
+        bl.forEach(un => cont.removeChild(un.n));
+        if (!puestas) pg.cu.removeChild(cont);
+        if (pg.cu.children.length) pg = nueva();     // página nueva solo si la actual ya tiene algo
+        cont = crearCont(sc, puestas > 0);
+        pg.cu.appendChild(cont);
+        bl.forEach(un => cont.appendChild(un.n));
+        bl.forEach(un => ajustar(un.n));
+      }
+      puestas += bl.length;
+      const pi = paginas.indexOf(pg);
+      bl.forEach(un => {
+        unidades.push({ u: un.n, cont, pag: pi, t: un.t, on: false });
+        un.subs.forEach(sb => unidades.push({ u: sb.n, cont, pag: pi, t: sb.t, on: false }));
+      });
+    });
+  });
+  libro = { unidades, paginas, T: secs.T };
+}
+
+/* pone al día lo que se ve según s */
+function aplicar(anim) {
+  const U = libro.unidades;
+  s = Math.max(0, Math.min(s, libro.T));
+  const conts = new Map();
+  U.forEach((o, i) => {
+    const on = o.t <= s;
+    if (on !== o.on) {
+      o.on = on;
+      if (on) { o.u.classList.remove("rapido"); o.u.classList.add("on"); }
+      else { o.u.classList.add("rapido"); o.u.classList.remove("on"); }
+    }
+    if (on) conts.set(o.cont, true); else if (!conts.has(o.cont)) conts.set(o.cont, false);
+  });
+  conts.forEach((v, c) => {
+    if (v) { c.classList.remove("rapido"); c.classList.add("on"); }
+    else { c.classList.add("rapido"); c.classList.remove("on"); }
+  });
+  let p = 0;
+  U.forEach(o => { if (o.t <= s) p = Math.max(p, o.pag); });
+  const L = Math.max(p - 1, 0);
+  const pista = $("pista");
+  pista.classList.toggle("anim", !!anim);
+  pista.style.transform = "translateX(" + (-L * G.Sw) + "px)";
+  if (anim && L > Lprev) {
+    const h = libro.paginas[p].hoja;
+    h.classList.remove("gira"); void h.offsetWidth; h.classList.add("gira");
+    setTimeout(() => h.classList.remove("gira"), 1000);
+  }
+  Lprev = L;
+  const n = libro.T;
+  $("contador").textContent = EJERCICIOS[actual].titulo + " · " + NOMBRE[metodo] + " · " + s + " / " + n;
+  $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
+  $("btnAtras").disabled = (actual === 0 && s <= 1);
+  $("btnAdelante").disabled = (actual === EJERCICIOS.length - 1 && s === n);
+}
+
+/* barra superior: ejercicios y método */
+function pintarBarra() {
+  const nav = $("pestanas");
+  nav.innerHTML = "";
+  EJERCICIOS.forEach((e, idx) => {
+    const b = document.createElement("button");
+    b.textContent = "Ej " + (idx + 1);
+    b.setAttribute("aria-selected", idx === actual);
+    b.onclick = ev => { ev.stopPropagation(); b.blur(); cargar(idx, false); };
+    nav.appendChild(b);
+  });
+  const sel = nav.children[actual];
+  if (sel) sel.scrollIntoView({ inline: "center", block: "nearest" });
+  document.querySelectorAll("#metodos button").forEach(b => b.setAttribute("aria-selected", b.dataset.m === metodo));
+}
+
+function construir() {
+  geometria();
+  const e = EJERCICIOS[actual];
+  const secs = extraer(e);
+  paginar(secs, secs.T);
+}
+
+async function cargar(i, alFinal) {
+  const lib = $("libro");
+  lib.classList.add("fuera");
+  await new Promise(r => setTimeout(r, 200));
+  actual = i;
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  construir();
+  s = alFinal ? libro.T : 1;          // al abrir un ejercicio ya se ve el enunciado
+  Lprev = 0;
+  pintarBarra();
+  aplicar(false);
+  lib.classList.remove("fuera");
+}
+
+function avanzar() {
+  if (s < libro.T) { s++; aplicar(true); }
+  else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
+}
+function retroceder() {
+  if (s > 1) { s--; aplicar(true); }
+  else if (actual > 0) cargar(actual - 1, true);
+}
+
+document.querySelectorAll("#metodos button").forEach(b => {
+  b.onclick = ev => {
+    ev.stopPropagation(); b.blur();
+    if (b.dataset.m !== metodo) { metodo = b.dataset.m; cargar(actual, false); }
+  };
+});
+
+/* clic: tercio izquierdo = atrás; resto = adelante */
+$("libro").addEventListener("click", ev => {
+  if (String(window.getSelection())) return;
+  if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
+});
+$("btnAtras").onclick = ev => { ev.stopPropagation(); retroceder(); };
+$("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
+$("tira").onclick = ev => {
+  ev.stopPropagation();
+  const r = $("tira").getBoundingClientRect();
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * libro.T));
+  aplicar(true);
+};
+document.addEventListener("keydown", ev => {
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
+  else if (ev.key === "Home") { s = 1; aplicar(true); }
+  else if (ev.key === "End") { s = libro.T; aplicar(true); }
+});
+let tRes = null;
+window.addEventListener("resize", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); Lprev = 0; aplicar(false); } }, 150);
+});
+
+window.addEventListener("load", () => cargar(0, false));
+if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); aplicar(false); } }, 60);
+});
+</script>
+</body>
+</html>
