@@ -1,0 +1,2003 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geometría en el espacio: rectas y planos (ejercicios 51-56)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#1414E6; --rojo:#E01E1E; --gris:#666;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;color:var(--texto);cursor:pointer;
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:20px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+
+  html,body{overflow:hidden}
+  body{background:#fff}
+
+  /* barra superior */
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:0 14px;display:flex;gap:14px;align-items:center;font-size:.85rem;color:var(--gris)}
+  .barra-sup .tit{font-weight:bold;color:#333;white-space:nowrap}
+  .pestanas{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #333;color:#333}
+  .pestanas button[aria-selected="true"]{background:#333;color:#fff}
+
+  /* barra inferior: botones grandes (pizarra digital) y progreso */
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:.85rem;color:var(--gris)}
+  .progreso .tira{flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .nav{font:inherit;font-size:1.5rem;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:9.5em;text-align:right;white-space:nowrap}
+
+  /* el libro: dos páginas, separadas solo por una línea fina */
+  #libro{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:hidden;background:#fff;transition:opacity .25s ease}
+  #libro.fuera{opacity:0}
+  #pista{position:absolute;left:0;top:0;height:100%;will-change:transform}
+  #pista.anim{transition:transform .9s cubic-bezier(.65,.05,.25,1)}
+  .hoja{position:absolute;top:0;padding:6px 8px}
+  .pag{position:relative;background:#fff;transform-origin:0 0;padding:30px 40px 0}
+  .pag .cuerpo{display:flow-root;overflow:hidden}
+  .pag .num{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#bbb;font-size:.8rem}
+  #lomo{position:absolute;left:50%;top:14px;bottom:14px;width:0;border-left:1px solid #c9c9c9;pointer-events:none;z-index:2}
+  .hoja.gira .pag{animation:gira .9s ease both}
+  @keyframes gira{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#pista.anim{transition:none}.hoja.gira .pag{animation:none}}
+
+  /* lo que se va escribiendo */
+  .cont{opacity:0;transition:opacity .35s ease}
+  .cont.on{opacity:1}
+  .u{opacity:0;clip-path:inset(-40px 100% -40px -40px);transition:opacity .25s ease,clip-path .85s ease}
+  span.u{display:block}
+  .u.on{opacity:1;clip-path:inset(-40px -40px -40px -40px)}
+  .u.rapido,.cont.rapido{transition:none}
+  .cont.sigue{margin-top:0;padding-top:14px;border-top-left-radius:0;border-top-right-radius:0}
+  .fila-menores{display:flex;justify-content:space-around;align-items:center;gap:.4em;margin:.8em 0}
+  .fila-menores .sub{display:block;white-space:nowrap}
+  .fila-menores.col{flex-direction:column;align-items:center;gap:.1em;margin:.4em 0}
+  .fila-menores.junto{flex-direction:column;align-items:stretch;gap:.35em;margin:.8em 0}
+  .junto .fila3{display:flex;justify-content:space-around;gap:.8em}
+  .junto .item{display:block;white-space:nowrap}
+  h1{margin:0 0 6px;font-size:2.1rem;line-height:1.2}
+  h4{margin:16px 0 6px;font-size:1.18rem}
+
+  /* cajas verdes del modelo */
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:20px 20px 10px;margin:26px 0 14px}
+  .caja>.titulo{position:absolute;top:-13px;left:12px;background:var(--verde-titulo);color:#fff;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.92rem}
+  .caja.enunciado{color:var(--azul);margin-top:6px;padding-top:12px}
+  .caja p{margin:.3em 0 .5em}
+  .paso{margin:6px 0 10px}
+
+  /* matrices con menores marcados en caja roja */
+  .ec{display:flex;align-items:center;justify-content:center;gap:.5em;margin:.6em 0;flex-wrap:wrap}
+  .mat{--w:2.5em;--h:1.7em;position:relative;display:inline-grid;
+    grid-template-columns:repeat(var(--nc),var(--w));grid-auto-rows:var(--h);
+    margin:1.1em .7em .2em;text-align:center}
+  .mat .c{display:flex;align-items:center;justify-content:center;white-space:nowrap}
+  .mat::before,.mat::after{content:"";position:absolute;top:-.15em;bottom:-.15em;width:.55em;border:2px solid #111}
+  .mat::before{left:-.7em;border-right:0;border-radius:60% 0 0 60%/50% 0 0 50%}
+  .mat::after{right:-.7em;border-left:0;border-radius:0 60% 60% 0/0 50% 50% 0}
+  .mat .bar{position:absolute;top:.1em;bottom:.1em;left:calc(var(--k) * var(--w));border-left:1.5px solid #111}
+  .mat .caja-roja{position:absolute;border:1.5px solid var(--rojo);pointer-events:none;
+    left:calc(var(--c0) * var(--w) + .15em);top:calc(var(--r0) * var(--h) + .12em);
+    width:calc(var(--cs) * var(--w) - .3em);height:calc(var(--rs) * var(--h) - .24em)}
+  .mat .caja-roja i{position:absolute;left:50%;top:-1.35em;transform:rotate(-40deg);transform-origin:left bottom;
+    color:var(--rojo);font-style:normal;white-space:nowrap}
+  .mat .tacha{position:absolute;left:-.2em;right:-.2em;top:calc((var(--r) + .5) * var(--h));
+    border-top:1.5px solid var(--rojo);pointer-events:none}
+  .mat .etq{position:absolute;left:calc((var(--c) + .5) * var(--w));top:-.15em;width:0;height:0;pointer-events:none}
+  .mat .etq i{position:absolute;left:0;bottom:0;transform:rotate(-40deg);transform-origin:left bottom;
+    color:var(--rojo);font-style:normal;white-space:nowrap}
+  .instr{color:var(--azul);border:1.5px solid #E6C200;border-radius:14px;padding:6px 16px;margin:10px 0;text-align:center}
+  .nota{color:var(--gris);font-size:.9em}
+  b.res{color:var(--rojo)}
+  .katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden}
+  table.res{border-collapse:collapse;margin:6px auto 8px}
+  table.res th,table.res td{padding:5px 16px;text-align:center}
+  table.res th{border-bottom:1.5px solid #111}
+  table.res td:not(:last-child),table.res th:not(:last-child){border-right:1px solid #111}
+  table.res td:last-child,table.res th:last-child{text-align:left}
+
+  /* figuras 3D interactivas */
+  .fig3d{margin:.5em 0 .3em}
+  .fig3d canvas{display:block;width:100%;height:auto;aspect-ratio:1400/480;border:1px solid #dcdcdc;border-radius:12px;background:#fff;cursor:grab;touch-action:none}
+  .fig3d canvas.arrastrando{cursor:grabbing}
+  .fig-ctl{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:.35em;font-size:.78em;color:var(--gris);line-height:1.25}
+  .fig-botones{display:flex;gap:5px;flex:none}
+  .fig-botones button{font:inherit;font-size:.9em;min-width:1.9em;height:1.9em;border-radius:999px;border:1.5px solid #bbb;background:#fff;color:#444;cursor:pointer;padding:0 .4em}
+  .fig-botones button[aria-pressed="true"]{background:#2d9a2d;border-color:#2d9a2d;color:#fff}
+</style>
+</head>
+<body>
+<div class="barra-sup">
+  <span class="tit">Geometría en el espacio · Ejercicios 51-56</span>
+  <nav class="pestanas" id="pestanas" aria-label="Ejercicios"></nav>
+</div>
+<div id="libro"><div id="pista"></div><div id="lomo"></div></div>
+<div id="stage" style="position:absolute;left:-99999px;top:0;width:720px;visibility:hidden"></div>
+<div class="progreso">
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
+  <span id="contador"></span>
+</div>
+
+<script>
+/* ---------------------------------------------------------------------
+   Matriz con barra opcional y menor marcado en caja roja.
+   rows: filas (cadenas LaTeX); opts.bar = nº de columnas antes de la barra;
+   opts.box = [fila0, col0, fila1, col1] (empezando en 0)
+   opts.tach = [filas a tachar]; opts.etq = [[columna, 'texto'], ...] (rótulo rojo sobre una columna)
+   --------------------------------------------------------------------- */
+function mat(rows, opts = {}) {
+  const nr = rows.length, nc = rows[0].length;
+  const largo = Math.max(...rows.map(r => Math.max(...r.map(c => String(c).replace(/\\[a-zA-Z]+|[{}\s]/g, '').length))));
+  const ancho = opts.w || Math.max(2.5, 1.0 + 0.55 * largo);
+  let h = '<span class="mat" style="--nc:' + nc + ';--nr:' + nr + ';--w:' + ancho.toFixed(2) + 'em' + (opts.etq ? ';margin-top:2.3em' : '') + '">';
+  rows.forEach(r => r.forEach(c => { h += '<span class="c">$' + c + '$</span>'; }));
+  if (opts.bar != null) h += '<span class="bar" style="--k:' + opts.bar + '"></span>';
+  if (opts.box) {
+    /* box = [f0,c0,f1,c1] o, para un menor de columnas no contiguas, una lista de cajas;
+       el rótulo ≠0 solo va en la primera */
+    const cajas = Array.isArray(opts.box[0]) ? opts.box : [opts.box];
+    cajas.forEach(([r0, c0, r1, c1], i) => {
+      h += '<span class="caja-roja" style="--r0:' + r0 + ';--c0:' + c0 + ';--rs:' + (r1 - r0 + 1) +
+           ';--cs:' + (c1 - c0 + 1) + '">' + (i === 0 ? '<i>$\\neq0$</i>' : '') + '</span>';
+    });
+  }
+  if (opts.tach) opts.tach.forEach(r => { h += '<span class="tacha" style="--r:' + r + '"></span>'; });
+  if (opts.etq) opts.etq.forEach(([c, t]) => { h += '<span class="etq" style="--c:' + c + '"><i>$' + t + '$</i></span>'; });
+  return h + '</span>';
+}
+const ec = (...partes) => '<div class="ec">' + partes.join('') + '</div>';
+const f = s => '<span>$' + s + '$</span>';
+
+/* ---------------------------------------------------------------------
+   Ayudantes numéricos y de escritura
+   --------------------------------------------------------------------- */
+const rg = x => '\\operatorname{rg}(' + x + ')';
+const detTex = filas => '\\begin{vmatrix} ' + filas.map(r => r.join('&')).join('\\\\ ') + ' \\end{vmatrix}';
+const strs = M => M.map(r => r.map(String));
+
+/* regla de Sarrus para un determinante numérico de orden 3 */
+const det3 = M => M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1])
+                - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0])
+                + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
+const suma = t => t.map((x, i) => (i && x >= 0) ? '+' + x : String(x)).join('');
+function sarrusTex(M0) {
+  const a = M0.map(r => r.map(Number));
+  const p = [a[0][0] * a[1][1] * a[2][2], a[0][1] * a[1][2] * a[2][0], a[0][2] * a[1][0] * a[2][1]];
+  const n = [a[0][2] * a[1][1] * a[2][0], a[0][0] * a[1][2] * a[2][1], a[0][1] * a[1][0] * a[2][2]];
+  return '(' + suma(p) + ')-(' + suma(n) + ')=' + det3(a);
+}
+
+/* sistema de ecuaciones con las igualdades alineadas: sis(['x','2+\\lambda'], ['y', ...]) */
+const sis = (...filas) => '$$\\left\\{\\begin{array}{rcl}' + filas.map(r => r.join('&=&')).join('\\\\') + '\\end{array}\\right.$$';
+
+/* menor marcado con caja roja dentro de una fracción o igualdad (se ve como en el cuaderno) */
+const cajaR = x => '{\\color{#E01E1E}\\boxed{\\color{#111}' + x + '}}';
+
+/* un determinante de Cramer por clic: etiqueta, matriz numérica 3x3 */
+const cramer = (etq, M) => '<span class="sub">$\\displaystyle ' + etq + '=' + detTex(M) + '=' + sarrusTex(M) + '$</span>';
+const filaCol = (...subs) => '<div class="fila-menores col">' + subs.join('') + '</div>';
+
+
+/* =====================================================================
+   FIGURAS 3D INTERACTIVAS (canvas, sin librerías)
+   - Cada figura es una escena con elementos que aparecen por etapas
+     (como las imágenes sucesivas del libro).
+   - Se gira arrastrando con el ratón o el dedo; doble clic = vista inicial.
+   - Coordenadas reales (eje z hacia arriba).
+   ===================================================================== */
+const V3 = {
+  add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+  mul: (a, k) => [a[0] * k, a[1] * k, a[2] * k],
+  dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+  cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+  len: a => Math.hypot(a[0], a[1], a[2]),
+  unit: a => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; }
+};
+
+/* plano de normal n que pasa por c: cuadrado de semilado h. 'hint' orienta el primer lado */
+function planoN(c, n, h, hint) {
+  n = V3.unit(n);
+  let e1 = hint ? V3.sub(hint, V3.mul(n, V3.dot(hint, n)))
+                : V3.cross(n, Math.abs(n[2]) < .9 ? [0, 0, 1] : [1, 0, 0]);
+  e1 = V3.unit(e1);
+  const e2 = V3.unit(V3.cross(n, e1));
+  return { o: V3.sub(V3.sub(c, V3.mul(e1, h)), V3.mul(e2, h)), u: V3.mul(e1, 2 * h), v: V3.mul(e2, 2 * h), a: [0, 1], b: [0, 1] };
+}
+/* plano P + a·u + b·v con a en [a0,a1] y b en [b0,b1] */
+function planoUV(P, u, v, a0, a1, b0, b1) {
+  return { o: V3.add(V3.add(P, V3.mul(u, a0)), V3.mul(v, b0)), u: V3.mul(u, a1 - a0), v: V3.mul(v, b1 - b0), a: [0, 1], b: [0, 1] };
+}
+
+const COL = { r: '#1414E6', s: '#6AA800', vec: '#E01E1E', vec2: '#C026D3', pt: '#111', verde: '#10CC50', rosa: '#E0409A', azul: '#3B5BDB', naranja: '#F08C00', gris: '#555' };
+
+/* ---------------------------------------------------------------------
+   ESCENAS. Elementos:
+   pt {p,l,c,s,big,d}           punto
+   vec {a,b,l,c,s,d}            vector (flecha de a a b)
+   line {p,v,l,c,s,d}           recta infinita (se recorta)
+   plane {...planoN|planoUV,c,s,l}
+   s = etapa desde la que se ve; focus = puntos que encuadran la figura
+   --------------------------------------------------------------------- */
+const FIGS = {};
+
+/* Ej. 1: recta por P con vector director v */
+(() => {
+  const P = [2, 1, -3], v = [1, -2, 4];
+  FIGS.ej1 = {
+    focus: [P, V3.add(P, v), V3.sub(P, V3.mul(v, .6))],
+    etapas: ['Punto $P$ y vector director $v$', 'La recta $r$ pasa por $P$ con la dirección de $v$'],
+    els: [
+      { t: 'line', p: P, v: v, l: 'r', c: COL.r, s: 1, d: [14, -10] },
+      { t: 'vec', a: P, b: V3.add(P, v), l: 'v', c: COL.vec, s: 0, d: [12, -6] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [-18, 4] }
+    ]
+  };
+})();
+
+/* Ej. 2: recta por dos puntos */
+(() => {
+  const P = [2, 1, 3], Q = [0, -1, 3], d = V3.sub(Q, P);
+  FIGS.ej2 = {
+    focus: [P, Q],
+    etapas: ['Los puntos $P$ y $Q$', 'El vector diferencia $\\overrightarrow{PQ}$', 'La recta $r$ que pasa por $P$ y $Q$'],
+    els: [
+      { t: 'line', p: P, v: d, l: 'r', c: COL.r, s: 2, d: [14, -10] },
+      { t: 'vec', a: P, b: Q, l: 'V_d', c: COL.vec2, s: 1, d: [-8, -14] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [10, 10] },
+      { t: 'pt', p: Q, l: 'Q', c: COL.pt, s: 0, d: [-18, -6] }
+    ]
+  };
+})();
+
+/* Ej. 3: recta como intersección de dos planos */
+(() => {
+  const P = [0, 1, -1], n1 = [1, 1, 1], n2 = [1, 1, -1], d = [1, -1, 0];
+  FIGS.ej3 = {
+    focus: [P, V3.add(P, V3.mul(d, 1.6)), V3.sub(P, V3.mul(d, 1.6))],
+    etapas: ['Los dos planos $x+y+z=0$ y $x+y-z=2$', 'Sus vectores normales $\\vec n_1$ y $\\vec n_2$', 'La intersección es la recta $r$, con $\\vec v=\\vec n_1\\times\\vec n_2$'],
+    els: [
+      { t: 'plane', ...planoN(P, n1, 2.6, d), c: COL.verde, s: 0, l: 'α', ld: [.08, .1] },
+      { t: 'plane', ...planoN(P, n2, 2.6, d), c: COL.azul, s: 0, l: 'β', ld: [.08, .1] },
+      { t: 'vec', a: P, b: V3.add(P, n1), l: 'n_1', c: COL.gris, s: 1, d: [8, -8] },
+      { t: 'vec', a: P, b: V3.add(P, n2), l: 'n_2', c: COL.gris, s: 1, d: [8, 12] },
+      { t: 'line', p: P, v: d, l: 'r', c: COL.r, s: 2, d: [12, -10] },
+      { t: 'vec', a: P, b: V3.add(P, V3.mul(d, 1.4)), l: 'v', c: COL.vec, s: 2, d: [6, -14] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 2, d: [-18, 4] }
+    ]
+  };
+})();
+
+/* Ej. 4: plano por un punto con dos vectores directores */
+(() => {
+  const P = [1, 2, -3], u = [0, 2, 1], v = [4, -2, 0];
+  FIGS.ej4 = {
+    focus: [P, V3.add(P, u), V3.add(P, v), V3.add(V3.add(P, u), v)],
+    etapas: ['El punto $P$ y los vectores $\\vec u$ y $\\vec v$', 'El plano $P+\\lambda\\vec u+\\mu\\vec v$'],
+    els: [
+      { t: 'plane', ...planoUV(P, u, v, -.5, 1.5, -.3, 1.3), c: COL.verde, s: 1, l: 'π', ld: [.1, .1] },
+      { t: 'vec', a: P, b: V3.add(P, u), l: 'u', c: COL.vec, s: 0, d: [-14, -8] },
+      { t: 'vec', a: P, b: V3.add(P, v), l: 'v', c: COL.vec2, s: 0, d: [8, -12] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [-18, 8] }
+    ]
+  };
+})();
+
+/* Ej. 5: plano por tres puntos */
+(() => {
+  const A = [1, 2, -1], B = [0, 0, 1], C = [2, 2, 2], u = V3.sub(B, A), v = V3.sub(C, A);
+  FIGS.ej5 = {
+    focus: [A, B, C],
+    etapas: ['Los tres puntos $A$, $B$ y $C$', 'Los vectores diferencia $\\overrightarrow{AB}$ y $\\overrightarrow{AC}$', 'El plano que pasa por $A$, $B$ y $C$'],
+    els: [
+      { t: 'plane', ...planoUV(A, u, v, -.4, 1.5, -.4, 1.5), c: COL.naranja, s: 2, l: 'π', ld: [.1, .1] },
+      { t: 'vec', a: A, b: B, l: 'u', c: COL.vec2, s: 1, d: [-14, -8] },
+      { t: 'vec', a: A, b: C, l: 'v', c: COL.vec, s: 1, d: [8, -12] },
+      { t: 'pt', p: A, l: 'A', c: COL.pt, s: 0, d: [-18, 8] },
+      { t: 'pt', p: B, l: 'B', c: COL.pt, s: 0, d: [-16, -8] },
+      { t: 'pt', p: C, l: 'C', c: COL.pt, s: 0, d: [10, -10] }
+    ]
+  };
+})();
+
+/* Ej. 6: plano que contiene a una recta y a un punto exterior */
+(() => {
+  const Pr = [1, 0, 2], vr = [2, 1, 3], P = [1, 2, 3], Vd = V3.sub(P, Pr);
+  FIGS.ej6 = {
+    focus: [Pr, P, V3.add(Pr, vr), V3.sub(Pr, vr)],
+    etapas: ['La recta $r$ y el punto $P$', 'El punto $P_r$ y el vector director $\\vec v_r$', 'El vector diferencia $\\overrightarrow{P_rP}$', 'El plano que contiene a $r$ y a $P$'],
+    els: [
+      { t: 'plane', ...planoUV(Pr, vr, Vd, -1, 1.1, -.4, 1.4), c: COL.verde, s: 3, l: 'π', ld: [.1, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, vr), l: 'V_r', c: COL.vec, s: 1, d: [8, -12] },
+      { t: 'vec', a: Pr, b: P, l: 'V_d', c: COL.s, s: 2, d: [-30, 0] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 1, d: [-26, 12] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [10, -10] }
+    ]
+  };
+})();
+
+/* Ej. 7: plano que contiene a dos rectas paralelas */
+(() => {
+  const Pr = [2, 0, -1], vr = [1, 2, 3], Ps = [1, 1, 5], vs = [2, 4, 6], Vd = V3.sub(Ps, Pr);
+  FIGS.ej7 = {
+    focus: [Pr, Ps, V3.add(Pr, vr), V3.add(Ps, V3.mul(vs, -.5)), V3.add(Pr, V3.mul(vr, -1))],
+    etapas: ['Las rectas paralelas $r$ y $s$', 'Puntos $P_r$, $P_s$ y vectores directores $\\vec v_r$, $\\vec v_s$', 'El vector diferencia $V_d=P_s-P_r$', 'El plano que contiene a las dos rectas'],
+    els: [
+      { t: 'plane', ...planoUV(Pr, vr, Vd, -1.1, 1.2, -.3, 1.3), c: COL.verde, s: 3, l: 'π', ld: [.1, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'line', p: Ps, v: vs, l: 's', c: COL.s, s: 0, d: [12, -10] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, vr), l: 'V_r', c: COL.vec, s: 1, d: [8, 12] },
+      { t: 'vec', a: Ps, b: V3.add(Ps, vs), l: 'V_s', c: COL.pt, s: 1, d: [8, -12] },
+      { t: 'vec', a: Pr, b: Ps, l: 'V_d', c: COL.vec2, s: 2, d: [-30, 0] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 1, d: [-26, 12] },
+      { t: 'pt', p: Ps, l: 'P_s', c: COL.pt, s: 1, d: [-26, -6] }
+    ]
+  };
+})();
+
+/* Ej. 8: recta (dos planos) y un tercer plano: punto de intersección */
+(() => {
+  const I = [-4, 6, 1], d = [3, -4, -1], n1 = [1, 1, -1], n2 = [3, 2, 1], n3 = [5, 3, 4];
+  FIGS.ej8 = {
+    vista: [2.1, .35],
+    focus: [I, V3.add(I, V3.mul(d, .45)), V3.sub(I, V3.mul(d, .45))],
+    etapas: ['Los planos que definen la recta $r$', 'La recta $r$ (su intersección)', 'El plano $\\pi:\\ 5x+3y+4z=2$', 'El punto de intersección $r\\cap\\pi$'],
+    els: [
+      { t: 'plane', ...planoN(I, n1, 2.7, d), c: COL.rosa, s: 0, l: 'α', ld: [.08, .1] },
+      { t: 'plane', ...planoN(I, n2, 2.7, d), c: COL.azul, s: 0, l: 'β', ld: [.08, .1] },
+      { t: 'plane', ...planoN(I, n3, 2.7, d), c: COL.s, s: 2, l: 'π', ld: [.08, .1] },
+      { t: 'line', p: I, v: d, l: 'r', c: COL.r, s: 1, d: [12, -10] },
+      { t: 'pt', p: I, l: '(−4, 6, 1)', c: COL.vec, s: 3, big: true, d: [14, 16] }
+    ]
+  };
+})();
+
+/* Ej. 9: recta y plano que se cortan */
+(() => {
+  const I = [1, 2, -1], d = [1, -2, 3];
+  FIGS.ej9 = {
+    focus: [I, V3.add(I, V3.mul(d, .6)), V3.sub(I, V3.mul(d, .6))],
+    etapas: ['La recta $r$ y el plano $x+y=3$', 'El punto donde la recta atraviesa el plano'],
+    els: [
+      { t: 'plane', ...planoN(I, [1, 1, 0], 2.2, [0, 0, 1]), c: COL.azul, s: 0, l: 'π', ld: [.08, .1] },
+      { t: 'line', p: I, v: d, l: 'r', c: COL.r, s: 0, d: [12, -10] },
+      { t: 'pt', p: I, l: '(1, 2, −1)', c: COL.vec, s: 1, big: true, d: [14, 18] }
+    ]
+  };
+})();
+
+/* Ej. 10: dos rectas que se cortan */
+(() => {
+  const Pr = [3, 2, 2], vr = [1, 2, 3], Ps = [3, 1, 0], vs = [1, 1, 1], I = [2, 0, -1];
+  FIGS.ej10 = {
+    focus: [I, Pr, Ps, V3.add(Pr, vr), V3.add(Ps, vs)],
+    etapas: ['Las rectas $r$ y $s$', 'Un punto y un vector director de cada una', 'El punto de intersección $P$'],
+    els: [
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'line', p: Ps, v: vs, l: 's', c: COL.s, s: 0, d: [12, -10] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, vr), l: 'V_r', c: COL.vec, s: 1, d: [8, -12] },
+      { t: 'vec', a: Ps, b: V3.add(Ps, vs), l: 'V_s', c: COL.vec2, s: 1, d: [8, 12] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 1, d: [-26, 6] },
+      { t: 'pt', p: Ps, l: 'P_s', c: COL.pt, s: 1, d: [-26, 6] },
+      { t: 'pt', p: I, l: '(2, 0, −1)', c: COL.vec, s: 2, big: true, d: [14, 18] }
+    ]
+  };
+})();
+
+
+/* =====================================================================
+   EJERCICIOS 11-20
+   ===================================================================== */
+
+/* Ej. 11: plano que contiene a dos rectas que se cortan */
+(() => {
+  const Pr = [3, 2, 2], vr = [1, 2, 3], Ps = [3, 1, 0], vs = [1, 1, 1], I = [2, 0, -1];
+  FIGS.ej11 = {
+    vista: [5.6, .45],
+    focus: [I, Pr, Ps],
+    etapas: ['Las rectas $r$ y $s$ se cortan en $P_I$', 'Sus vectores directores $\\vec v_r$ y $\\vec v_s$', 'El plano que contiene a las dos rectas'],
+    els: [
+      { t: 'plane', ...planoN(I, [-1, 2, -1], 2.6, vr), c: COL.verde, s: 2, l: 'π', ld: [.1, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'line', p: Ps, v: vs, l: 's', c: COL.s, s: 0, d: [12, -10] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, vr), l: 'V_r', c: COL.vec, s: 1, d: [8, -12] },
+      { t: 'vec', a: Ps, b: V3.add(Ps, vs), l: 'V_s', c: COL.vec2, s: 1, d: [8, 12] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 1, d: [-26, 6] },
+      { t: 'pt', p: Ps, l: 'P_s', c: COL.pt, s: 1, d: [-26, 6] },
+      { t: 'pt', p: I, l: 'P_I', c: COL.vec, s: 0, big: true, d: [12, 14] }
+    ]
+  };
+})();
+
+/* Ej. 12: plano que contiene a r y es paralelo a s */
+(() => {
+  const Pr = [1, 1, -2], vr = [0, 0, 2], Ps = [2, 0, 0], vs = [1, -2, -1];
+  FIGS.ej12 = {
+    focus: [Pr, V3.add(Pr, vr), Ps, V3.add(Ps, vs)],
+    etapas: ['Las rectas $r$ y $s$ (se cruzan)', 'Puntos y vectores directores', 'El plano que contiene a $r$ y es paralelo a $s$'],
+    els: [
+      { t: 'plane', ...planoUV(Pr, vr, vs, -.5, 1.5, -.7, 1.6), c: COL.rosa, s: 2, l: 'π', ld: [.08, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.r, s: 0, d: [12, -10] },
+      { t: 'line', p: Ps, v: vs, l: 's', c: COL.s, s: 0, d: [12, -10] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, vr), l: 'V_r', c: COL.vec, s: 1, d: [-30, 0] },
+      { t: 'vec', a: Ps, b: V3.add(Ps, vs), l: 'V_s', c: COL.vec2, s: 1, d: [10, 12] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 1, d: [-26, 8] },
+      { t: 'pt', p: Ps, l: 'P_s', c: COL.pt, s: 1, d: [-26, -4] }
+    ]
+  };
+})();
+
+/* Ej. 13: plano perpendicular a una recta por un punto */
+(() => {
+  const P = [0, 0, 1], v = [1, 1, 0], A = [1, 2, 3], C = [-.5, .5, 3];
+  FIGS.ej13 = {
+    vista: [4.9, .55],
+    focus: [P, A, C],
+    etapas: ['La recta $r$, su vector director $\\vec v_r$ y el punto $P$', 'El plano perpendicular a $r$ por $P$: $\\vec n=\\vec v_r$'],
+    els: [
+      { t: 'plane', ...planoN(P, v, 2.2, [0, 0, 1]), c: COL.azul, s: 1, l: 'π', ld: [.08, .1] },
+      { t: 'line', p: A, v: v, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'vec', a: A, b: V3.add(A, v), l: 'V_r', c: COL.vec, s: 0, d: [8, -12] },
+      { t: 'vec', a: P, b: V3.add(P, v), l: 'n', c: COL.vec, s: 1, d: [8, -12] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [-20, 10] }
+    ]
+  };
+})();
+
+/* Ej. 14: recta perpendicular a un plano por un punto */
+(() => {
+  const P = [1, 1, -5], n = [1, -2, 1], Q = [4 / 3, 1 / 3, -14 / 3];
+  FIGS.ej14 = {
+    focus: [P, Q, V3.add(P, n)],
+    etapas: ['El plano $\\pi$ y el punto $P$', 'El vector normal $\\vec n$ de $\\pi$', 'La recta $r$ perpendicular a $\\pi$ que pasa por $P$'],
+    els: [
+      { t: 'plane', ...planoN(Q, n, 2.6), c: COL.azul, s: 0, l: 'π', ld: [.08, .1] },
+      { t: 'line', p: P, v: n, l: 'r', c: COL.r, s: 2, d: [12, -10] },
+      { t: 'vec', a: P, b: V3.add(P, n), l: 'n', c: COL.vec, s: 1, d: [10, -8] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [-20, 8] }
+    ]
+  };
+})();
+
+/* Ej. 15: plano que contiene a r y es perpendicular al plano z = 4 */
+(() => {
+  const Pr = [1, 1, 5], vr = [2, 2, 3], n = [0, 0, 1], Q = [1 / 3, 1 / 3, 4];
+  FIGS.ej15 = {
+    vista: [2.1, .5],
+    focus: [Pr, V3.add(Pr, V3.mul(vr, .5)), V3.sub(Pr, vr), Q],
+    etapas: ['El plano $\\pi:\\ z=4$ y la recta $r$', 'El vector normal $\\vec n_\\pi$ es paralelo al plano buscado', 'El plano que contiene a $r$ y es perpendicular a $\\pi$'],
+    els: [
+      { t: 'plane', ...planoN([1, 1, 4], n, 3.2, [1, 1, 0]), c: COL.naranja, s: 0, l: 'π', ld: [.07, .1] },
+      { t: 'plane', ...planoUV(Pr, vr, n, -1.4, .9, -1.8, 1.2), c: COL.verde, s: 2, l: 'α', ld: [.1, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'vec', a: Q, b: V3.add(Q, V3.mul(n, 1.6)), l: 'n_π', c: COL.vec, s: 1, d: [8, 0] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 1, d: [-26, 8] }
+    ]
+  };
+})();
+
+/* Ej. 16: recta perpendicular a r por P que corta a r */
+(() => {
+  const Pr = [0, 1, -2], vr = [1, 2, 2], P = [1, 1, 1], Q = [7 / 9, 23 / 9, -4 / 9], d = [2, -14, 13], Vd = V3.sub(P, Pr);
+  FIGS.ej16 = {
+    focus: [Pr, P, Q, V3.add(Pr, vr), V3.add(Pr, V3.mul(vr, 1.6))],
+    etapas: ['La recta $r$ y el punto $P$', 'El plano $\\alpha$ que contiene a $r$ y a $P$', 'El plano $\\beta$ perpendicular a $r$ por $P$', 'La recta $s=\\alpha\\cap\\beta$ corta a $r$ en $Q$ y es perpendicular a $r$'],
+    els: [
+      { t: 'plane', ...planoUV(Pr, vr, Vd, -.5, 1.6, -.4, 1.5), c: COL.verde, s: 1, l: 'α', ld: [.1, .1] },
+      { t: 'plane', ...planoN(P, vr, 2.1), c: COL.azul, s: 2, l: 'β', ld: [.1, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'line', p: P, v: d, l: 's', c: COL.vec, s: 3, d: [12, -10] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [-20, 8] },
+      { t: 'pt', p: Q, l: 'Q', c: COL.vec, s: 3, big: true, d: [12, 14] }
+    ]
+  };
+})();
+
+/* Ej. 17: simétrico de un punto respecto de una recta */
+(() => {
+  const P = [1, 1, 5], Pr = [1, -2, 3], v = [-1, 2, 2], I = [-1 / 9, 2 / 9, 47 / 9], Ps = [-11 / 9, -5 / 9, 49 / 9];
+  FIGS.ej17 = {
+    focus: [P, I, Ps, V3.add(Pr, v), V3.add(Pr, V3.mul(v, 2))],
+    etapas: ['La recta $r$ y el punto $P$', 'El plano $\\pi$ perpendicular a $r$ que pasa por $P$', 'La proyección ortogonal $P_I=r\\cap\\pi$', 'El simétrico $P\'$: $P_I$ es el punto medio de $PP\'$'],
+    els: [
+      { t: 'plane', ...planoN(I, v, 2.4), c: COL.azul, s: 1, l: 'π', ld: [.08, .1] },
+      { t: 'line', p: Pr, v: v, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'seg', a: P, b: Ps, c: COL.vec, s: 3 },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [-20, 8] },
+      { t: 'pt', p: I, l: 'P_I', c: COL.vec, s: 2, d: [10, 16] },
+      { t: 'pt', p: Ps, l: "P'", c: COL.vec2, s: 3, d: [-24, -8] }
+    ]
+  };
+})();
+
+/* Ej. 18: simétrico de un punto respecto de un plano */
+(() => {
+  const P = [1, 1, 7], n = [1, 1, 1], I = [-5 / 3, -5 / 3, 13 / 3], Ps = [-13 / 3, -13 / 3, 5 / 3];
+  FIGS.ej18 = {
+    focus: [P, I, Ps],
+    etapas: ['El plano $\\pi_0:\\ x+y+z=1$ y el punto $P$', 'La recta $r$ perpendicular a $\\pi_0$ que pasa por $P$', 'La proyección ortogonal $P_I=r\\cap\\pi_0$', 'El simétrico $P\'$: $P_I$ es el punto medio de $PP\'$'],
+    els: [
+      { t: 'plane', ...planoN(I, n, 4.4), c: COL.azul, s: 0, l: 'π_0', ld: [.08, .1] },
+      { t: 'line', p: P, v: n, l: 'r', c: COL.r, s: 1, d: [12, -10] },
+      { t: 'seg', a: P, b: Ps, c: COL.vec, s: 3 },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [-20, 8] },
+      { t: 'pt', p: I, l: 'P_I', c: COL.vec, s: 2, d: [10, 16] },
+      { t: 'pt', p: Ps, l: "P'", c: COL.vec2, s: 3, d: [-24, -8] }
+    ]
+  };
+})();
+
+/* Ej. 19: plano mediador de A y B */
+(() => {
+  const A = [2, -1, 1], B = [-2, 3, 1], M = [0, 1, 1], n = [1, -1, 0];
+  FIGS.ej19 = {
+    focus: [A, B, M],
+    etapas: ['Los puntos $A$ y $B$', 'El punto medio $M$ del segmento $AB$', 'El plano perpendicular a $AB$ por $M$: $A$ y $B$ son simétricos'],
+    els: [
+      { t: 'plane', ...planoN(M, n, 2.7, [0, 0, 1]), c: COL.verde, s: 2, l: 'π', ld: [.08, .1] },
+      { t: 'seg', a: A, b: B, c: COL.vec, s: 1 },
+      { t: 'pt', p: A, l: 'A', c: COL.pt, s: 0, d: [10, -12] },
+      { t: 'pt', p: B, l: 'B', c: COL.pt, s: 0, d: [-24, -8] },
+      { t: 'pt', p: M, l: 'M', c: COL.vec, s: 1, d: [10, 16] }
+    ]
+  };
+})();
+
+/* Ej. 20: recta simétrica de r respecto de un plano (r paralela al plano) */
+(() => {
+  const P1 = [-2, 0, 2], P2 = [-1, 1, 3], v = [1, 1, 1], I1 = [-1, 0, 1], I2 = [0, 1, 2], S1 = [0, 0, 0], S2 = [1, 1, 1], C = [-.5, .5, 1.5];
+  FIGS.ej20 = {
+    focus: [P1, P2, S1, S2],
+    etapas: ['El plano $\\pi:\\ x-z+2=0$ y la recta $r$ (paralela a $\\pi$)', 'Perpendiculares a $\\pi$ desde $P_1$ y $P_2$', 'Los simétricos $P_1\'$ y $P_2\'$', 'La recta simétrica $s$ pasa por $P_1\'$ y $P_2\'$'],
+    els: [
+      { t: 'plane', ...planoN(C, [1, 0, -1], 2.9, v), c: COL.azul, s: 0, l: 'π', ld: [.07, .1] },
+      { t: 'line', p: P1, v: v, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'line', p: S1, v: v, l: 's', c: COL.vec, s: 3, d: [12, -10] },
+      { t: 'seg', a: P1, b: S1, c: COL.gris, s: 1 },
+      { t: 'seg', a: P2, b: S2, c: COL.gris, s: 1 },
+      { t: 'pt', p: P1, l: 'P_1', c: COL.pt, s: 0, d: [-26, 8] },
+      { t: 'pt', p: P2, l: 'P_2', c: COL.pt, s: 0, d: [-26, -6] },
+      { t: 'pt', p: S1, l: "P_1'", c: COL.vec2, s: 2, d: [10, 16] },
+      { t: 'pt', p: S2, l: "P_2'", c: COL.vec2, s: 2, d: [10, -10] }
+    ]
+  };
+})();
+
+
+/* =====================================================================
+   EJERCICIOS 21-30
+   ===================================================================== */
+
+/* Ej. 21: proyección ortogonal de un punto sobre un plano */
+(() => {
+  const P = [-1, 1, 0], n = [2, -1, 1], Q = [1, 0, 1];
+  FIGS.ej21 = {
+    vista: [1.4, .6],
+    focus: [P, Q, V3.add(Q, n), V3.sub(P, V3.mul(n, .5))],
+    etapas: ['El plano $\\pi$ y el punto $P$', 'La recta $r$ perpendicular a $\\pi$ que pasa por $P$', '$r$ corta a $\\pi$ en $Q$: la proyección ortogonal de $P$'],
+    els: [
+      { t: 'plane', ...planoN(Q, n, 2.6, [0, 1, 0]), c: COL.azul, s: 0, l: 'π', ld: [.08, .1] },
+      { t: 'line', p: P, v: n, l: 'r', c: COL.r, s: 1, d: [12, -10] },
+      { t: 'vec', a: Q, b: V3.add(Q, n), l: 'n', c: COL.vec, s: 1, d: [10, -8] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [-22, 10] },
+      { t: 'pt', p: Q, l: 'Q', c: COL.vec, s: 2, big: true, d: [14, 18] }
+    ]
+  };
+})();
+
+/* Ej. 22: proyección ortogonal de una recta sobre el plano x = 3 */
+(() => {
+  const Pr = [1, 2, 3], vr = [1, 0, 1], I = [3, 2, 5];
+  FIGS.ej22 = {
+    focus: [Pr, I, [3, 2, 3], [3, 2, 7]],
+    etapas: ['El plano $\\pi:\\ x=3$ y la recta $r$', 'El plano $\\alpha$ contiene a $r$ y es perpendicular a $\\pi$', 'La proyección es la recta $r\'=\\alpha\\cap\\pi$'],
+    els: [
+      { t: 'plane', ...planoN([3, 2, 4], [1, 0, 0], 3.2, [0, 0, 1]), c: COL.azul, s: 0, l: 'π', ld: [.08, .1] },
+      { t: 'plane', ...planoN([2, 2, 4], [0, 1, 0], 2.6, vr), c: COL.verde, s: 1, l: 'α', ld: [.08, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'line', p: [3, 2, 4], v: [0, 0, 1], l: "r'", c: COL.vec, s: 2, d: [12, -10] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 0, d: [-26, 8] }
+    ]
+  };
+})();
+
+/* Ej. 23: rectas secantes */
+(() => {
+  const Pr = [1, 0, 0], vr = [0, 1, 1], Ps = [3, 4, 0], vs = [1, 3, 1], I = [1, -2, -2];
+  FIGS.ej23 = {
+    focus: [Pr, Ps, I, V3.add(Pr, V3.mul(vr, 2)), V3.add(Ps, vs)],
+    etapas: ['Las rectas $r$ y $s$ con un punto de cada una', 'Vectores directores y vector diferencia $\\vec v_D=P_r-P_s$', 'Los tres vectores son coplanarios: las rectas se cortan en un punto'],
+    els: [
+      { t: 'plane', ...planoN(I, V3.cross(vr, vs), 3.6, vr), c: COL.verde, s: 2, l: 'π', ld: [.08, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.r, s: 0, d: [12, -10] },
+      { t: 'line', p: Ps, v: vs, l: 's', c: COL.s, s: 0, d: [12, -10] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, vr), l: 'V_r', c: COL.vec, s: 1, d: [8, -12] },
+      { t: 'vec', a: Ps, b: V3.add(Ps, vs), l: 'V_s', c: COL.vec2, s: 1, d: [8, 12] },
+      { t: 'vec', a: Ps, b: Pr, l: 'V_D', c: COL.naranja, s: 1, d: [0, -16] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 0, d: [-26, 8] },
+      { t: 'pt', p: Ps, l: 'P_s', c: COL.pt, s: 0, d: [10, -10] },
+      { t: 'pt', p: I, l: 'P_I', c: COL.vec, s: 2, big: true, d: [12, 16] }
+    ]
+  };
+})();
+
+/* Ej. 24: rectas que se cruzan */
+(() => {
+  const Pr = [2, -1, -4], vr = [1, 1, -3], Ps = [2, 5, 0], vs = [-1, 0, 1];
+  FIGS.ej24 = {
+    focus: [Pr, Ps, V3.add(Pr, vr), V3.add(Ps, vs), V3.sub(Pr, vr)],
+    etapas: ['Las rectas $r$ y $s$ con un punto de cada una', 'Vectores directores de $r$ y de $s$', 'El vector $\\vec v_D$ no está en el plano de $\\vec v_r$ y $\\vec v_s$: las rectas se cruzan'],
+    els: [
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.r, s: 0, d: [12, -10] },
+      { t: 'line', p: Ps, v: vs, l: 's', c: COL.s, s: 0, d: [12, -10] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, vr), l: 'V_r', c: COL.vec, s: 1, d: [8, -12] },
+      { t: 'vec', a: Ps, b: V3.add(Ps, vs), l: 'V_s', c: COL.vec2, s: 1, d: [8, 12] },
+      { t: 'vec', a: Ps, b: Pr, l: 'V_D', c: COL.naranja, s: 2, d: [14, 0] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 0, d: [-26, 8] },
+      { t: 'pt', p: Ps, l: 'P_s', c: COL.pt, s: 0, d: [10, -10] }
+    ]
+  };
+})();
+
+/* Ej. 25: rectas paralelas */
+(() => {
+  const Pr = [1, 1, 1], vr = [1, -1, 3], Ps = [1, 2, -2], vs = [2, -2, 6];
+  FIGS.ej25 = {
+    focus: [Pr, Ps, V3.add(Pr, vr), V3.add(Ps, vs), V3.sub(Pr, vr)],
+    etapas: ['Las rectas $r$ y $s$ con un punto de cada una', 'Vectores directores proporcionales ($\\vec v_s=2\\vec v_r$) y $\\vec v_D=P_s-P_r$', 'Las rectas están en un mismo plano y son paralelas'],
+    els: [
+      { t: 'plane', ...planoN(V3.mul(V3.add(Pr, Ps), .5), [0, 3, 1], 3.2, vr), c: COL.verde, s: 2, l: 'π', ld: [.08, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.r, s: 0, d: [12, -10] },
+      { t: 'line', p: Ps, v: vs, l: 's', c: COL.s, s: 0, d: [12, -10] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, vr), l: 'V_r', c: COL.vec, s: 1, d: [-30, 0] },
+      { t: 'vec', a: Ps, b: V3.add(Ps, vs), l: 'V_s', c: COL.vec2, s: 1, d: [-30, 0] },
+      { t: 'vec', a: Pr, b: Ps, l: 'V_D', c: COL.naranja, s: 1, d: [12, 0] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 0, d: [10, 10] },
+      { t: 'pt', p: Ps, l: 'P_s', c: COL.pt, s: 0, d: [10, -10] }
+    ]
+  };
+})();
+
+/* Ej. 26: rectas coincidentes */
+(() => {
+  const Pr = [2, -1, 4], vr = [3, 1, -2], Ps = [5, 0, 2];
+  FIGS.ej26 = {
+    focus: [Pr, Ps, V3.add(Ps, V3.mul(vr, 2)), V3.sub(Pr, vr)],
+    etapas: ['Las rectas $r$ y $s$ pasan por $P_r$ y $P_s$', 'Los vectores directores: $\\vec v_s=2\\vec v_r$', '$\\vec v_D=P_s-P_r=\\vec v_r$: $P_s\\in r$ y las rectas coinciden'],
+    els: [
+      { t: 'line', p: Pr, v: vr, l: 'r = s', c: COL.r, s: 0, d: [12, -10] },
+      { t: 'vec', a: V3.sub(Pr, vr), b: Pr, l: 'V_r', c: COL.vec, s: 1, d: [0, -16] },
+      { t: 'vec', a: Ps, b: V3.add(Ps, V3.mul(vr, 2)), l: 'V_s', c: COL.vec2, s: 1, d: [0, -16] },
+      { t: 'vec', a: Pr, b: Ps, l: 'V_D', c: COL.naranja, s: 2, d: [0, 16] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 0, d: [-26, 8] },
+      { t: 'pt', p: Ps, l: 'P_s', c: COL.pt, s: 0, d: [10, 16] }
+    ]
+  };
+})();
+
+/* Ej. 27: recta y plano secantes */
+(() => {
+  const n = [1, -2, 3], Pr = [1, -1, 2], vr = [2, 1, 3], I = [-19 / 9, -23 / 9, -8 / 3], O = [-1 / 9, -14 / 9, -8 / 3];
+  FIGS.ej27 = {
+    focus: [I, O, Pr, V3.add(Pr, vr), V3.add(O, n)],
+    etapas: ['El plano $\\pi$ y su vector normal $\\vec n_\\pi$', 'La recta $r$ y su vector director $\\vec v_r$', '$\\vec v_r\\cdot\\vec n_\\pi\\neq0$: la recta atraviesa el plano en un punto'],
+    els: [
+      { t: 'plane', ...planoN(I, n, 4.2, [1, 1, 0]), c: COL.azul, s: 0, l: 'π', ld: [.08, .1] },
+      { t: 'vec', a: O, b: V3.add(O, n), l: 'n_π', c: COL.vec, s: 0, d: [10, -8] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.pt, s: 1, d: [12, -10] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, vr), l: 'V_r', c: COL.vec2, s: 1, d: [8, -12] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 1, d: [-26, 8] },
+      { t: 'pt', p: I, l: 'P_I', c: COL.vec, s: 2, big: true, d: [12, 16] }
+    ]
+  };
+})();
+
+/* Ej. 28: recta paralela al plano (disjuntos) */
+(() => {
+  const n = [1, -2, 1], Pr = [1, 0, -3], vr = [-2, 1, 4], c = [11 / 6, -5 / 3, -13 / 6], O = [11 / 6 + 1, -5 / 3 + 1, -13 / 6 + 1];
+  const O2 = V3.add(c, [2, 1, 0]);
+  FIGS.ej28 = {
+    focus: [Pr, c, V3.add(Pr, vr), V3.sub(Pr, vr), V3.add(O2, n)],
+    etapas: ['El plano $\\pi$ y su vector normal $\\vec n_\\pi$', 'La recta $r$ con $P_r\\notin\\pi$ y $\\vec v_r\\perp\\vec n_\\pi$', 'La recta es paralela al plano y no lo toca'],
+    els: [
+      { t: 'plane', ...planoN(c, n, 3.6, vr), c: COL.azul, s: 0, l: 'π', ld: [.08, .1] },
+      { t: 'vec', a: O2, b: V3.add(O2, n), l: 'n_π', c: COL.vec, s: 0, d: [10, -8] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.pt, s: 1, d: [12, -10] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, vr), l: 'V_r', c: COL.vec2, s: 1, d: [8, -12] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 1, d: [-26, 8] },
+      { t: 'seg', a: Pr, b: c, c: COL.gris, s: 2 }
+    ]
+  };
+})();
+
+/* Ej. 29: recta contenida en el plano */
+(() => {
+  const n = [2, -1, -1], Pr = [1, 2, 0], vr = [1, 1, 1], O2 = V3.add(Pr, [0, 1, -1]);
+  FIGS.ej29 = {
+    focus: [Pr, V3.add(Pr, V3.mul(vr, 1.6)), V3.sub(Pr, V3.mul(vr, 1.6)), V3.add(O2, n)],
+    etapas: ['El plano $\\pi$ y su vector normal $\\vec n_\\pi$', 'La recta $r$ con $\\vec v_r\\perp\\vec n_\\pi$ y $P_r\\in\\pi$', 'La recta está contenida en el plano'],
+    els: [
+      { t: 'plane', ...planoN(Pr, n, 3.4, vr), c: COL.azul, s: 0, l: 'π', ld: [.08, .1] },
+      { t: 'vec', a: O2, b: V3.add(O2, n), l: 'n_π', c: COL.vec, s: 0, d: [10, -8] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.r, s: 1, d: [12, -10] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, vr), l: 'V_r', c: COL.vec2, s: 1, d: [8, -12] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 1, d: [-26, 8] }
+    ]
+  };
+})();
+
+/* Ej. 30: ángulo entre dos rectas */
+(() => {
+  const Pr = [1, 1, 1], vr = [1, 3, 1], Ps = [3, 0, 2], vs = [0, 1, 0];
+  FIGS.ej30 = {
+    vista: [0.2, .35],
+    focus: [Pr, Ps, V3.add(Pr, V3.mul(vr, 1.2)), V3.sub(Pr, vr), V3.add(Ps, V3.mul(vs, 2))],
+    etapas: ['Las rectas $r$ y $s$ (se cruzan)', 'Sus vectores directores $\\vec v_r$ y $\\vec v_s$', 'Trasladamos $\\vec v_s$ a $P_r$: el ángulo entre los vectores es el de las rectas'],
+    els: [
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.r, s: 0, d: [12, -10] },
+      { t: 'line', p: Ps, v: vs, l: 's', c: COL.s, s: 0, d: [12, -10] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, vr), l: 'V_r', c: COL.vec, s: 1, d: [8, -12] },
+      { t: 'vec', a: Ps, b: V3.add(Ps, vs), l: 'V_s', c: COL.vec2, s: 1, d: [10, 8] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, vs), l: "V_s'", c: COL.vec2, s: 2, d: [-30, 0] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 0, d: [-26, 8] },
+      { t: 'pt', p: Ps, l: 'P_s', c: COL.pt, s: 0, d: [10, 12] }
+    ]
+  };
+})();
+
+
+/* =====================================================================
+   EJERCICIOS 31-40
+   ===================================================================== */
+
+/* Ej. 31: ángulo entre recta y plano */
+(() => {
+  const Pr = [2, -2, 0], v = [3, 2, 1], n = [2, 1, -1], I = [-1 / 7, -24 / 7, -5 / 7];
+  FIGS.ej31 = {
+    vista: [2.1, .6],
+    focus: [I, Pr, V3.add(I, v), V3.add(I, V3.mul(n, 1.3)), V3.sub(I, V3.mul(n, 1.3))],
+    etapas: ['El plano $\\pi$ y la recta $r$, que lo corta en $P_I$', 'El vector director $\\vec v_r$ y el vector normal $\\vec n_\\pi$', 'El ángulo $\\theta$ entre $\\vec v_r$ y $\\vec n_\\pi$ es el complementario del ángulo $\\alpha$ entre $r$ y $\\pi$'],
+    els: [
+      { t: 'plane', ...planoN(I, n, 3.6, [0, 0, 1]), c: COL.azul, s: 0, l: 'π', ld: [.08, .1] },
+      { t: 'line', p: Pr, v: v, l: 'r', c: COL.r, s: 0, d: [12, -10] },
+      { t: 'line', p: I, v: n, c: COL.gris, s: 2 },
+      { t: 'vec', a: I, b: V3.add(I, v), l: 'V_r', c: COL.vec2, s: 1, d: [8, -12] },
+      { t: 'vec', a: I, b: V3.add(I, n), l: 'n_π', c: COL.vec, s: 1, d: [10, 8] },
+      { t: 'pt', p: I, l: 'P_I', c: COL.vec, s: 0, big: true, d: [12, 16] }
+    ]
+  };
+})();
+
+/* Ej. 32: distancia entre dos puntos */
+(() => {
+  const P = [2, 1, 1], Q = [-1, 2, -3];
+  FIGS.ej32 = {
+    focus: [P, Q],
+    etapas: ['Los puntos $P$ y $Q$', 'El vector diferencia $\\vec V_D=\\overrightarrow{PQ}$: su módulo es la distancia'],
+    els: [
+      { t: 'vec', a: P, b: Q, l: 'V_D', c: COL.vec, s: 1, d: [12, 10] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [10, -10] },
+      { t: 'pt', p: Q, l: 'Q', c: COL.pt, s: 0, d: [-22, -8] }
+    ]
+  };
+})();
+
+/* Ej. 33: distancia de un punto a una recta */
+(() => {
+  const Pr = [1, 0, 2], v = [1, 1, 0], P = [2, 2, 1], Pi = [5 / 2, 3 / 2, 2];
+  FIGS.ej33 = {
+    focus: [P, Pi, Pr, V3.add(Pr, V3.mul(v, 3))],
+    etapas: ['La recta $r$ y el punto $P$', 'El plano $\\pi$ perpendicular a $r$ que pasa por $P$', '$P_I=r\\cap\\pi$ y la distancia $d=\\|P-P_I\\|$'],
+    els: [
+      { t: 'plane', ...planoN(Pi, v, 2.4, [0, 0, 1]), c: COL.azul, s: 1, l: 'π', ld: [.08, .1] },
+      { t: 'line', p: Pr, v: v, l: 'r', c: COL.r, s: 0, d: [12, -10] },
+      { t: 'seg', a: P, b: Pi, c: COL.vec, s: 2, l: 'd', d: [-14, 8] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [-20, 8] },
+      { t: 'pt', p: Pi, l: 'P_I', c: COL.vec, s: 2, d: [12, 14] }
+    ]
+  };
+})();
+
+/* Ej. 34: recta contenida en un plano que corta perpendicularmente a r */
+(() => {
+  const A = [1, 0, 2], vr = [2, 0, 1], B = [-11, 0, -4], n = [1, 2, -3], vs = [-2, 7, 4];
+  FIGS.ej34 = {
+    focus: [B, A, V3.add(B, V3.mul(vs, 1.2)), V3.sub(B, V3.mul(vs, 1.2)), V3.add(A, vr)],
+    etapas: ['El plano $\\pi$ y la recta $r$', '$B=r\\cap\\pi$', 'El plano $\\alpha$ perpendicular a $r$ que pasa por $B$', 'La recta $s=\\pi\\cap\\alpha$ está en $\\pi$ y es perpendicular a $r$'],
+    els: [
+      { t: 'plane', ...planoN(B, n, 8, [0, 0, 1]), c: COL.azul, s: 0, l: 'π', ld: [.08, .1] },
+      { t: 'plane', ...planoN(B, vr, 7, vs), c: COL.verde, s: 2, l: 'α', ld: [.08, .1] },
+      { t: 'line', p: A, v: vr, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'line', p: B, v: vs, l: 's', c: COL.vec, s: 3, d: [12, -10] },
+      { t: 'pt', p: B, l: 'B', c: COL.vec, s: 1, big: true, d: [12, 16] }
+    ]
+  };
+})();
+
+/* Ej. 35: distancia de un punto a un plano */
+(() => {
+  const P = [2, 1, 0], n = [1, 0, 3], Pi = [12 / 5, 1, 6 / 5];
+  FIGS.ej35 = {
+    focus: [P, Pi, V3.add(Pi, V3.mul(n, .8))],
+    etapas: ['El plano $\\pi$ y el punto $P$', 'La recta $r$ perpendicular a $\\pi$ que pasa por $P$', '$P_i=r\\cap\\pi$ y la distancia $d=\\|P-P_i\\|$'],
+    els: [
+      { t: 'plane', ...planoN(Pi, n, 2.6, [0, 1, 0]), c: COL.azul, s: 0, l: 'π', ld: [.08, .1] },
+      { t: 'line', p: P, v: n, l: 'r', c: COL.r, s: 1, d: [12, -10] },
+      { t: 'seg', a: P, b: Pi, c: COL.vec, s: 2, l: 'd', d: [-14, 8] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [-20, 8] },
+      { t: 'pt', p: Pi, l: 'P_i', c: COL.vec, s: 2, d: [12, 14] }
+    ]
+  };
+})();
+
+/* Ej. 36: lugar geométrico de los puntos a la misma distancia de un plano */
+(() => {
+  const n = [2, 1, 2], A = [2, -3, 1], H = [3, -2.5, 2], H2 = [4, -2, 3], hint = [1, -2, 0];
+  FIGS.ej36 = {
+    vista: [1.4, .6],
+    focus: [A, H, H2],
+    etapas: ['El plano $\\alpha$ y el punto $A$', 'La distancia de $A$ a $\\alpha$ es $d=\\tfrac32$', 'Los puntos a distancia $\\tfrac32$ de $\\alpha$ forman dos planos paralelos a $\\alpha$'],
+    els: [
+      { t: 'plane', ...planoN(H, n, 3.4, hint), c: COL.azul, s: 0, l: 'α', ld: [.08, .1] },
+      { t: 'plane', ...planoN(A, n, 3.4, hint), c: COL.verde, s: 2, l: 'π_1', ld: [.08, .1] },
+      { t: 'plane', ...planoN(H2, n, 3.4, hint), c: COL.naranja, s: 2, l: 'π_2', ld: [.08, .1] },
+      { t: 'seg', a: A, b: H, c: COL.vec, s: 1, l: 'd', d: [-14, 8] },
+      { t: 'pt', p: A, l: 'A', c: COL.pt, s: 0, d: [-20, 8] },
+      { t: 'pt', p: H, l: 'H', c: COL.vec, s: 1, d: [10, 14] }
+    ]
+  };
+})();
+
+/* Ej. 37: plano paralelo a otro a distancia 10 de un punto */
+(() => {
+  const P = [1, 2, 1], n = [1, 2, -3], u = V3.unit(n), C1 = V3.add(P, V3.mul(u, 10)), C2 = V3.sub(P, V3.mul(u, 10)), hint = [2, -1, 0];
+  FIGS.ej37 = {
+    vista: [2.8, .3],
+    focus: [C1, C2, P],
+    etapas: ['El plano $\\tau$ y el punto $P$ (que está en $\\tau$)', 'Los planos buscados están a 10 unidades de $P$ en la dirección de $\\vec n$', 'Los dos planos $\\pi_1$ y $\\pi_2$ paralelos a $\\tau$ a distancia 10 de $P$'],
+    els: [
+      { t: 'plane', ...planoN(P, n, 11, hint), c: COL.azul, s: 0, l: 'τ', ld: [.07, .1] },
+      { t: 'plane', ...planoN(C1, n, 11, hint), c: COL.verde, s: 2, l: 'π_1', ld: [.07, .1] },
+      { t: 'plane', ...planoN(C2, n, 11, hint), c: COL.naranja, s: 2, l: 'π_2', ld: [.07, .1] },
+      { t: 'seg', a: P, b: C1, c: COL.vec, s: 1 },
+      { t: 'seg', a: P, b: C2, c: COL.vec, s: 1 },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [-20, 8] }
+    ]
+  };
+})();
+
+/* Ej. 38: plano ⟂ recta, recta ⟂ plano, plano que contiene a la recta y a P */
+(() => {
+  const Pr = [1, -1, 2], vr = [2, 1, 3], P = [2, -1, 1], n = [1, -2, 3], I = [-19 / 9, -23 / 9, -8 / 3], F = [8 / 7, 5 / 7, -11 / 7];
+  const Vd = V3.sub(P, Pr);
+  FIGS.ej38 = {
+    focus: [I, P, F, Pr, V3.add(Pr, vr), V3.add(P, n)],
+    etapas: ['La recta $r$, el punto $P$ y el plano $\\pi$', 'a) El plano $\\pi_1$ perpendicular a $r$ que pasa por $P$', 'b) La recta $s$ perpendicular a $\\pi$ por $P$, y la distancia de $P$ a $\\pi$', 'c) El plano $\\pi_2$ que contiene a $r$ y a $P$'],
+    els: [
+      { t: 'plane', ...planoN(I, n, 3.6, vr), c: COL.azul, s: 0, l: 'π', ld: [.07, .1] },
+      { t: 'plane', ...planoN(P, vr, 2.6, [1, 0, 0]), c: COL.verde, s: 1, l: 'π_1', ld: [.07, .1] },
+      { t: 'plane', ...planoUV(Pr, vr, Vd, -.8, 1, -.6, 1.4), c: COL.naranja, s: 3, l: 'π_2', ld: [.07, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'line', p: P, v: n, l: 's', c: COL.vec, s: 2, d: [12, -10] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [-20, 8] },
+      { t: 'pt', p: F, l: 'F', c: COL.vec, s: 2, d: [12, 14] }
+    ]
+  };
+})();
+
+/* Ej. 39: distancia entre dos rectas paralelas */
+(() => {
+  const Pr = [1, -1, 3], v = [2, 1, -1], Ps = [4, 2, 1], H = [1 / 3, 1 / 6, 17 / 6];
+  FIGS.ej39 = {
+    focus: [Pr, Ps, H, V3.add(Ps, v), V3.sub(Pr, v)],
+    etapas: ['Las rectas paralelas $r$ y $s$ y un punto de cada una', 'Vector $\\overrightarrow{P_sP_r}$ y vector director común $\\vec v$', 'La distancia entre las rectas es la distancia de $P_r$ a $s$ (plano que contiene a ambas)'],
+    els: [
+      { t: 'plane', ...planoN(V3.mul(V3.add(Pr, Ps), .5), [1, 1, 3], 3.6, v), c: COL.verde, s: 2, l: 'π', ld: [.07, .1] },
+      { t: 'line', p: Pr, v: v, l: 'r', c: COL.r, s: 0, d: [12, -10] },
+      { t: 'line', p: Ps, v: v, l: 's', c: COL.s, s: 0, d: [12, -10] },
+      { t: 'vec', a: Ps, b: Pr, l: 'V', c: COL.naranja, s: 1, d: [0, 14] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, v), l: 'v', c: COL.vec, s: 1, d: [8, -12] },
+      { t: 'seg', a: Pr, b: H, c: COL.vec, s: 2, l: 'd', d: [-14, 8] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 0, d: [-26, 8] },
+      { t: 'pt', p: Ps, l: 'P_s', c: COL.pt, s: 0, d: [10, -10] },
+      { t: 'pt', p: H, l: 'H', c: COL.vec, s: 2, d: [10, 14] }
+    ]
+  };
+})();
+
+/* Ej. 40: distancia entre dos planos paralelos */
+(() => {
+  const n = [2, 3, -1], P = [0, 0, 4], H = [9 / 7, 27 / 14, 47 / 14], hint = [3, -2, 0];
+  FIGS.ej40 = {
+    vista: [4.9, .3],
+    focus: [P, H, V3.add(P, V3.mul(n, .6))],
+    etapas: ['Los planos paralelos $\\pi_1$ y $\\pi_2$', 'Un punto $P$ de $\\pi_1$', 'La perpendicular desde $P$ a $\\pi_2$: su longitud es la distancia entre los planos'],
+    els: [
+      { t: 'plane', ...planoN(P, n, 3, hint), c: COL.azul, s: 0, l: 'π_1', ld: [.07, .1] },
+      { t: 'plane', ...planoN(H, n, 3, hint), c: COL.naranja, s: 0, l: 'π_2', ld: [.07, .1] },
+      { t: 'seg', a: P, b: H, c: COL.vec, s: 2, l: 'd', d: [-14, 8] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 1, d: [-20, 8] },
+      { t: 'pt', p: H, l: 'H', c: COL.vec, s: 2, d: [12, 14] }
+    ]
+  };
+})();
+
+/* Ej. 41: perpendicular común a dos rectas que se cruzan */
+(() => {
+  const Pr = [2, -1, -4], vr = [1, 1, -3], Ps = [2, 5, 0], vs = [-1, 0, 1], n = [1, 2, 1];
+  const P = [8 / 3, -1 / 3, -6], Q = [16 / 3, 5, -10 / 3];
+  FIGS.ej41 = {
+    vista: [4.9, .6],
+    focus: [P, Q, Pr, Ps, V3.add(Ps, vs), V3.add(Pr, vr)],
+    etapas: ['Las rectas $r$ y $s$ se cruzan', 'Planos $\\pi_r\\supset r$ y $\\pi_s\\supset s$, ambos paralelos a $\\vec n=\\vec v_r\\times\\vec v_s$', 'La perpendicular común $t=\\pi_r\\cap\\pi_s$ corta a $r$ en $P$ y a $s$ en $Q$'],
+    els: [
+      { t: 'plane', ...planoUV(P, vr, n, -1.3, 1.3, -1.6, 1.6), c: COL.azul, s: 1, l: 'π_r', ld: [.06, .1] },
+      { t: 'plane', ...planoUV(Q, vs, n, -3, 3, -1.6, 1.6), c: COL.naranja, s: 1, l: 'π_s', ld: [.06, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.r, s: 0, d: [12, -10] },
+      { t: 'line', p: Ps, v: vs, l: 's', c: COL.s, s: 0, d: [12, -10] },
+      { t: 'line', p: P, v: n, l: 't', c: COL.vec, s: 2, d: [12, -10] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 2, d: [-22, 8] },
+      { t: 'pt', p: Q, l: 'Q', c: COL.pt, s: 2, d: [12, 14] }
+    ]
+  };
+})();
+
+/* Ej. 42: distancia entre dos rectas que se cruzan */
+(() => {
+  const Pr = [2, -3, 0], vr = [1, 2, 1], O = [0, 0, 0], vs = [1, 1, 1], H = [1, -3, 1];
+  FIGS.ej42 = {
+    vista: [2.1, .6],
+    focus: [Pr, H, O, V3.mul(vs, 2.5), V3.mul(vs, -1.5), V3.add(Pr, vr), V3.sub(Pr, vr)],
+    etapas: ['Las rectas $r$ y $s$ se cruzan', 'El plano $\\pi$ contiene a $s$ y es paralelo a $r$', 'La distancia entre las rectas es la distancia de $P_r$ a $\\pi$'],
+    els: [
+      { t: 'plane', ...planoUV(O, vs, vr, -2, 2.6, -1.4, 1.4), c: COL.verde, s: 1, l: 'π', ld: [.05, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.r, s: 0, d: [12, -10] },
+      { t: 'line', p: O, v: vs, l: 's', c: COL.s, s: 0, d: [12, -10] },
+      { t: 'seg', a: Pr, b: H, c: COL.vec, s: 2, l: 'd', d: [-14, 8], sol: true },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 0, d: [-30, 8] },
+      { t: 'pt', p: H, l: 'H', c: COL.vec, s: 2, d: [12, 14] }
+    ]
+  };
+})();
+
+/* Ej. 43: simétrico de A respecto de π1 y recta paralela a dos planos */
+(() => {
+  const A = [0, -1, 2], n1 = [1, -2, -2], n2 = [5, 1, -6], P = [-1 / 3, -1 / 3, 8 / 3], A2 = [-2 / 3, 1 / 3, 10 / 3], v = [14, -4, 11];
+  const H2 = V3.add(A, V3.mul(n2, 17 / 62));
+  FIGS.ej43 = {
+    vista: [2.8, .6],
+    focus: [A, A2, P, H2, V3.add(A, V3.mul(v, .22)), V3.sub(A, V3.mul(v, .22))],
+    etapas: ['El punto $A$ y el plano $\\pi_1$', 'a) $A^{\\prime}$ simétrico de $A$ respecto de $\\pi_1$: $P$ es el punto medio', 'b) La recta por $A$ paralela a $\\pi_1$ y a $\\pi_2$ (dirección $\\vec n_1\\times\\vec n_2$)'],
+    els: [
+      { t: 'plane', ...planoN(P, n1, 3, [0, 1, 0]), c: COL.azul, s: 0, l: 'π_1', ld: [.06, .1] },
+      { t: 'plane', ...planoN(H2, n2, 3, [0, 1, 0]), c: COL.naranja, s: 2, l: 'π_2', ld: [.06, .1] },
+      { t: 'line', p: A, v: n1, l: '', c: COL.gris, s: 1 },
+      { t: 'line', p: A, v: v, l: 's', c: COL.vec, s: 2, d: [12, -10] },
+      { t: 'pt', p: A, l: 'A', c: COL.pt, s: 0, d: [-22, 8] },
+      { t: 'pt', p: P, l: 'P', c: COL.vec, s: 1, d: [12, 14] },
+      { t: 'pt', p: A2, l: "A'", c: COL.pt, s: 1, d: [-26, -6] }
+    ]
+  };
+})();
+
+/* Ej. 44: área de un triángulo en el espacio */
+(() => {
+  const A = [2, 1, 2], B = [-1, 0, 0], C = [1, 1, 1], n = [1, -1, -1];
+  const G = V3.mul(V3.add(V3.add(A, B), C), 1 / 3);
+  FIGS.ej44 = {
+    vista: [2.8, .3],
+    focus: [A, B, C, V3.add(G, V3.mul(n, 1.2))],
+    etapas: ['Los vértices $A$, $B$ y $C$', 'Los vectores $\\overrightarrow{AB}$ y $\\overrightarrow{AC}$', 'El triángulo $ABC$ y el vector $\\overrightarrow{AB}\\times\\overrightarrow{AC}$: su módulo es el área del paralelogramo'],
+    els: [
+      { t: 'poly', pts: [A, B, C], c: COL.verde, s: 2, al: .38 },
+      { t: 'vec', a: A, b: B, l: 'AB', c: COL.azul, s: 1, d: [0, 14] },
+      { t: 'vec', a: A, b: C, l: 'AC', c: COL.naranja, s: 1, d: [0, -14] },
+      { t: 'vec', a: G, b: V3.add(G, V3.mul(n, 1.4)), l: 'n', c: COL.vec2, s: 2, d: [14, 0] },
+      { t: 'pt', p: A, l: 'A', c: COL.pt, s: 0, d: [10, -10] },
+      { t: 'pt', p: B, l: 'B', c: COL.pt, s: 0, d: [-22, 10] },
+      { t: 'pt', p: C, l: 'C', c: COL.pt, s: 0, d: [12, 12] }
+    ]
+  };
+})();
+
+/* Ej. 45: triángulo con un vértice en una recta y AC ⟂ r */
+(() => {
+  const A = [0, 1, 0], B = [-1, 1, 1], C = [4, 1, 1], vr = [0, 1, 0];
+  FIGS.ej45 = {
+    vista: [5.6, .3],
+    focus: [A, B, C, [4, -0.8, 1], [4, 2.8, 1]],
+    etapas: ['Los puntos $A$, $B$ y la recta $r$ ($x=4,\\ z=1$)', 'El punto $C\\in r$ con $\\overrightarrow{AC}\\perp r$', 'El triángulo $ABC$'],
+    els: [
+      { t: 'poly', pts: [A, B, C], c: COL.verde, s: 2, al: .38 },
+      { t: 'line', p: [4, 0, 1], v: vr, l: 'r', c: COL.r, s: 0, d: [12, -10] },
+      { t: 'seg', a: A, b: C, c: COL.vec, s: 1, sol: true },
+      { t: 'pt', p: A, l: 'A', c: COL.pt, s: 0, d: [-22, 8] },
+      { t: 'pt', p: B, l: 'B', c: COL.pt, s: 0, d: [-24, -6] },
+      { t: 'pt', p: C, l: 'C', c: COL.vec, s: 1, d: [12, 14] }
+    ]
+  };
+})();
+
+/* Ej. 46: punto del plano más cercano a P y triángulo con los cortes con los ejes */
+(() => {
+  const P = [0, 1, 1], Q = [.5, 1.5, 1], A = [2, 0, 0], B = [0, 2, 0], n = [1, 1, 0];
+  FIGS.ej46 = {
+    vista: [4.2, .3],
+    focus: [P, Q, A, B],
+    etapas: ['El plano $\\pi:\\ x+y=2$ y el punto $P$', 'a) $Q$ es la proyección ortogonal de $P$ sobre $\\pi$: $d(P,Q)=d(P,\\pi)$', 'b) Cortes de $\\pi$ con los ejes: $A$ y $B$ (no corta al eje $OZ$). Triángulo $PAB$'],
+    els: [
+      { t: 'plane', ...planoN([1, 1, .5], n, 1.8, [0, 0, 1]), c: COL.azul, s: 0, l: 'π', ld: [.06, .1] },
+      { t: 'poly', pts: [P, A, B], c: COL.verde, s: 2, al: .40 },
+      { t: 'line', p: P, v: n, l: '', c: COL.gris, s: 1 },
+      { t: 'seg', a: P, b: Q, c: COL.vec, s: 1, l: 'd', d: [-14, 8], sol: true },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [-20, 8] },
+      { t: 'pt', p: Q, l: 'Q', c: COL.vec, s: 1, d: [12, 14] },
+      { t: 'pt', p: A, l: 'A', c: COL.pt, s: 2, d: [12, 12] },
+      { t: 'pt', p: B, l: 'B', c: COL.pt, s: 2, d: [-22, 6] }
+    ]
+  };
+})();
+
+/* Ej. 47: paralelogramo ABCD */
+(() => {
+  const A = [1, 1, 1], B = [2, 2, 2], C = [1, 3, 3], D = [0, 2, 2], n = [0, -2, 2];
+  const M = V3.mul(V3.add(A, C), .5);
+  FIGS.ej47 = {
+    vista: [0.7, .3],
+    focus: [A, B, C, D, V3.add(M, V3.mul(n, .9))],
+    etapas: ['Los vértices consecutivos $A$, $B$ y $C$ con $\\overrightarrow{AB}$, $\\overrightarrow{BC}$ y la diagonal $AC$', 'c) El cuarto vértice $D=A+\\overrightarrow{BC}$ cierra el paralelogramo', 'a), b) $\\vec n=\\overrightarrow{AB}\\times\\overrightarrow{AC}$ es normal al plano; $\\|\\vec n\\|$ es el área'],
+    els: [
+      { t: 'poly', pts: [A, B, C, D], c: COL.verde, s: 1, al: .38 },
+      { t: 'vec', a: A, b: B, l: 'AB', c: COL.azul, s: 0, d: [0, 14] },
+      { t: 'vec', a: B, b: C, l: 'BC', c: COL.naranja, s: 0, d: [14, 0] },
+      { t: 'seg', a: A, b: C, c: COL.gris, s: 0, sol: true },
+      { t: 'vec', a: M, b: V3.add(M, V3.mul(n, .9)), l: 'n', c: COL.vec2, s: 2, d: [14, 0] },
+      { t: 'pt', p: A, l: 'A', c: COL.pt, s: 0, d: [-22, 8] },
+      { t: 'pt', p: B, l: 'B', c: COL.pt, s: 0, d: [10, -10] },
+      { t: 'pt', p: C, l: 'C', c: COL.pt, s: 0, d: [12, 12] },
+      { t: 'pt', p: D, l: 'D', c: COL.vec, s: 1, d: [-24, -6] }
+    ]
+  };
+})();
+
+/* Ej. 48: volumen de un tetraedro */
+(() => {
+  const A = [0, 0, 1], B = [1, 2, 3], C = [1, 3, 3], D = [2, 2, 2];
+  const aristas = [[A, B], [A, C], [A, D], [B, C], [B, D], [C, D]];
+  FIGS.ej48 = {
+    vista: [5.6, .3],
+    focus: [A, B, C, D],
+    etapas: ['Los cuatro vértices $A$, $B$, $C$ y $D$', 'Los tres vectores $\\overrightarrow{AB}$, $\\overrightarrow{AC}$ y $\\overrightarrow{AD}$ desde el vértice $A$', 'El tetraedro: su volumen es $\\frac16$ del volumen del paralelepípedo de esos tres vectores'],
+    els: [
+      { t: 'poly', pts: [A, B, C], c: COL.azul, s: 2, al: .16, sinborde: true },
+      { t: 'poly', pts: [A, B, D], c: COL.verde, s: 2, al: .16, sinborde: true },
+      { t: 'poly', pts: [A, C, D], c: COL.naranja, s: 2, al: .16, sinborde: true },
+      { t: 'poly', pts: [B, C, D], c: COL.rosa, s: 2, al: .16, sinborde: true },
+      ...aristas.map(([a, b]) => ({ t: 'seg', a, b, c: COL.gris, s: 2, sol: true })),
+      { t: 'vec', a: A, b: B, l: 'AB', c: COL.azul, s: 1, d: [-4, -14] },
+      { t: 'vec', a: A, b: C, l: 'AC', c: COL.naranja, s: 1, d: [-8, 12] },
+      { t: 'vec', a: A, b: D, l: 'AD', c: COL.vec, s: 1, d: [10, 10] },
+      { t: 'pt', p: A, l: 'A', c: COL.pt, s: 0, d: [-22, 8] },
+      { t: 'pt', p: B, l: 'B', c: COL.pt, s: 0, d: [8, -10] },
+      { t: 'pt', p: C, l: 'C', c: COL.pt, s: 0, d: [10, 12] },
+      { t: 'pt', p: D, l: 'D', c: COL.pt, s: 0, d: [12, 10] }
+    ]
+  };
+})();
+
+/* Ej. 49: tetraedro y altura desde A */
+(() => {
+  const A = [0, 0, 0], B = [1, 1, 0], C = [0, 1, 3], D = [1, 0, 3], F = [18 / 19, 18 / 19, 6 / 19];
+  const aristas = [[A, B], [A, C], [A, D], [B, C], [B, D], [C, D]];
+  FIGS.ej49 = {
+    vista: [0.0, .6],
+    focus: [A, B, C, D, F],
+    etapas: ['El tetraedro $ABCD$', 'La cara opuesta $BCD$, de área $\\frac12\\|\\overrightarrow{BC}\\times\\overrightarrow{BD}\\|$', 'La altura desde $A$ es la distancia de $A$ al plano de $BCD$'],
+    els: [
+      { t: 'poly', pts: [B, C, D], c: COL.verde, s: 1, al: .38 },
+      ...aristas.map(([a, b]) => ({ t: 'seg', a, b, c: COL.gris, s: 0, sol: true })),
+      { t: 'seg', a: A, b: F, c: COL.vec, s: 2, l: 'h', d: [-14, 8] },
+      { t: 'pt', p: A, l: 'A', c: COL.pt, s: 0, d: [-22, 8] },
+      { t: 'pt', p: B, l: 'B', c: COL.pt, s: 0, d: [10, 12] },
+      { t: 'pt', p: C, l: 'C', c: COL.pt, s: 0, d: [-24, -6] },
+      { t: 'pt', p: D, l: 'D', c: COL.pt, s: 0, d: [12, -8] },
+      { t: 'pt', p: F, l: 'F', c: COL.vec, s: 2, d: [12, 14] }
+    ]
+  };
+})();
+
+/* Ej. 50: tetraedro de la impresora 3D y paralelepípedo */
+(() => {
+  const P1 = [1, 1, 1], P2 = [2, 1, 0], P3 = [1, 3, 2], Q = [3, 3, 3];
+  const a = V3.sub(P2, P1), b = V3.sub(P3, P1), c = V3.sub(Q, P1);
+  const V = (i, j, k) => V3.add(V3.add(V3.add(P1, V3.mul(a, i)), V3.mul(b, j)), V3.mul(c, k));
+  const ar = [[[0, 0, 0], [1, 0, 0]], [[0, 0, 0], [0, 1, 0]], [[0, 0, 0], [0, 0, 1]], [[1, 0, 0], [1, 1, 0]], [[1, 0, 0], [1, 0, 1]], [[0, 1, 0], [1, 1, 0]], [[0, 1, 0], [0, 1, 1]], [[0, 0, 1], [1, 0, 1]], [[0, 0, 1], [0, 1, 1]], [[1, 1, 0], [1, 1, 1]], [[1, 0, 1], [1, 1, 1]], [[0, 1, 1], [1, 1, 1]]];
+  const caras = [[[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]], [[0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]], [[0, 0, 0], [1, 0, 0], [1, 0, 1], [0, 0, 1]], [[0, 1, 0], [1, 1, 0], [1, 1, 1], [0, 1, 1]], [[0, 0, 0], [0, 1, 0], [0, 1, 1], [0, 0, 1]], [[1, 0, 0], [1, 1, 0], [1, 1, 1], [1, 0, 1]]];
+  const T = [[P1, P2], [P1, P3], [P1, Q], [P2, P3], [P2, Q], [P3, Q]];
+  FIGS.ej50 = {
+    vista: [5.6, .6],
+    focus: [V(0, 0, 0), V(1, 1, 1), V(1, 0, 0), V(0, 1, 1)],
+    etapas: ['a) El tetraedro con $a=3$, es decir $P_4=(3,3,3)$', 'b) Las aristas $\\vec u=\\overrightarrow{P_1P_2}$, $\\vec v=\\overrightarrow{P_1P_3}$ y $\\vec w=\\overrightarrow{P_1Q}$', 'b) El paralelepípedo: sus 8 vértices son $P_1+i\\,\\overrightarrow{P_1P_2}+j\\,\\overrightarrow{P_1P_3}+k\\,\\overrightarrow{P_1Q}$'],
+    els: [
+      ...caras.map(f => ({ t: 'poly', pts: f.map(q => V(...q)), c: COL.verde, s: 2, al: .12, sinborde: true })),
+      ...ar.map(([p, q]) => ({ t: 'seg', a: V(...p), b: V(...q), c: COL.gris, s: 2, sol: true })),
+      { t: 'vec', a: P1, b: P2, l: 'u', c: COL.azul, s: 1, d: [4, -14] },
+      { t: 'vec', a: P1, b: P3, l: 'v', c: COL.naranja, s: 1, d: [-10, 14] },
+      { t: 'vec', a: P1, b: Q, l: 'w', c: COL.vec, s: 1, d: [10, 8] },
+      { t: 'pt', p: P1, l: 'P_1', c: COL.pt, s: 0, d: [-30, 8] },
+      { t: 'pt', p: P2, l: 'P_2', c: COL.pt, s: 0, d: [8, -10] },
+      { t: 'pt', p: P3, l: 'P_3', c: COL.pt, s: 0, d: [-30, 6] },
+      { t: 'pt', p: Q, l: 'Q', c: COL.pt, s: 0, d: [12, 10] }
+    ]
+  };
+  /* en la etapa 0 se ve el tetraedro de la impresora: aristas del tetraedro */
+  T.forEach(([p, q]) => FIGS.ej50.els.push({ t: 'seg', a: p, b: q, c: COL.vec, s: 0, sol: true }));
+})();
+
+/* Ej. 51: vectores perpendiculares y paralelepípedo */
+(() => {
+  const O = [0, 0, 0], u = [3, -1, 5], v = [2, 6, 0], w = [-3, 1, 2], t = [1, 3, 0];
+  const V = (i, j, k) => V3.add(V3.add(V3.mul(u, i), V3.mul(v, j)), V3.mul(w, k));
+  const ar = [[[0, 0, 0], [1, 0, 0]], [[0, 0, 0], [0, 1, 0]], [[0, 0, 0], [0, 0, 1]], [[1, 0, 0], [1, 1, 0]], [[1, 0, 0], [1, 0, 1]], [[0, 1, 0], [1, 1, 0]], [[0, 1, 0], [0, 1, 1]], [[0, 0, 1], [1, 0, 1]], [[0, 0, 1], [0, 1, 1]], [[1, 1, 0], [1, 1, 1]], [[1, 0, 1], [1, 1, 1]], [[0, 1, 1], [1, 1, 1]]];
+  const caras = [[[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]], [[0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]], [[0, 0, 0], [1, 0, 0], [1, 0, 1], [0, 0, 1]], [[0, 1, 0], [1, 1, 0], [1, 1, 1], [0, 1, 1]], [[0, 0, 0], [0, 1, 0], [0, 1, 1], [0, 0, 1]], [[1, 0, 0], [1, 1, 0], [1, 1, 1], [1, 0, 1]]];
+  FIGS.ej51 = {
+    vista: [5.4, .5],
+    focus: [V(0, 0, 0), V(1, 1, 1), V(1, 0, 0), V(0, 1, 1), V(0, 0, 1)],
+    etapas: ['a) $\\vec t=(1,3,0)$ es perpendicular a $\\vec u$', 'b) $\\vec w=\\vec u\\times\\vec v$ (simplificado) es perpendicular a $\\vec u$ y a $\\vec v$', 'c) El paralelepípedo de aristas $\\vec u$, $\\vec v$ y $\\vec w$: su volumen es $|\\det(\\vec u,\\vec v,\\vec w)|$'],
+    els: [
+      ...caras.map(f => ({ t: 'poly', pts: f.map(q => V(...q)), c: COL.verde, s: 2, al: .12, sinborde: true })),
+      ...ar.map(([p, q]) => ({ t: 'seg', a: V(...p), b: V(...q), c: COL.gris, s: 2, sol: true })),
+      { t: 'vec', a: O, b: u, l: 'u', c: COL.azul, s: 0, d: [4, -14] },
+      { t: 'vec', a: O, b: t, l: 't', c: COL.naranja, s: 0, d: [-14, 10] },
+      { t: 'vec', a: O, b: v, l: 'v', c: COL.vec, s: 1, d: [10, 8] },
+      { t: 'vec', a: O, b: w, l: 'w', c: COL.vec2, s: 1, d: [-14, 10] },
+      { t: 'pt', p: O, l: 'O', c: COL.pt, s: 0, d: [-22, 12] }
+    ]
+  };
+})();
+
+/* Ej. 52: recta por el origen que corta a dos rectas que se cruzan */
+(() => {
+  const Pr = [0, 0, 1], vr = [2, 1, 2], Ps = [0, 1, 0], vs = [2, 3, 1], O = [0, 0, 0], d = [2, 1, 1];
+  const A = [-2, -1, -1], B = [-1, -.5, -.5];
+  FIGS.ej52 = {
+    vista: [2.1,.3],
+    focus: [O, A, B, V3.add(Pr, vr), V3.sub(Pr, vr), V3.add(Ps, vs), V3.sub(Ps, vs)],
+    etapas: ['Las rectas $r$ y $s$ se cruzan; $O$ es el origen', 'El plano $\\pi_r$ (por $O$ y $r$) y el plano $\\pi_s$ (por $O$ y $s$)', 'La recta $t=\\pi_r\\cap\\pi_s$ pasa por $O$ y corta a $r$ y a $s$'],
+    els: [
+      { t: 'plane', ...planoUV(O, [0, 0, 1], vr, -1.2, 1.8, -1.2, 1.2), c: COL.azul, s: 1, l: 'π_r', ld: [.05, .1] },
+      { t: 'plane', ...planoUV(O, [0, 1, 0], vs, -1.2, 1.8, -1.2, 1.2), c: COL.naranja, s: 1, l: 'π_s', ld: [.05, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.r, s: 0, d: [12, -10] },
+      { t: 'line', p: Ps, v: vs, l: 's', c: COL.s, s: 0, d: [12, -10] },
+      { t: 'line', p: O, v: d, l: 't', c: COL.vec, s: 2, d: [12, -10] },
+      { t: 'pt', p: O, l: 'O', c: COL.pt, s: 0, d: [-22, 10] },
+      { t: 'pt', p: A, l: 'A', c: COL.vec, s: 2, d: [-22, 10] },
+      { t: 'pt', p: B, l: 'B', c: COL.vec, s: 2, d: [10, -12] }
+    ]
+  };
+})();
+
+/* Ej. 53: recta perpendicular a r contenida en un plano */
+(() => {
+  const P = [-3, -1, 4], vr = [-1, 0, 1], n = [2, 1, 1], d = [-1, 3, -1], Pr = [1, -1, 0];
+  FIGS.ej53 = {
+    focus: [P, V3.add(Pr, vr), V3.sub(P, V3.mul(vr, 2)), V3.add(P, vr), V3.add(P, d), V3.sub(P, d)],
+    etapas: ['La recta $r$ y el plano $\\pi:\\ 2x+y+z+3=0$ se cortan en $P$', 'El plano $\\alpha$ perpendicular a $r$ por $P$', 'La recta $s=\\pi\\cap\\alpha$ está en $\\pi$ y es perpendicular a $r$'],
+    els: [
+      { t: 'plane', ...planoN(P, n, 3.4, [0, 1, 0]), c: COL.azul, s: 0, l: 'π', ld: [.06, .1] },
+      { t: 'plane', ...planoN(P, vr, 3, [0, 1, 0]), c: COL.verde, s: 1, l: 'α', ld: [.06, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'line', p: P, v: d, l: 's', c: COL.vec, s: 2, d: [12, -10] },
+      { t: 'pt', p: P, l: 'P', c: COL.vec, s: 0, d: [-20, 10] }
+    ]
+  };
+})();
+
+/* Ej. 54: recta contenida en un plano y paralela a otro */
+(() => {
+  const P = [2, 2, 3], n = [1, -1, 1], vd = [1, 1, 0];
+  const H = V3.add(P, V3.mul(n, 14 / 3));
+  FIGS.ej54 = {
+    vista: [4.9,.4],
+    focus: [P, V3.add(P, V3.mul(vd, 2.5)), V3.sub(P, V3.mul(vd, 2.5)), H],
+    etapas: ['El plano $\\alpha:\\ x-y=0$, el punto $P\\in\\alpha$ y el plano $\\beta:\\ x-y+z=17$', 'El plano $\\gamma$ paralelo a $\\beta$ que pasa por $P$', 'La recta $s=\\alpha\\cap\\gamma$ está en $\\alpha$ y es paralela a $\\beta$'],
+    els: [
+      { t: 'plane', ...planoN(P, [1, -1, 0], 3, [0, 0, 1]), c: COL.azul, s: 0, l: 'α', ld: [.06, .1] },
+      { t: 'plane', ...planoN(H, n, 3, [1, 1, 0]), c: COL.naranja, s: 0, l: 'β', ld: [.06, .1] },
+      { t: 'plane', ...planoN(P, n, 3, [1, 1, 0]), c: COL.verde, s: 1, l: 'γ', ld: [.06, .1] },
+      { t: 'line', p: P, v: vd, l: 's', c: COL.vec, s: 2, d: [12, -10] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [-20, 10] }
+    ]
+  };
+})();
+
+/* Ej. 55: recta paralela a un plano que corta perpendicularmente a otra recta */
+(() => {
+  const A = [2, -1, -2], Pr = [1, -3, 2], vr = [1, 2, -4], n = [1, -1, -1], d = [2, 1, 1];
+  const F = V3.sub(A, V3.mul(n, 5 / 3));
+  FIGS.ej55 = {
+    focus: [A, Pr, V3.add(A, vr), F, V3.add(A, V3.mul(d, 1.5)), V3.sub(A, V3.mul(d, 1.5))],
+    etapas: ['La recta $r$, el punto $A\\in r$ y el plano $\\pi$', 'Planos por $A$: $P_1\\perp r$ y $P_2\\parallel\\pi$', 'La recta $s=P_1\\cap P_2$ es paralela a $\\pi$ y corta perpendicularmente a $r$ en $A$'],
+    els: [
+      { t: 'plane', ...planoN(F, n, 3, [1, 1, 0]), c: COL.azul, s: 0, l: 'π', ld: [.06, .1] },
+      { t: 'plane', ...planoN(A, vr, 2.6, [1, 0, 0]), c: COL.verde, s: 1, l: 'P_1', ld: [.06, .1] },
+      { t: 'plane', ...planoN(A, n, 2.6, [1, 1, 0]), c: COL.naranja, s: 1, l: 'P_2', ld: [.06, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'line', p: A, v: d, l: 's', c: COL.vec, s: 2, d: [12, -10] },
+      { t: 'pt', p: A, l: 'A', c: COL.vec, s: 0, d: [-20, 10] }
+    ]
+  };
+})();
+
+/* Ej. 56: rectas paralelas en un plano a distancia 1 */
+(() => {
+  const A = [0, 0, 1], B = [1, 1, 0], v1 = [1, 0, -1], v2 = [1, 4, -1];
+  const F1 = [1, 0, 0], F2 = [1 / 3, 4 / 3, 2 / 3];
+  FIGS.ej56 = {
+    vista: [4.2,.35],
+    focus: [A, B, V3.add(A, V3.mul(v2, 1.2)), V3.sub(A, V3.mul(v2, 1.2)), V3.add(A, V3.mul(v1, 1.5)), V3.sub(A, V3.mul(v1, 1.5))],
+    etapas: ['El plano $x+z=1$ y los puntos $A$ y $B$', 'Primera pareja: $r_1\\parallel r_2$ con dirección $(1,0,-1)$', 'Segunda pareja: $r_3\\parallel r_4$ con dirección $(1,4,-1)$'],
+    els: [
+      { t: 'plane', ...planoN([.5, .5, .5], [1, 0, 1], 2.6, [0, 1, 0]), c: COL.azul, s: 0, l: 'π', ld: [.06, .1] },
+      { t: 'line', p: A, v: v1, l: 'r_1', c: COL.r, s: 1, d: [12, -10] },
+      { t: 'line', p: B, v: v1, l: 'r_2', c: COL.s, s: 1, d: [12, -10] },
+      { t: 'seg', a: B, b: F1, c: COL.vec, s: 1, l: 'd', d: [10, 0], sol: true },
+      { t: 'line', p: A, v: v2, l: 'r_3', c: COL.naranja, s: 2, d: [12, -10] },
+      { t: 'line', p: B, v: v2, l: 'r_4', c: COL.rosa, s: 2, d: [12, -10] },
+      { t: 'seg', a: B, b: F2, c: COL.vec, s: 2, l: 'd', d: [-14, 8], sol: true },
+      { t: 'pt', p: A, l: 'A', c: COL.pt, s: 0, d: [-20, 10] },
+      { t: 'pt', p: B, l: 'B', c: COL.pt, s: 0, d: [10, 12] }
+    ]
+  };
+})();
+
+/* ---------------------------------------------------------------------
+   Dibujo
+   --------------------------------------------------------------------- */
+const CW = 1400, CH = 480, K = 1.7;
+function rgba(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+}
+
+/* texto con subíndices simples: "V_r", "P_s" */
+function rotulo(ctx, txt, x, y, col, tam) {
+  ctx.fillStyle = col;
+  const m = txt.split('_');
+  ctx.font = 'italic ' + tam + 'px "Latin Modern Roman","CMU Serif",Georgia,serif';
+  ctx.fillText(m[0], x, y);
+  if (m[1]) {
+    const w = ctx.measureText(m[0]).width;
+    ctx.font = 'italic ' + (tam * .7) + 'px "Latin Modern Roman","CMU Serif",Georgia,serif';
+    ctx.fillText(m[1], x + w + 1, y + tam * .22);
+  }
+}
+
+function dibujarFigura(F, st, ctx) {
+  const { els } = F;
+  const C = F._C, R = F._R, L = R * 1.05;
+  const esc = (CH * .5 * .93) / R;
+  const cy = Math.cos(st.yaw), sy = Math.sin(st.yaw), cp = Math.cos(st.pitch), sp = Math.sin(st.pitch);
+  const proj = p => {
+    const q = V3.sub(p, C);
+    const x1 = q[0] * cy - q[1] * sy, y1 = q[0] * sy + q[1] * cy, z1 = q[2];
+    return { x: CW / 2 + x1 * esc, y: CH / 2 - (z1 * cp + y1 * sp) * esc, d: y1 * cp - z1 * sp };
+  };
+  const recorte = (p, v) => {
+    const w = V3.sub(C, p), a = V3.dot(v, v), k = V3.dot(w, v);
+    const d2 = V3.dot(w, w) - k * k / a;
+    if (d2 > L * L) return null;
+    const h = Math.sqrt(L * L - d2) / Math.sqrt(a), t0 = k / a;
+    return [t0 - h, t0 + h];
+  };
+  ctx.clearRect(0, 0, CW, CH);
+
+  /* ejes */
+  ctx.lineWidth = 2;
+  [['x', [1, 0, 0]], ['y', [0, 1, 0]], ['z', [0, 0, 1]]].forEach(([nom, e]) => {
+    const r = recorte([0, 0, 0], e);
+    if (!r) return;
+    const t0 = Math.max(r[0], -L), t1 = Math.min(r[1], L);
+    const a = proj(V3.mul(e, t0)), b = proj(V3.mul(e, t1));
+    ctx.strokeStyle = 'rgba(0,0,0,.18)';
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    if (t1 > 0) rotulo(ctx, nom, b.x + 6, b.y - 4, 'rgba(0,0,0,.38)', 26);
+  });
+
+  /* planos, del más lejano al más cercano */
+  const planos = els.filter(e => (e.t === 'plane' || e.t === 'poly') && e.s <= st.etapa).map(e => {
+    const q = (a, b) => V3.add(V3.add(e.o, V3.mul(e.u, a)), V3.mul(e.v, b));
+    const c4 = (e.t === 'poly' ? e.pts : [q(0, 0), q(1, 0), q(1, 1), q(0, 1)]).map(proj);
+    return { e, c4, d: c4.reduce((t, p) => t + p.d, 0) / c4.length };
+  }).sort((p, q) => q.d - p.d);
+  planos.forEach(({ e, c4 }) => {
+    if (e.t === 'poly') {
+      ctx.fillStyle = rgba(e.c, e.al == null ? .35 : e.al);
+      ctx.beginPath(); c4.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); ctx.fill();
+      if (!e.sinborde) { ctx.strokeStyle = rgba(e.c, .85); ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.stroke(); }
+      if (e.l) {
+        const gx = c4.reduce((t, p) => t + p.x, 0) / c4.length, gy = c4.reduce((t, p) => t + p.y, 0) / c4.length;
+        rotulo(ctx, e.l, gx + (e.d ? e.d[0] : 0) * K, gy + (e.d ? e.d[1] : 0) * K, rgba(e.c, 1), 32);
+      }
+      return;
+    }
+    const m0 = { x: (c4[0].x + c4[3].x) / 2, y: (c4[0].y + c4[3].y) / 2 };
+    const m1 = { x: (c4[1].x + c4[2].x) / 2, y: (c4[1].y + c4[2].y) / 2 };
+    const g = ctx.createLinearGradient(m0.x, m0.y, m1.x, m1.y);
+    g.addColorStop(0, rgba(e.c, .62)); g.addColorStop(1, rgba(e.c, .10));
+    ctx.fillStyle = g;
+    ctx.beginPath(); c4.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = rgba(e.c, .55); ctx.lineWidth = 2; ctx.stroke();
+    if (e.l) {
+      const q = V3.add(V3.add(e.o, V3.mul(e.u, e.ld[0])), V3.mul(e.v, e.ld[1])), p = proj(q);
+      rotulo(ctx, e.l, p.x, p.y, rgba(e.c, 1), 30);
+    }
+  });
+
+  /* rectas */
+  els.filter(e => e.t === 'line' && e.s <= st.etapa).forEach(e => {
+    const r = recorte(e.p, e.v);
+    if (!r) return;
+    const a = proj(V3.add(e.p, V3.mul(e.v, r[0]))), b = proj(V3.add(e.p, V3.mul(e.v, r[1])));
+    ctx.strokeStyle = e.c; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    const t = r[1] - (r[1] - r[0]) * .06, p = proj(V3.add(e.p, V3.mul(e.v, t)));
+    if (e.l) rotulo(ctx, e.l, p.x + e.d[0] * K, p.y + e.d[1] * K, e.c, 32);
+  });
+
+  /* segmentos discontinuos */
+  els.filter(e => e.t === 'seg' && e.s <= st.etapa).forEach(e => {
+    const a = proj(e.a), b = proj(e.b);
+    ctx.strokeStyle = e.c; ctx.lineWidth = e.sol ? 4 : 3.5; ctx.setLineDash(e.sol ? [] : [16, 11]); ctx.lineCap = e.sol ? 'round' : 'butt';
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.setLineDash([]);
+    if (e.l) rotulo(ctx, e.l, (a.x + b.x) / 2 + e.d[0] * K, (a.y + b.y) / 2 + e.d[1] * K, e.c, 30);
+  });
+
+  /* vectores */
+  els.filter(e => e.t === 'vec' && e.s <= st.etapa).forEach(e => {
+    const a = proj(e.a), b = proj(e.b);
+    const ang = Math.atan2(b.y - a.y, b.x - a.x), h = 20;
+    ctx.strokeStyle = e.c; ctx.fillStyle = e.c; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x - Math.cos(ang) * h * .6, b.y - Math.sin(ang) * h * .6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(b.x, b.y);
+    ctx.lineTo(b.x - h * Math.cos(ang - .38), b.y - h * Math.sin(ang - .38));
+    ctx.lineTo(b.x - h * Math.cos(ang + .38), b.y - h * Math.sin(ang + .38)); ctx.closePath(); ctx.fill();
+    rotulo(ctx, e.l, (a.x + b.x) / 2 + e.d[0] * K, (a.y + b.y) / 2 + e.d[1] * K, e.c, 30);
+  });
+
+  /* puntos */
+  els.filter(e => e.t === 'pt' && e.s <= st.etapa).forEach(e => {
+    const p = proj(e.p);
+    ctx.fillStyle = e.c; ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(p.x, p.y, e.big ? 11 : 7, 0, 7); ctx.fill(); ctx.stroke();
+    rotulo(ctx, e.l, p.x + e.d[0] * K, p.y + e.d[1] * K, e.c, e.big ? 34 : 32);
+  });
+}
+
+
+/* encuadre (centro y radio) con todo lo que se dibuja; mejor vista inicial */
+function preparar(F) {
+  const pts = [...F.focus];
+  F.els.forEach(e => {
+    if (e.t === 'pt') pts.push(e.p);
+    if (e.t === 'vec' || e.t === 'seg') { pts.push(e.a, e.b); }
+    if (e.t === 'poly') pts.push(...e.pts);
+    if (e.t === 'plane') [[0, 0], [1, 0], [1, 1], [0, 1]].forEach(([a, b]) => pts.push(V3.add(V3.add(e.o, V3.mul(e.u, a)), V3.mul(e.v, b))));
+  });
+  const mn = [0, 1, 2].map(i => Math.min(...pts.map(p => p[i]))), mx = [0, 1, 2].map(i => Math.max(...pts.map(p => p[i])));
+  F._C = [0, 1, 2].map(i => (mn[i] + mx[i]) / 2);
+  F._R = Math.max(1.5, ...pts.map(p => V3.len(V3.sub(p, F._C))));
+  /* vista: planos vistos en oblicuo y rectas/vectores sin acortar */
+  let mejor = -1e9, vista = [3.55, .4];
+  for (let yaw = 0; yaw < 6.28; yaw += .12) for (let pitch = .25; pitch <= .8; pitch += .11) {
+    const f = [Math.sin(yaw) * Math.cos(pitch), Math.cos(yaw) * Math.cos(pitch), -Math.sin(pitch)];
+    let pl = 1, li = 1;
+    F.els.forEach(e => {
+      if (e.t === 'plane') pl = Math.min(pl, Math.min(Math.abs(V3.dot(V3.unit(V3.cross(e.u, e.v)), f)), .62));
+      if (e.t === 'line') li = Math.min(li, Math.sqrt(1 - V3.dot(V3.unit(e.v), f) ** 2));
+      if (e.t === 'vec') li = Math.min(li, Math.sqrt(1 - V3.dot(V3.unit(V3.sub(e.b, e.a)), f) ** 2));
+    });
+    const sc = 2 * pl + li - .05 * Math.abs(Math.sin((yaw - 3.55) / 2)) - .1 * Math.abs(pitch - .45);
+    if (sc > mejor) { mejor = sc; vista = [yaw, pitch]; }
+  }
+  F._vista = vista;
+}
+
+/* monta cada <div class="fig3d" data-fig="ejN"> dentro de root */
+function initFiguras(root) {
+  root.querySelectorAll('.fig3d').forEach(box => {
+    const F = FIGS[box.dataset.fig];
+    if (!F || box._ok) return;
+    box._ok = true;
+    if (!F._C) preparar(F);
+    const st = { yaw: (F.vista || F._vista)[0], pitch: (F.vista || F._vista)[1], etapa: F.etapas.length - 1 };
+    const ini = { yaw: st.yaw, pitch: st.pitch };
+    box.innerHTML = '<canvas width="' + CW + '" height="' + CH + '"></canvas>' +
+      '<div class="fig-ctl"><span class="fig-pie"></span><span class="fig-botones"></span></div>';
+    const cv = box.querySelector('canvas'), ctx = cv.getContext('2d');
+    const pie = box.querySelector('.fig-pie'), bot = box.querySelector('.fig-botones');
+    const pinta = () => dibujarFigura(F, st, ctx);
+    const poner = () => {
+      pie.innerHTML = F.etapas[st.etapa];
+      mate(pie);
+      bot.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', i === st.etapa));
+      pinta();
+    };
+    F.etapas.forEach((_, i) => {
+      const b = document.createElement('button');
+      b.textContent = i + 1;
+      b.title = 'Etapa ' + (i + 1);
+      b.onclick = () => { st.etapa = i; poner(); };
+      bot.appendChild(b);
+    });
+    const rb = document.createElement('button');
+    rb.textContent = '⟲'; rb.title = 'Vista inicial';
+    rb.onclick = () => { st.yaw = ini.yaw; st.pitch = ini.pitch; pinta(); };
+    bot.appendChild(rb);
+    /* girar arrastrando */
+    let arr = null;
+    cv.addEventListener('pointerdown', ev => { arr = { x: ev.clientX, y: ev.clientY }; cv.setPointerCapture(ev.pointerId); cv.classList.add('arrastrando'); });
+    cv.addEventListener('pointermove', ev => {
+      if (!arr) return;
+      st.yaw -= (ev.clientX - arr.x) * .009;
+      st.pitch = Math.max(-1.45, Math.min(1.45, st.pitch + (ev.clientY - arr.y) * .009));
+      arr = { x: ev.clientX, y: ev.clientY };
+      pinta();
+    });
+    const fin = () => { arr = null; cv.classList.remove('arrastrando'); };
+    cv.addEventListener('pointerup', fin); cv.addEventListener('pointercancel', fin);
+    cv.addEventListener('dblclick', () => { st.yaw = ini.yaw; st.pitch = ini.pitch; pinta(); });
+    /* los clics en la figura no pasan página */
+    box.addEventListener('click', ev => ev.stopPropagation());
+    box.addEventListener('dblclick', ev => ev.stopPropagation());
+    poner();
+  });
+}
+
+/* =====================================================================
+   EJERCICIOS 51-56: PROBLEMAS DE REPASO
+   ===================================================================== */
+
+const sub = t => '<span class="sub">$\\displaystyle ' + t + '$</span>';
+
+const EJERCICIOS = [
+
+  /* ===================== EJERCICIO 51 ===================== */
+  {
+    titulo: "Ejercicio 51",
+    enunciado: '<p class="nota">Producto escalar, vectorial y mixto</p>' + String.raw`
+      <p>Se considera el vector $\vec{u}=(3,-1,5)$.</p>
+      <ol type="a">
+      <li>Determina $a$ para que el vector $\vec{t}=(1,a,0)$ sea perpendicular a $\vec{u}$.</li>
+      <li>Determina un vector $\vec{w}$ perpendicular a $\vec{u}=(3,-1,5)$ y a $\vec{v}=(2,6,0)$.</li>
+      <li>Dados $\vec{u}=(3,-1,5)$, $\vec{v}=(2,6,0)$ y $\vec{w}=(-3,1,2)$, determina el volumen del paralelepípedo definido por los vectores $\vec{u}$, $\vec{v}$ y $\vec{w}$.</li>
+      </ol>`,
+    pasos: [
+      { titulo: "Interpretación geométrica", html: '<div class="fig3d" data-fig="ej51"></div>' },
+      { titulo: "a) Perpendicularidad",
+        html: String.raw`<p>Dos vectores son perpendiculares si su producto escalar es nulo:</p>
+          $$\vec{u}\cdot\vec{t}=3\cdot1+(-1)\cdot a+5\cdot0=3-a$$
+          $$3-a=0\;\Rightarrow\;a=3$$` },
+      { caja: "a) Valor de $a$",
+        html: String.raw`$$a=3\qquad\Rightarrow\qquad\vec{t}=(1,3,0)$$` },
+      { titulo: "b) Producto vectorial",
+        html: String.raw`<p>El producto vectorial es perpendicular a los dos vectores:</p>
+          $$\vec{u}\times\vec{v}=\begin{vmatrix} \mathbf{i}&\mathbf{j}&\mathbf{k}\\ 3&-1&5\\ 2&6&0 \end{vmatrix}=\mathbf{i}(0-30)-\mathbf{j}(0-10)+\mathbf{k}(18+2)=(-30,10,20)$$` },
+      { caja: "b) Vector perpendicular",
+        html: String.raw`<p>Cualquier múltiplo no nulo también vale. Dividiendo entre 10:</p>
+          $$\vec{w}=(-3,1,2)$$` },
+      { titulo: "c) Producto mixto",
+        html: String.raw`<p>El volumen del paralelepípedo es el valor absoluto del determinante:</p>
+          $$V=\left|\begin{vmatrix} 3&-1&5\\ 2&6&0\\ -3&1&2 \end{vmatrix}\right|$$
+          $$\begin{vmatrix} 3&-1&5\\ 2&6&0\\ -3&1&2 \end{vmatrix}=3\begin{vmatrix} 6&0\\ 1&2 \end{vmatrix}-(-1)\begin{vmatrix} 2&0\\ -3&2 \end{vmatrix}+5\begin{vmatrix} 2&6\\ -3&1 \end{vmatrix}=3(12)+1(4)+5(20)=140$$` },
+      { caja: "c) Volumen",
+        html: String.raw`$$V=|140|=140\,u^3$$` },
+      { titulo: "Comprobación",
+        html: String.raw`<p>Como $\vec{w}\perp\vec{u}$ y $\vec{w}\perp\vec{v}$, el vector $\vec{w}$ es la altura del paralelepípedo: volumen = (área de la base) · (altura):</p>
+          $$\|\vec{u}\times\vec{v}\|\cdot\|\vec{w}\|=\sqrt{1400}\cdot\sqrt{14}=\sqrt{19600}=140\;✓$$` }
+    ]
+  },
+
+  /* ===================== EJERCICIO 52 ===================== */
+  {
+    titulo: "Ejercicio 52",
+    enunciado: '<p class="nota">Recta que pasa por un punto y corta a dos rectas</p>' + String.raw`
+      <p>Consideremos las rectas</p>
+      $$r:\ \frac{x}{2}=y=\frac{z-1}{2},\qquad s:\ \frac{x}{2}=\frac{y-1}{3}=z$$
+      <ol type="a">
+      <li>Comprueba que las rectas $r$ y $s$ se cruzan.</li>
+      <li>Halla la ecuación de la recta que pasa por el origen de coordenadas y corta a las rectas $r$ y $s$.</li>
+      </ol>`,
+    pasos: [
+      { titulo: "Interpretación geométrica", html: '<div class="fig3d" data-fig="ej52"></div>' },
+      { titulo: "a) Puntos y vectores directores",
+        html: String.raw`$$r:\ P_r=(0,0,1),\quad\vec{v}_r=(2,1,2)$$
+          $$s:\ P_s=(0,1,0),\quad\vec{v}_s=(2,3,1)$$
+          $$\vec{v}_d=P_r-P_s=(0,-1,1)$$` },
+      { titulo: "a) Determinante",
+        html: String.raw`$$\begin{vmatrix} 2&1&2\\ 2&3&1\\ 0&-1&1 \end{vmatrix}=(6+0-4)-(0-2+2)=2-0=2\neq0$$
+          <p>Los tres vectores son linealmente independientes. Además $\vec{v}_r$ y $\vec{v}_s$ no son proporcionales.</p>` },
+      { caja: "a) Posición relativa",
+        html: String.raw`<p><b class="res">Las rectas $r$ y $s$ se cruzan.</b></p>` },
+      { titulo: "b) Idea",
+        html: String.raw`<p>La recta buscada $t$ pasa por $O$ y corta a $r$, luego está en el plano $\pi_r$ que contiene a $O$ y a $r$. Del mismo modo está en el plano $\pi_s$ que contiene a $O$ y a $s$:</p>
+          $$t=\pi_r\cap\pi_s$$` },
+      { titulo: "b) Plano $\\pi_r$",
+        html: String.raw`<p>Vectores directores: $\overrightarrow{OP_r}=(0,0,1)$ y $\vec{v}_r=(2,1,2)$.</p>
+          $$\begin{vmatrix} x&y&z\\ 0&0&1\\ 2&1&2 \end{vmatrix}=x(0-1)-y(0-2)+z(0)=-x+2y$$
+          $$\pi_r:\;-x+2y=0$$` },
+      { titulo: "b) Plano $\\pi_s$",
+        html: String.raw`<p>Vectores directores: $\overrightarrow{OP_s}=(0,1,0)$ y $\vec{v}_s=(2,3,1)$.</p>
+          $$\begin{vmatrix} x&y&z\\ 0&1&0\\ 2&3&1 \end{vmatrix}=x(1-0)-y(0-0)+z(0-2)=x-2z$$
+          $$\pi_s:\;x-2z=0$$` },
+      { caja: "b) Recta pedida",
+        html: String.raw`$$t:\left\{\begin{array}{l} -x+2y=0\\ x-2z=0 \end{array}\right.\qquad\text{es decir}\qquad\frac{x}{2}=y=z$$
+          <p>Pasa por el origen con vector director $(2,1,1)$.</p>` },
+      { titulo: "Comprobación",
+        html: String.raw`<p>Los puntos de $t$ son $(2k,k,k)$.</p>
+          <ul>
+          <li>Con $r$: $(2\lambda,\lambda,1+2\lambda)$ está en $\pi_s$ si $2\lambda-2(1+2\lambda)=0$, es decir $\lambda=-1$. Punto $A(-2,-1,-1)$, que está en $t$ ($k=-1$) ✓.</li>
+          <li>Con $s$: $(2\mu,1+3\mu,\mu)$ está en $\pi_r$ si $-2\mu+2(1+3\mu)=0$, es decir $\mu=-\tfrac12$. Punto $B(-1,-\tfrac12,-\tfrac12)$, que está en $t$ ($k=-\tfrac12$) ✓.</li>
+          </ul>` }
+    ]
+  },
+
+  /* ===================== EJERCICIO 53 ===================== */
+  {
+    titulo: "Ejercicio 53",
+    enunciado: '<p class="nota">Recta perpendicular a otra y contenida en un plano</p>' + String.raw`
+      <p>Calcula la recta perpendicular a $r$, dada por las ecuaciones paramétricas</p>
+      $$r:\left\{\begin{array}{rcl} x&=&1-\lambda\\ y&=&-1\\ z&=&\lambda \end{array}\right.$$
+      <p>y que está contenida en el plano $2x+y+z+3=0$.</p>`,
+    pasos: [
+      { titulo: "Interpretación geométrica", html: '<div class="fig3d" data-fig="ej53"></div>' },
+      { titulo: "Observación previa",
+        html: String.raw`<p>Si $r$ y el plano se cortan en un único punto $P$, existe una única recta que pasa por $P$, está en el plano y es perpendicular a $r$. Esa es la recta buscada.</p>` },
+      { titulo: "1. Punto $P=r\\cap\\pi$",
+        html: String.raw`<p>Sustituimos las paramétricas de $r$ en $2x+y+z+3=0$:</p>
+          $$2(1-\lambda)+(-1)+\lambda+3=0\;\Rightarrow\;2-2\lambda-1+\lambda+3=0\;\Rightarrow\;4-\lambda=0\;\Rightarrow\;\lambda=4$$
+          $$P=(1-4,\;-1,\;4)=(-3,-1,4)$$` },
+      { titulo: "2. Plano perpendicular a $r$ por $P$",
+        html: String.raw`<p>Vector director de $r$: $\vec{v}_r=(-1,0,1)$, que es el normal del plano:</p>
+          $$-x+z+D=0$$
+          <p>Imponemos $P(-3,-1,4)$:</p>
+          $$3+4+D=0\;\Rightarrow\;D=-7$$
+          $$\alpha:\;-x+z-7=0$$` },
+      { titulo: "3. La recta es la intersección",
+        html: String.raw`<p>La recta buscada está en $\pi$ y en $\alpha$:</p>` },
+      { caja: "Recta pedida",
+        html: String.raw`$$s:\left\{\begin{array}{l} -x+z-7=0\\ 2x+y+z+3=0 \end{array}\right.$$` },
+      { titulo: "Otra forma: paramétricas",
+        html: String.raw`<p>Su vector director es perpendicular a $\vec{v}_r=(-1,0,1)$ y al normal del plano $\vec{n}=(2,1,1)$:</p>
+          $$\vec{v}_r\times\vec{n}=\begin{vmatrix} \mathbf{i}&\mathbf{j}&\mathbf{k}\\ -1&0&1\\ 2&1&1 \end{vmatrix}=\mathbf{i}(0-1)-\mathbf{j}(-1-2)+\mathbf{k}(-1-0)=(-1,3,-1)$$
+          $$s:\left\{\begin{array}{rcl} x&=&-3-\mu\\ y&=&-1+3\mu\\ z&=&4-\mu \end{array}\right.\qquad(\mu\in\mathbb{R})$$` }
+    ]
+  },
+
+  /* ===================== EJERCICIO 54 ===================== */
+  {
+    titulo: "Ejercicio 54",
+    enunciado: '<p class="nota">Recta contenida en un plano y paralela a otro</p>' + String.raw`
+      <p>Calcula la ecuación de la recta contenida en el plano $\alpha\equiv x-y=0$ y paralela al plano $\beta\equiv x-y+z=17$, que pasa por el punto $P=(2,2,3)$.</p>`,
+    pasos: [
+      { titulo: "Interpretación geométrica", html: '<div class="fig3d" data-fig="ej54"></div>' },
+      { titulo: "1. El punto está en $\\alpha$",
+        html: String.raw`<p>Como $2-2=0$, el punto $P(2,2,3)$ cumple la ecuación de $\alpha$: $P\in\alpha$.</p>` },
+      { titulo: "2. Idea",
+        html: String.raw`<p>La recta será la intersección de dos planos:</p>
+          <ul>
+          <li>el plano $\alpha$ dado (la recta está contenida en él),</li>
+          <li>un plano $\gamma$ paralelo a $\beta$ que pase por $P$ (así la recta es paralela a $\beta$).</li>
+          </ul>` },
+      { titulo: "3. Plano $\\gamma$",
+        html: String.raw`<p>Un plano paralelo a $\beta$ tiene la forma $x-y+z+D=0$. Imponemos $P(2,2,3)$:</p>
+          $$2-2+3+D=0\;\Rightarrow\;D=-3$$
+          $$\gamma:\;x-y+z-3=0$$` },
+      { caja: "Recta pedida",
+        html: String.raw`$$s:\left\{\begin{array}{ll} x-y=0&(\alpha)\\ x-y+z=3&(\gamma) \end{array}\right.$$` },
+      { titulo: "Forma simplificada",
+        html: String.raw`<p>Restando las dos ecuaciones se obtiene $z=3$, y de la primera $y=x$:</p>
+          $$s:\left\{\begin{array}{rcl} x&=&t\\ y&=&t\\ z&=&3 \end{array}\right.\qquad(t\in\mathbb{R})$$` },
+      { titulo: "Comprobación",
+        html: String.raw`<p>Vector director $\vec{v}=(1,1,0)$ y normal de $\beta$: $\vec{n}_\beta=(1,-1,1)$.</p>
+          $$\vec{v}\cdot\vec{n}_\beta=1-1+0=0$$
+          <p>La recta es paralela a $\beta$ (y no está contenida en él: con $z=3$ resulta $x-y+z=3\neq17$) ✓.</p>` }
+    ]
+  },
+
+  /* ===================== EJERCICIO 55 ===================== */
+  {
+    titulo: "Ejercicio 55",
+    enunciado: '<p class="nota">Recta paralela a un plano que corta perpendicularmente a otra recta</p>' + String.raw`
+      <p>Determina la recta $s$ paralela al plano $\pi\equiv x-y-z=0$ y que corta perpendicularmente a la recta</p>
+      $$r:\ \frac{x-1}{1}=\frac{y+3}{2}=\frac{z-2}{-4}$$
+      <p>en el punto $A=(2,-1,-2)$.</p>`,
+    pasos: [
+      { titulo: "Interpretación geométrica", html: '<div class="fig3d" data-fig="ej55"></div>' },
+      { titulo: "1. $A$ está en $r$",
+        html: String.raw`$$\frac{2-1}{1}=1,\qquad\frac{-1+3}{2}=1,\qquad\frac{-2-2}{-4}=1$$
+          <p>Los tres cocientes valen 1: $A\in r$. Su vector director es $\vec{v}_r=(1,2,-4)$.</p>` },
+      { titulo: "2. Idea",
+        html: String.raw`<p>La recta $s$ es la intersección de dos planos que pasan por $A$:</p>
+          <ul>
+          <li>$P_1$: perpendicular a $r$ (así $s\perp r$ en $A$).</li>
+          <li>$P_2$: paralelo a $\pi$ (así $s\parallel\pi$).</li>
+          </ul>` },
+      { titulo: "3. Plano $P_1$",
+        html: String.raw`<p>Su vector normal es $\vec{v}_r=(1,2,-4)$:</p>
+          $$x+2y-4z+D_1=0$$
+          <p>Imponemos $A(2,-1,-2)$:</p>
+          $$2-2+8+D_1=0\;\Rightarrow\;D_1=-8$$
+          $$P_1:\;x+2y-4z-8=0$$` },
+      { titulo: "4. Plano $P_2$",
+        html: String.raw`<p>Mismo normal que $\pi$: $(1,-1,-1)$.</p>
+          $$x-y-z+D_2=0$$
+          <p>Imponemos $A(2,-1,-2)$:</p>
+          $$2+1+2+D_2=0\;\Rightarrow\;D_2=-5$$
+          $$P_2:\;x-y-z-5=0$$` },
+      { caja: "Recta pedida",
+        html: String.raw`$$s:\left\{\begin{array}{l} x+2y-4z-8=0\\ x-y-z-5=0 \end{array}\right.$$` },
+      { titulo: "Comprobación: paramétricas",
+        html: String.raw`$$\vec{v}_s=\vec{v}_r\times\vec{n}_\pi=\begin{vmatrix} \mathbf{i}&\mathbf{j}&\mathbf{k}\\ 1&2&-4\\ 1&-1&-1 \end{vmatrix}=(-6,-3,-3)\parallel(2,1,1)$$
+          $$s:\left\{\begin{array}{rcl} x&=&2+2t\\ y&=&-1+t\\ z&=&-2+t \end{array}\right.$$
+          <p>$\vec{v}_s\cdot\vec{v}_r=2+2-4=0$ ✓ (perpendicular a $r$) y $\vec{v}_s\cdot\vec{n}_\pi=2-1-1=0$ ✓ (paralela a $\pi$).</p>` }
+    ]
+  },
+
+  /* ===================== EJERCICIO 56 ===================== */
+  {
+    titulo: "Ejercicio 56",
+    enunciado: '<p class="nota">Rectas paralelas en un plano a una distancia dada</p>' + String.raw`
+      <p>Dado el plano $x+z=1$ y los puntos $A(0,0,1)$ y $B(1,1,0)$, encuentra dos parejas de rectas paralelas $r_1$ y $r_2$ contenidas en el plano $x+z=1$, que pasen por $A$ y $B$, respectivamente, y cuya distancia sea igual a 1.</p>`,
+    pasos: [
+      { titulo: "Interpretación geométrica", html: '<div class="fig3d" data-fig="ej56"></div>' },
+      { titulo: "1. Vectores del plano",
+        html: String.raw`<p>El plano $x+z=1$ tiene normal $\vec{n}=(1,0,1)$. Un vector $\vec{v}=(v_x,v_y,v_z)$ contenido en el plano cumple</p>
+          $$\vec{v}\cdot\vec{n}=0\;\Rightarrow\;v_x+v_z=0\;\Rightarrow\;v_z=-v_x$$
+          <p>Es decir, la dirección de cualquier recta del plano es</p>
+          $$\vec{v}=(a,\,b,\,-a)$$` },
+      { titulo: "2. Las dos rectas",
+        html: String.raw`<p>Como son paralelas, tienen el mismo vector director:</p>
+          $$r_1:\;(0,0,1)+\lambda(a,b,-a),\qquad r_2:\;(1,1,0)+\mu(a,b,-a)$$` },
+      { titulo: "3. Distancia entre rectas paralelas",
+        html: String.raw`$$d=\frac{\|\overrightarrow{AB}\times\vec{v}\|}{\|\vec{v}\|},\qquad\overrightarrow{AB}=(1,1,-1)$$
+          $$\overrightarrow{AB}\times\vec{v}=\begin{vmatrix} \mathbf{i}&\mathbf{j}&\mathbf{k}\\ 1&1&-1\\ a&b&-a \end{vmatrix}=\mathbf{i}(-a+b)-\mathbf{j}(-a+a)+\mathbf{k}(b-a)=(b-a,\,0,\,b-a)$$
+          $$\|\overrightarrow{AB}\times\vec{v}\|=\sqrt{2(b-a)^2},\qquad\|\vec{v}\|=\sqrt{2a^2+b^2}$$` },
+      { titulo: "4. Imponemos $d=1$",
+        html: String.raw`$$\frac{\sqrt{2(b-a)^2}}{\sqrt{2a^2+b^2}}=1\;\Rightarrow\;2(b-a)^2=2a^2+b^2$$
+          $$2b^2-4ab+2a^2=2a^2+b^2\;\Rightarrow\;b^2-4ab=0\;\Rightarrow\;b(b-4a)=0$$` },
+      { titulo: "5. Dos soluciones",
+        html: String.raw`<ul>
+          <li>$b=0$: $\vec{v}=(a,0,-a)\parallel(1,0,-1)$.</li>
+          <li>$b=4a$: $\vec{v}=(a,4a,-a)\parallel(1,4,-1)$.</li>
+          </ul>` },
+      { caja: "Primera pareja",
+        html: String.raw`$$r_1:\;(0,0,1)+\lambda(1,0,-1)\qquad r_2:\;(1,1,0)+\mu(1,0,-1)$$` },
+      { caja: "Segunda pareja",
+        html: String.raw`$$r_3:\;(0,0,1)+\lambda(1,4,-1)\qquad r_4:\;(1,1,0)+\mu(1,4,-1)$$` },
+      { titulo: "Otra forma: dos planos perpendiculares a $\\pi$",
+        html: String.raw`<p>Las dos rectas de cada pareja son la intersección del plano $x+z=1$ con dos planos paralelos $\alpha$ y $\alpha'$ perpendiculares a él, que pasan por $A$ y por $B$. La distancia entre las rectas es la distancia entre $\alpha$ y $\alpha'$.</p>
+          <p>Un vector normal perpendicular a $(1,0,1)$ es de la forma $\vec{n}=(p,q,-p)$:</p>
+          $$\alpha:\;px+qy-pz+D=0,\qquad A(0,0,1)\;\Rightarrow\;D=p$$
+          $$\alpha':\;px+qy-pz+D'=0,\qquad B(1,1,0)\;\Rightarrow\;D'=-p-q$$` },
+      { titulo: "Otra forma: condición de distancia",
+        html: String.raw`$$d(\alpha,\alpha')=\frac{|D-D'|}{\|\vec{n}\|}=\frac{|2p+q|}{\sqrt{2p^2+q^2}}=1\;\Rightarrow\;(2p+q)^2=2p^2+q^2$$
+          $$4p^2+4pq+q^2=2p^2+q^2\;\Rightarrow\;2p(p+2q)=0$$
+          <ul>
+          <li>$p=0$ ($q=1$): $\alpha:\ y=0$ y $\alpha':\ y=1$.</li>
+          <li>$p=-2q$ ($q=1,\ p=-2$): $\alpha:\ 2x-y-2z+2=0$ y $\alpha':\ 2x-y-2z-1=0$.</li>
+          </ul>` },
+      { titulo: "Otra forma: las rectas",
+        html: String.raw`$$r_1:\left\{\begin{array}{l} x+z=1\\ y=0 \end{array}\right.\qquad r_2:\left\{\begin{array}{l} x+z=1\\ y=1 \end{array}\right.$$
+          $$r_3:\left\{\begin{array}{l} x+z=1\\ 2x-y-2z+2=0 \end{array}\right.\qquad r_4:\left\{\begin{array}{l} x+z=1\\ 2x-y-2z-1=0 \end{array}\right.$$
+          <p class="nota">El libro escribe el plano de $r_4$ como $2x-y-2z+1=0$, pero ese plano no pasa por $B(1,1,0)$ ($2-1+1=2\neq0$). El correcto es $2x-y-2z-1=0$: $2-1-1=0$ ✓.</p>` },
+      { titulo: "Comprobación",
+        html: String.raw`<p>La distancia de $B(1,1,0)$ a cada recta de la primera pareja es 1 ($r_1$: pie en $(1,0,0)$). Para la segunda, el pie de $B$ sobre $r_3$ es $\left(\tfrac13,\tfrac43,\tfrac23\right)$ y $\overrightarrow{B\,\text{pie}}=\left(-\tfrac23,\tfrac13,\tfrac23\right)$ tiene módulo $\sqrt{\tfrac49+\tfrac19+\tfrac49}=1$ ✓.</p>` }
+    ]
+  }
+];
+
+/* ===================================================================== */
+const OPCIONES_MATE = {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "$",  right: "$",  display: false}
+  ],
+  throwOnError: false
+};
+const $ = id => document.getElementById(id);
+function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
+
+/* ---------------------------------------------------------------------
+   MOTOR DEL LIBRO
+   - Cada ejercicio se trocea en "unidades" (un párrafo, una fórmula, una
+     matriz...). Cada clic escribe la siguiente unidad.
+   - Las unidades se reparten en páginas de tamaño fijo (como un libro).
+     Cada valor crítico ("Si a = ...") empieza en página nueva.
+   - Se ven dos páginas. Cuando se llena la de la derecha, pasa a ser la
+     de la izquierda y aparece una página nueva a la derecha.
+   --------------------------------------------------------------------- */
+const LW = 800;                     // ancho lógico de una página (px)
+let actual = 0;                     // ejercicio activo
+let s = 0;                          // unidades escritas
+let G = {};                         // geometría
+let libro = null;                   // {unidades, paginas}
+let Lprev = 0;
+
+function geometria() {
+  const W = $("libro").clientWidth, H = $("libro").clientHeight;
+  const Sw = W / 2, k = (Sw - 20) / LW;
+  G = { W, H, Sw, k, LH: (H - 20) / k };
+}
+
+/* trocea un ejercicio en secciones y unidades (se hace una sola vez) */
+function extraer(e) {
+  if (e._sec) return e._sec;
+  const stage = $("stage"), secs = [];
+  const add = (tipo, cab, html, salto, mismo) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    stage.appendChild(d);
+    mate(d);
+    initFiguras(d);
+    const unidades = [];
+    d.childNodes.forEach(n => {
+      if (n.nodeType === 1) unidades.push(n);
+      else if (n.nodeType === 3 && n.textContent.trim()) {
+        const sp = document.createElement("span"); sp.textContent = n.textContent; unidades.push(sp);
+      }
+    });
+    let cabHTML = null;
+    if (cab) { const c = document.createElement("div"); c.innerHTML = cab; mate(c); cabHTML = c.innerHTML; }
+    secs.push({ tipo, cabHTML, unidades, salto: !!salto, mismo: !!mismo });
+  };
+  add("titulo", null, "<h1>" + e.titulo + "</h1>");
+  add("enun", null, e.enunciado, false, true);      // título y enunciado salen juntos con un clic
+  e.pasos.forEach(p => add(p.caja ? "caja" : "paso", p.caja || p.titulo, p.html, p.caja && /^Si /.test(p.caja)));
+  stage.innerHTML = "";
+  /* un "tic" = un clic. Cada sección es un bloque; dentro de una fila de menores
+     (.fila-menores) cada .sub sale con su propio clic */
+  let base = 0;
+  secs.forEach(sc => {
+    let cur = sc.mismo ? base : base + 1, nuevo = false;
+    sc.unidades = sc.unidades.map(n => {
+      if (nuevo) { cur++; nuevo = false; }
+      const o = { n, t: cur, subs: [] };
+      if (n.classList && n.classList.contains("fila-menores")) {
+        n.querySelectorAll(".sub").forEach(sb => { cur++; o.subs.push({ n: sb, t: cur }); });
+        nuevo = true;
+      }
+      return o;
+    });
+    base = cur;
+  });
+  e._T = base;
+  e._sec = secs;
+  return secs;
+}
+
+function crearCont(sc, sigue) {
+  const c = document.createElement("div");
+  c.className = "cont";
+  if (sc.tipo === "caja") {
+    c.classList.add("caja");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", '<span class="titulo">' + sc.cabHTML + "</span>");
+  } else if (sc.tipo === "paso") {
+    c.classList.add("paso");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", "<h4>" + sc.cabHTML + "</h4>");
+  } else if (sc.tipo === "enun") {
+    c.classList.add("caja", "enunciado");
+  }
+  if (sigue) c.classList.add("sigue");
+  return c;
+}
+
+/* una fórmula más ancha que la página se reduce hasta caber */
+function ajustar(u) {
+  if (u.classList && u.classList.contains("fila-menores")) {
+    u.style.zoom = "";
+    if (u.scrollWidth > u.clientWidth + 2) u.style.zoom = String(Math.max(.55, u.clientWidth / u.scrollWidth * .97));
+  }
+  u.querySelectorAll(".katex-display").forEach(d => {
+    const k = d.firstElementChild;
+    if (!k) return;
+    k.style.zoom = "";
+    if (d.scrollWidth > d.clientWidth + 2) k.style.zoom = String(Math.max(.55, d.clientWidth / d.scrollWidth * .98));
+  });
+}
+
+/* reparte las unidades en páginas del tamaño actual */
+function paginar(secs, T) {
+  secs.T = T;
+  const pista = $("pista");
+  pista.innerHTML = "";
+  const paginas = [], unidades = [];
+  const nueva = () => {
+    const hoja = document.createElement("div");
+    hoja.className = "hoja";
+    hoja.style.cssText = "left:" + (paginas.length * G.Sw) + "px;width:" + G.Sw + "px;height:" + G.H + "px";
+    const pag = document.createElement("div");
+    pag.className = "pag";
+    pag.style.cssText = "width:" + LW + "px;height:" + G.LH + "px;transform:scale(" + G.k + ")";
+    const cu = document.createElement("div");
+    cu.className = "cuerpo";
+    cu.style.height = (G.LH - 34 - 56) + "px";
+    const num = document.createElement("div");
+    num.className = "num"; num.textContent = paginas.length + 1;
+    pag.append(cu, num); hoja.appendChild(pag); pista.appendChild(hoja);
+    const o = { hoja, cu };
+    paginas.push(o);
+    return o;
+  };
+  let pg = nueva();
+  const desborda = () => pg.cu.scrollHeight > pg.cu.clientHeight + 1;
+  secs.forEach(sc => {
+    if (sc.salto && pg.cu.children.length) pg = nueva();
+    let cont = crearCont(sc, false), puestas = 0;
+    pg.cu.appendChild(cont);
+    /* un bloque (lo que sale con un clic) nunca se parte entre dos páginas */
+    const bloques = [];
+    sc.unidades.forEach(un => {
+      const ult = bloques[bloques.length - 1];
+      if (ult && ult[0].t === un.t) ult.push(un); else bloques.push([un]);
+    });
+    bloques.forEach(bl => {
+      bl.forEach(un => {
+        un.n.classList.add("u"); un.n.classList.remove("on");
+        un.subs.forEach(sb => { sb.n.classList.add("u"); sb.n.classList.remove("on"); });
+        cont.appendChild(un.n);
+      });
+      bl.forEach(un => ajustar(un.n));
+      if (desborda()) {
+        bl.forEach(un => cont.removeChild(un.n));
+        if (!puestas) pg.cu.removeChild(cont);
+        if (pg.cu.children.length) pg = nueva();     // página nueva solo si la actual ya tiene algo
+        cont = crearCont(sc, puestas > 0);
+        pg.cu.appendChild(cont);
+        bl.forEach(un => cont.appendChild(un.n));
+        bl.forEach(un => ajustar(un.n));
+      }
+      puestas += bl.length;
+      const pi = paginas.indexOf(pg);
+      bl.forEach(un => {
+        unidades.push({ u: un.n, cont, pag: pi, t: un.t, on: false });
+        un.subs.forEach(sb => unidades.push({ u: sb.n, cont, pag: pi, t: sb.t, on: false }));
+      });
+    });
+  });
+  libro = { unidades, paginas, T: secs.T };
+}
+
+/* pone al día lo que se ve según s */
+function aplicar(anim) {
+  const U = libro.unidades;
+  s = Math.max(0, Math.min(s, libro.T));
+  const conts = new Map();
+  U.forEach((o, i) => {
+    const on = o.t <= s;
+    if (on !== o.on) {
+      o.on = on;
+      if (on) { o.u.classList.remove("rapido"); o.u.classList.add("on"); }
+      else { o.u.classList.add("rapido"); o.u.classList.remove("on"); }
+    }
+    if (on) conts.set(o.cont, true); else if (!conts.has(o.cont)) conts.set(o.cont, false);
+  });
+  conts.forEach((v, c) => {
+    if (v) { c.classList.remove("rapido"); c.classList.add("on"); }
+    else { c.classList.add("rapido"); c.classList.remove("on"); }
+  });
+  let p = 0;
+  U.forEach(o => { if (o.t <= s) p = Math.max(p, o.pag); });
+  const L = Math.max(p - 1, 0);
+  const pista = $("pista");
+  pista.classList.toggle("anim", !!anim);
+  pista.style.transform = "translateX(" + (-L * G.Sw) + "px)";
+  if (anim && L > Lprev) {
+    const h = libro.paginas[p].hoja;
+    h.classList.remove("gira"); void h.offsetWidth; h.classList.add("gira");
+    setTimeout(() => h.classList.remove("gira"), 1000);
+  }
+  Lprev = L;
+  const n = libro.T;
+  $("contador").textContent = EJERCICIOS[actual].titulo + " · " + s + " / " + n;
+  $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
+  $("btnAtras").disabled = (actual === 0 && s <= 1);
+  $("btnAdelante").disabled = (actual === EJERCICIOS.length - 1 && s === n);
+}
+
+function pintarPestanas() {
+  const nav = $("pestanas");
+  nav.innerHTML = "";
+  EJERCICIOS.forEach((e, i) => {
+    const b = document.createElement("button");
+    b.textContent = e.titulo.replace("Ejercicio ", "Ej. ");
+    b.setAttribute("aria-selected", i === actual);
+    b.onclick = ev => { ev.stopPropagation(); cargar(i, false); };
+    nav.appendChild(b);
+  });
+  const sel = nav.querySelector('[aria-selected="true"]');
+  if (sel) sel.scrollIntoView({ inline: "center", block: "nearest" });
+}
+
+function construir() {
+  geometria();
+  const e = EJERCICIOS[actual];
+  const secs = extraer(e);
+  paginar(secs, e._T);
+}
+
+async function cargar(i, alFinal) {
+  const lib = $("libro");
+  lib.classList.add("fuera");
+  await new Promise(r => setTimeout(r, 200));
+  actual = i;
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  construir();
+  s = alFinal ? libro.T : 1;          // al abrir un ejercicio ya se ve el enunciado
+  Lprev = 0;
+  pintarPestanas();
+  aplicar(false);
+  lib.classList.remove("fuera");
+}
+
+function avanzar() {
+  if (s < libro.T) { s++; aplicar(true); }
+  else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
+}
+function retroceder() {
+  if (s > 1) { s--; aplicar(true); }
+  else if (actual > 0) cargar(actual - 1, true);
+}
+
+/* clic: tercio izquierdo = atrás; resto = adelante */
+$("libro").addEventListener("click", ev => {
+  if (String(window.getSelection())) return;
+  if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
+});
+$("btnAtras").onclick = ev => { ev.stopPropagation(); retroceder(); };
+$("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
+$("tira").onclick = ev => {
+  ev.stopPropagation();
+  const r = $("tira").getBoundingClientRect();
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * libro.T));
+  aplicar(true);
+};
+document.addEventListener("keydown", ev => {
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
+  else if (ev.key === "Home") { s = 1; aplicar(true); }
+  else if (ev.key === "End") { s = libro.T; aplicar(true); }
+});
+let tRes = null;
+window.addEventListener("resize", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); Lprev = 0; aplicar(false); } }, 150);
+});
+
+window.addEventListener("load", () => cargar(0, false));
+if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); aplicar(false); } }, 60);
+});
+</script>
+</body>
+</html>

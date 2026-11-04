@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geometría en el espacio: rectas y planos (ejercicios 1-10)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#1414E6; --rojo:#E01E1E; --gris:#666;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;color:var(--texto);cursor:pointer;
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:20px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+
+  html,body{overflow:hidden}
+  body{background:#fff}
+
+  /* barra superior */
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:0 14px;display:flex;gap:14px;align-items:center;font-size:.85rem;color:var(--gris)}
+  .barra-sup .tit{font-weight:bold;color:#333;white-space:nowrap}
+  .pestanas{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #333;color:#333}
+  .pestanas button[aria-selected="true"]{background:#333;color:#fff}
+
+  /* barra inferior: botones grandes (pizarra digital) y progreso */
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:.85rem;color:var(--gris)}
+  .progreso .tira{flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .nav{font:inherit;font-size:1.5rem;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:9.5em;text-align:right;white-space:nowrap}
+
+  /* el libro: dos páginas, separadas solo por una línea fina */
+  #libro{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:hidden;background:#fff;transition:opacity .25s ease}
+  #libro.fuera{opacity:0}
+  #pista{position:absolute;left:0;top:0;height:100%;will-change:transform}
+  #pista.anim{transition:transform .9s cubic-bezier(.65,.05,.25,1)}
+  .hoja{position:absolute;top:0;padding:6px 8px}
+  .pag{position:relative;background:#fff;transform-origin:0 0;padding:30px 40px 0}
+  .pag .cuerpo{display:flow-root;overflow:hidden}
+  .pag .num{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#bbb;font-size:.8rem}
+  #lomo{position:absolute;left:50%;top:14px;bottom:14px;width:0;border-left:1px solid #c9c9c9;pointer-events:none;z-index:2}
+  .hoja.gira .pag{animation:gira .9s ease both}
+  @keyframes gira{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#pista.anim{transition:none}.hoja.gira .pag{animation:none}}
+
+  /* lo que se va escribiendo */
+  .cont{opacity:0;transition:opacity .35s ease}
+  .cont.on{opacity:1}
+  .u{opacity:0;clip-path:inset(-40px 100% -40px -40px);transition:opacity .25s ease,clip-path .85s ease}
+  span.u{display:block}
+  .u.on{opacity:1;clip-path:inset(-40px -40px -40px -40px)}
+  .u.rapido,.cont.rapido{transition:none}
+  .cont.sigue{margin-top:0;padding-top:14px;border-top-left-radius:0;border-top-right-radius:0}
+  .fila-menores{display:flex;justify-content:space-around;align-items:center;gap:.4em;margin:.8em 0}
+  .fila-menores .sub{display:block;white-space:nowrap}
+  .fila-menores.col{flex-direction:column;align-items:center;gap:.1em;margin:.4em 0}
+  .fila-menores.junto{flex-direction:column;align-items:stretch;gap:.35em;margin:.8em 0}
+  .junto .fila3{display:flex;justify-content:space-around;gap:.8em}
+  .junto .item{display:block;white-space:nowrap}
+  h1{margin:0 0 6px;font-size:2.1rem;line-height:1.2}
+  h4{margin:16px 0 6px;font-size:1.18rem}
+
+  /* cajas verdes del modelo */
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:20px 20px 10px;margin:26px 0 14px}
+  .caja>.titulo{position:absolute;top:-13px;left:12px;background:var(--verde-titulo);color:#fff;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.92rem}
+  .caja.enunciado{color:var(--azul);margin-top:6px;padding-top:12px}
+  .caja p{margin:.3em 0 .5em}
+  .paso{margin:6px 0 10px}
+
+  /* matrices con menores marcados en caja roja */
+  .ec{display:flex;align-items:center;justify-content:center;gap:.5em;margin:.6em 0;flex-wrap:wrap}
+  .mat{--w:2.5em;--h:1.7em;position:relative;display:inline-grid;
+    grid-template-columns:repeat(var(--nc),var(--w));grid-auto-rows:var(--h);
+    margin:1.1em .7em .2em;text-align:center}
+  .mat .c{display:flex;align-items:center;justify-content:center;white-space:nowrap}
+  .mat::before,.mat::after{content:"";position:absolute;top:-.15em;bottom:-.15em;width:.55em;border:2px solid #111}
+  .mat::before{left:-.7em;border-right:0;border-radius:60% 0 0 60%/50% 0 0 50%}
+  .mat::after{right:-.7em;border-left:0;border-radius:0 60% 60% 0/0 50% 50% 0}
+  .mat .bar{position:absolute;top:.1em;bottom:.1em;left:calc(var(--k) * var(--w));border-left:1.5px solid #111}
+  .mat .caja-roja{position:absolute;border:1.5px solid var(--rojo);pointer-events:none;
+    left:calc(var(--c0) * var(--w) + .15em);top:calc(var(--r0) * var(--h) + .12em);
+    width:calc(var(--cs) * var(--w) - .3em);height:calc(var(--rs) * var(--h) - .24em)}
+  .mat .caja-roja i{position:absolute;left:50%;top:-1.35em;transform:rotate(-40deg);transform-origin:left bottom;
+    color:var(--rojo);font-style:normal;white-space:nowrap}
+  .mat .tacha{position:absolute;left:-.2em;right:-.2em;top:calc((var(--r) + .5) * var(--h));
+    border-top:1.5px solid var(--rojo);pointer-events:none}
+  .mat .etq{position:absolute;left:calc((var(--c) + .5) * var(--w));top:-.15em;width:0;height:0;pointer-events:none}
+  .mat .etq i{position:absolute;left:0;bottom:0;transform:rotate(-40deg);transform-origin:left bottom;
+    color:var(--rojo);font-style:normal;white-space:nowrap}
+  .instr{color:var(--azul);border:1.5px solid #E6C200;border-radius:14px;padding:6px 16px;margin:10px 0;text-align:center}
+  .nota{color:var(--gris);font-size:.9em}
+  b.res{color:var(--rojo)}
+  .katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden}
+  table.res{border-collapse:collapse;margin:6px auto 8px}
+  table.res th,table.res td{padding:5px 16px;text-align:center}
+  table.res th{border-bottom:1.5px solid #111}
+  table.res td:not(:last-child),table.res th:not(:last-child){border-right:1px solid #111}
+  table.res td:last-child,table.res th:last-child{text-align:left}
+
+  /* figuras 3D interactivas */
+  .fig3d{margin:.5em 0 .3em}
+  .fig3d canvas{display:block;width:100%;height:auto;aspect-ratio:1400/480;border:1px solid #dcdcdc;border-radius:12px;background:#fff;cursor:grab;touch-action:none}
+  .fig3d canvas.arrastrando{cursor:grabbing}
+  .fig-ctl{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:.35em;font-size:.78em;color:var(--gris);line-height:1.25}
+  .fig-botones{display:flex;gap:5px;flex:none}
+  .fig-botones button{font:inherit;font-size:.9em;min-width:1.9em;height:1.9em;border-radius:999px;border:1.5px solid #bbb;background:#fff;color:#444;cursor:pointer;padding:0 .4em}
+  .fig-botones button[aria-pressed="true"]{background:#2d9a2d;border-color:#2d9a2d;color:#fff}
+</style>
+</head>
+<body>
+<div class="barra-sup">
+  <span class="tit">Geometría en el espacio · Ejercicios 1-10</span>
+  <nav class="pestanas" id="pestanas" aria-label="Ejercicios"></nav>
+</div>
+<div id="libro"><div id="pista"></div><div id="lomo"></div></div>
+<div id="stage" style="position:absolute;left:-99999px;top:0;width:720px;visibility:hidden"></div>
+<div class="progreso">
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
+  <span id="contador"></span>
+</div>
+
+<script>
+/* ---------------------------------------------------------------------
+   Matriz con barra opcional y menor marcado en caja roja.
+   rows: filas (cadenas LaTeX); opts.bar = nº de columnas antes de la barra;
+   opts.box = [fila0, col0, fila1, col1] (empezando en 0)
+   opts.tach = [filas a tachar]; opts.etq = [[columna, 'texto'], ...] (rótulo rojo sobre una columna)
+   --------------------------------------------------------------------- */
+function mat(rows, opts = {}) {
+  const nr = rows.length, nc = rows[0].length;
+  const largo = Math.max(...rows.map(r => Math.max(...r.map(c => String(c).replace(/\\[a-zA-Z]+|[{}\s]/g, '').length))));
+  const ancho = opts.w || Math.max(2.5, 1.0 + 0.55 * largo);
+  let h = '<span class="mat" style="--nc:' + nc + ';--nr:' + nr + ';--w:' + ancho.toFixed(2) + 'em' + (opts.etq ? ';margin-top:2.3em' : '') + '">';
+  rows.forEach(r => r.forEach(c => { h += '<span class="c">$' + c + '$</span>'; }));
+  if (opts.bar != null) h += '<span class="bar" style="--k:' + opts.bar + '"></span>';
+  if (opts.box) {
+    /* box = [f0,c0,f1,c1] o, para un menor de columnas no contiguas, una lista de cajas;
+       el rótulo ≠0 solo va en la primera */
+    const cajas = Array.isArray(opts.box[0]) ? opts.box : [opts.box];
+    cajas.forEach(([r0, c0, r1, c1], i) => {
+      h += '<span class="caja-roja" style="--r0:' + r0 + ';--c0:' + c0 + ';--rs:' + (r1 - r0 + 1) +
+           ';--cs:' + (c1 - c0 + 1) + '">' + (i === 0 ? '<i>$\\neq0$</i>' : '') + '</span>';
+    });
+  }
+  if (opts.tach) opts.tach.forEach(r => { h += '<span class="tacha" style="--r:' + r + '"></span>'; });
+  if (opts.etq) opts.etq.forEach(([c, t]) => { h += '<span class="etq" style="--c:' + c + '"><i>$' + t + '$</i></span>'; });
+  return h + '</span>';
+}
+const ec = (...partes) => '<div class="ec">' + partes.join('') + '</div>';
+const f = s => '<span>$' + s + '$</span>';
+
+/* ---------------------------------------------------------------------
+   Ayudantes numéricos y de escritura
+   --------------------------------------------------------------------- */
+const rg = x => '\\operatorname{rg}(' + x + ')';
+const detTex = filas => '\\begin{vmatrix} ' + filas.map(r => r.join('&')).join('\\\\ ') + ' \\end{vmatrix}';
+const strs = M => M.map(r => r.map(String));
+
+/* regla de Sarrus para un determinante numérico de orden 3 */
+const det3 = M => M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1])
+                - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0])
+                + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
+const suma = t => t.map((x, i) => (i && x >= 0) ? '+' + x : String(x)).join('');
+function sarrusTex(M0) {
+  const a = M0.map(r => r.map(Number));
+  const p = [a[0][0] * a[1][1] * a[2][2], a[0][1] * a[1][2] * a[2][0], a[0][2] * a[1][0] * a[2][1]];
+  const n = [a[0][2] * a[1][1] * a[2][0], a[0][0] * a[1][2] * a[2][1], a[0][1] * a[1][0] * a[2][2]];
+  return '(' + suma(p) + ')-(' + suma(n) + ')=' + det3(a);
+}
+
+/* sistema de ecuaciones con las igualdades alineadas: sis(['x','2+\\lambda'], ['y', ...]) */
+const sis = (...filas) => '$$\\left\\{\\begin{array}{rcl}' + filas.map(r => r.join('&=&')).join('\\\\') + '\\end{array}\\right.$$';
+
+/* menor marcado con caja roja dentro de una fracción o igualdad (se ve como en el cuaderno) */
+const cajaR = x => '{\\color{#E01E1E}\\boxed{\\color{#111}' + x + '}}';
+
+/* un determinante de Cramer por clic: etiqueta, matriz numérica 3x3 */
+const cramer = (etq, M) => '<span class="sub">$\\displaystyle ' + etq + '=' + detTex(M) + '=' + sarrusTex(M) + '$</span>';
+const filaCol = (...subs) => '<div class="fila-menores col">' + subs.join('') + '</div>';
+
+
+/* =====================================================================
+   FIGURAS 3D INTERACTIVAS (canvas, sin librerías)
+   - Cada figura es una escena con elementos que aparecen por etapas
+     (como las imágenes sucesivas del libro).
+   - Se gira arrastrando con el ratón o el dedo; doble clic = vista inicial.
+   - Coordenadas reales (eje z hacia arriba).
+   ===================================================================== */
+const V3 = {
+  add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+  mul: (a, k) => [a[0] * k, a[1] * k, a[2] * k],
+  dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+  cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+  len: a => Math.hypot(a[0], a[1], a[2]),
+  unit: a => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; }
+};
+
+/* plano de normal n que pasa por c: cuadrado de semilado h. 'hint' orienta el primer lado */
+function planoN(c, n, h, hint) {
+  n = V3.unit(n);
+  let e1 = hint ? V3.sub(hint, V3.mul(n, V3.dot(hint, n)))
+                : V3.cross(n, Math.abs(n[2]) < .9 ? [0, 0, 1] : [1, 0, 0]);
+  e1 = V3.unit(e1);
+  const e2 = V3.unit(V3.cross(n, e1));
+  return { o: V3.sub(V3.sub(c, V3.mul(e1, h)), V3.mul(e2, h)), u: V3.mul(e1, 2 * h), v: V3.mul(e2, 2 * h), a: [0, 1], b: [0, 1] };
+}
+/* plano P + a·u + b·v con a en [a0,a1] y b en [b0,b1] */
+function planoUV(P, u, v, a0, a1, b0, b1) {
+  return { o: V3.add(V3.add(P, V3.mul(u, a0)), V3.mul(v, b0)), u: V3.mul(u, a1 - a0), v: V3.mul(v, b1 - b0), a: [0, 1], b: [0, 1] };
+}
+
+const COL = { r: '#1414E6', s: '#6AA800', vec: '#E01E1E', vec2: '#C026D3', pt: '#111', verde: '#10CC50', rosa: '#E0409A', azul: '#3B5BDB', naranja: '#F08C00', gris: '#555' };
+
+/* ---------------------------------------------------------------------
+   ESCENAS. Elementos:
+   pt {p,l,c,s,big,d}           punto
+   vec {a,b,l,c,s,d}            vector (flecha de a a b)
+   line {p,v,l,c,s,d}           recta infinita (se recorta)
+   plane {...planoN|planoUV,c,s,l}
+   s = etapa desde la que se ve; focus = puntos que encuadran la figura
+   --------------------------------------------------------------------- */
+const FIGS = {};
+
+/* Ej. 1: recta por P con vector director v */
+(() => {
+  const P = [2, 1, -3], v = [1, -2, 4];
+  FIGS.ej1 = {
+    focus: [P, V3.add(P, v), V3.sub(P, V3.mul(v, .6))],
+    etapas: ['Punto $P$ y vector director $v$', 'La recta $r$ pasa por $P$ con la dirección de $v$'],
+    els: [
+      { t: 'line', p: P, v: v, l: 'r', c: COL.r, s: 1, d: [14, -10] },
+      { t: 'vec', a: P, b: V3.add(P, v), l: 'v', c: COL.vec, s: 0, d: [12, -6] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [-18, 4] }
+    ]
+  };
+})();
+
+/* Ej. 2: recta por dos puntos */
+(() => {
+  const P = [2, 1, 3], Q = [0, -1, 3], d = V3.sub(Q, P);
+  FIGS.ej2 = {
+    focus: [P, Q],
+    etapas: ['Los puntos $P$ y $Q$', 'El vector diferencia $\\overrightarrow{PQ}$', 'La recta $r$ que pasa por $P$ y $Q$'],
+    els: [
+      { t: 'line', p: P, v: d, l: 'r', c: COL.r, s: 2, d: [14, -10] },
+      { t: 'vec', a: P, b: Q, l: 'V_d', c: COL.vec2, s: 1, d: [-8, -14] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [10, 10] },
+      { t: 'pt', p: Q, l: 'Q', c: COL.pt, s: 0, d: [-18, -6] }
+    ]
+  };
+})();
+
+/* Ej. 3: recta como intersección de dos planos */
+(() => {
+  const P = [0, 1, -1], n1 = [1, 1, 1], n2 = [1, 1, -1], d = [1, -1, 0];
+  FIGS.ej3 = {
+    focus: [P, V3.add(P, V3.mul(d, 1.6)), V3.sub(P, V3.mul(d, 1.6))],
+    etapas: ['Los dos planos $x+y+z=0$ y $x+y-z=2$', 'Sus vectores normales $\\vec n_1$ y $\\vec n_2$', 'La intersección es la recta $r$, con $\\vec v=\\vec n_1\\times\\vec n_2$'],
+    els: [
+      { t: 'plane', ...planoN(P, n1, 2.6, d), c: COL.verde, s: 0, l: 'α', ld: [.08, .1] },
+      { t: 'plane', ...planoN(P, n2, 2.6, d), c: COL.azul, s: 0, l: 'β', ld: [.08, .1] },
+      { t: 'vec', a: P, b: V3.add(P, n1), l: 'n_1', c: COL.gris, s: 1, d: [8, -8] },
+      { t: 'vec', a: P, b: V3.add(P, n2), l: 'n_2', c: COL.gris, s: 1, d: [8, 12] },
+      { t: 'line', p: P, v: d, l: 'r', c: COL.r, s: 2, d: [12, -10] },
+      { t: 'vec', a: P, b: V3.add(P, V3.mul(d, 1.4)), l: 'v', c: COL.vec, s: 2, d: [6, -14] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 2, d: [-18, 4] }
+    ]
+  };
+})();
+
+/* Ej. 4: plano por un punto con dos vectores directores */
+(() => {
+  const P = [1, 2, -3], u = [0, 2, 1], v = [4, -2, 0];
+  FIGS.ej4 = {
+    focus: [P, V3.add(P, u), V3.add(P, v), V3.add(V3.add(P, u), v)],
+    etapas: ['El punto $P$ y los vectores $\\vec u$ y $\\vec v$', 'El plano $P+\\lambda\\vec u+\\mu\\vec v$'],
+    els: [
+      { t: 'plane', ...planoUV(P, u, v, -.5, 1.5, -.3, 1.3), c: COL.verde, s: 1, l: 'π', ld: [.1, .1] },
+      { t: 'vec', a: P, b: V3.add(P, u), l: 'u', c: COL.vec, s: 0, d: [-14, -8] },
+      { t: 'vec', a: P, b: V3.add(P, v), l: 'v', c: COL.vec2, s: 0, d: [8, -12] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [-18, 8] }
+    ]
+  };
+})();
+
+/* Ej. 5: plano por tres puntos */
+(() => {
+  const A = [1, 2, -1], B = [0, 0, 1], C = [2, 2, 2], u = V3.sub(B, A), v = V3.sub(C, A);
+  FIGS.ej5 = {
+    focus: [A, B, C],
+    etapas: ['Los tres puntos $A$, $B$ y $C$', 'Los vectores diferencia $\\overrightarrow{AB}$ y $\\overrightarrow{AC}$', 'El plano que pasa por $A$, $B$ y $C$'],
+    els: [
+      { t: 'plane', ...planoUV(A, u, v, -.4, 1.5, -.4, 1.5), c: COL.naranja, s: 2, l: 'π', ld: [.1, .1] },
+      { t: 'vec', a: A, b: B, l: 'u', c: COL.vec2, s: 1, d: [-14, -8] },
+      { t: 'vec', a: A, b: C, l: 'v', c: COL.vec, s: 1, d: [8, -12] },
+      { t: 'pt', p: A, l: 'A', c: COL.pt, s: 0, d: [-18, 8] },
+      { t: 'pt', p: B, l: 'B', c: COL.pt, s: 0, d: [-16, -8] },
+      { t: 'pt', p: C, l: 'C', c: COL.pt, s: 0, d: [10, -10] }
+    ]
+  };
+})();
+
+/* Ej. 6: plano que contiene a una recta y a un punto exterior */
+(() => {
+  const Pr = [1, 0, 2], vr = [2, 1, 3], P = [1, 2, 3], Vd = V3.sub(P, Pr);
+  FIGS.ej6 = {
+    focus: [Pr, P, V3.add(Pr, vr), V3.sub(Pr, vr)],
+    etapas: ['La recta $r$ y el punto $P$', 'El punto $P_r$ y el vector director $\\vec v_r$', 'El vector diferencia $\\overrightarrow{P_rP}$', 'El plano que contiene a $r$ y a $P$'],
+    els: [
+      { t: 'plane', ...planoUV(Pr, vr, Vd, -1, 1.1, -.4, 1.4), c: COL.verde, s: 3, l: 'π', ld: [.1, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, vr), l: 'V_r', c: COL.vec, s: 1, d: [8, -12] },
+      { t: 'vec', a: Pr, b: P, l: 'V_d', c: COL.s, s: 2, d: [-30, 0] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 1, d: [-26, 12] },
+      { t: 'pt', p: P, l: 'P', c: COL.pt, s: 0, d: [10, -10] }
+    ]
+  };
+})();
+
+/* Ej. 7: plano que contiene a dos rectas paralelas */
+(() => {
+  const Pr = [2, 0, -1], vr = [1, 2, 3], Ps = [1, 1, 5], vs = [2, 4, 6], Vd = V3.sub(Ps, Pr);
+  FIGS.ej7 = {
+    focus: [Pr, Ps, V3.add(Pr, vr), V3.add(Ps, V3.mul(vs, -.5)), V3.add(Pr, V3.mul(vr, -1))],
+    etapas: ['Las rectas paralelas $r$ y $s$', 'Puntos $P_r$, $P_s$ y vectores directores $\\vec v_r$, $\\vec v_s$', 'El vector diferencia $V_d=P_s-P_r$', 'El plano que contiene a las dos rectas'],
+    els: [
+      { t: 'plane', ...planoUV(Pr, vr, Vd, -1.1, 1.2, -.3, 1.3), c: COL.verde, s: 3, l: 'π', ld: [.1, .1] },
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'line', p: Ps, v: vs, l: 's', c: COL.s, s: 0, d: [12, -10] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, vr), l: 'V_r', c: COL.vec, s: 1, d: [8, 12] },
+      { t: 'vec', a: Ps, b: V3.add(Ps, vs), l: 'V_s', c: COL.pt, s: 1, d: [8, -12] },
+      { t: 'vec', a: Pr, b: Ps, l: 'V_d', c: COL.vec2, s: 2, d: [-30, 0] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 1, d: [-26, 12] },
+      { t: 'pt', p: Ps, l: 'P_s', c: COL.pt, s: 1, d: [-26, -6] }
+    ]
+  };
+})();
+
+/* Ej. 8: recta (dos planos) y un tercer plano: punto de intersección */
+(() => {
+  const I = [-4, 6, 1], d = [3, -4, -1], n1 = [1, 1, -1], n2 = [3, 2, 1], n3 = [5, 3, 4];
+  FIGS.ej8 = {
+    vista: [2.1, .35],
+    focus: [I, V3.add(I, V3.mul(d, .45)), V3.sub(I, V3.mul(d, .45))],
+    etapas: ['Los planos que definen la recta $r$', 'La recta $r$ (su intersección)', 'El plano $\\pi:\\ 5x+3y+4z=2$', 'El punto de intersección $r\\cap\\pi$'],
+    els: [
+      { t: 'plane', ...planoN(I, n1, 2.7, d), c: COL.rosa, s: 0, l: 'α', ld: [.08, .1] },
+      { t: 'plane', ...planoN(I, n2, 2.7, d), c: COL.azul, s: 0, l: 'β', ld: [.08, .1] },
+      { t: 'plane', ...planoN(I, n3, 2.7, d), c: COL.s, s: 2, l: 'π', ld: [.08, .1] },
+      { t: 'line', p: I, v: d, l: 'r', c: COL.r, s: 1, d: [12, -10] },
+      { t: 'pt', p: I, l: '(−4, 6, 1)', c: COL.vec, s: 3, big: true, d: [14, 16] }
+    ]
+  };
+})();
+
+/* Ej. 9: recta y plano que se cortan */
+(() => {
+  const I = [1, 2, -1], d = [1, -2, 3];
+  FIGS.ej9 = {
+    focus: [I, V3.add(I, V3.mul(d, .6)), V3.sub(I, V3.mul(d, .6))],
+    etapas: ['La recta $r$ y el plano $x+y=3$', 'El punto donde la recta atraviesa el plano'],
+    els: [
+      { t: 'plane', ...planoN(I, [1, 1, 0], 2.2, [0, 0, 1]), c: COL.azul, s: 0, l: 'π', ld: [.08, .1] },
+      { t: 'line', p: I, v: d, l: 'r', c: COL.r, s: 0, d: [12, -10] },
+      { t: 'pt', p: I, l: '(1, 2, −1)', c: COL.vec, s: 1, big: true, d: [14, 18] }
+    ]
+  };
+})();
+
+/* Ej. 10: dos rectas que se cortan */
+(() => {
+  const Pr = [3, 2, 2], vr = [1, 2, 3], Ps = [3, 1, 0], vs = [1, 1, 1], I = [2, 0, -1];
+  FIGS.ej10 = {
+    focus: [I, Pr, Ps, V3.add(Pr, vr), V3.add(Ps, vs)],
+    etapas: ['Las rectas $r$ y $s$', 'Un punto y un vector director de cada una', 'El punto de intersección $P$'],
+    els: [
+      { t: 'line', p: Pr, v: vr, l: 'r', c: COL.pt, s: 0, d: [12, -10] },
+      { t: 'line', p: Ps, v: vs, l: 's', c: COL.s, s: 0, d: [12, -10] },
+      { t: 'vec', a: Pr, b: V3.add(Pr, vr), l: 'V_r', c: COL.vec, s: 1, d: [8, -12] },
+      { t: 'vec', a: Ps, b: V3.add(Ps, vs), l: 'V_s', c: COL.vec2, s: 1, d: [8, 12] },
+      { t: 'pt', p: Pr, l: 'P_r', c: COL.pt, s: 1, d: [-26, 6] },
+      { t: 'pt', p: Ps, l: 'P_s', c: COL.pt, s: 1, d: [-26, 6] },
+      { t: 'pt', p: I, l: '(2, 0, −1)', c: COL.vec, s: 2, big: true, d: [14, 18] }
+    ]
+  };
+})();
+
+/* ---------------------------------------------------------------------
+   Dibujo
+   --------------------------------------------------------------------- */
+const CW = 1400, CH = 480, K = 1.7;
+function rgba(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+}
+
+/* texto con subíndices simples: "V_r", "P_s" */
+function rotulo(ctx, txt, x, y, col, tam) {
+  ctx.fillStyle = col;
+  const m = txt.split('_');
+  ctx.font = 'italic ' + tam + 'px "Latin Modern Roman","CMU Serif",Georgia,serif';
+  ctx.fillText(m[0], x, y);
+  if (m[1]) {
+    const w = ctx.measureText(m[0]).width;
+    ctx.font = 'italic ' + (tam * .7) + 'px "Latin Modern Roman","CMU Serif",Georgia,serif';
+    ctx.fillText(m[1], x + w + 1, y + tam * .22);
+  }
+}
+
+function dibujarFigura(F, st, ctx) {
+  const { els } = F;
+  const C = F._C, R = F._R, L = R * 1.05;
+  const esc = (CH * .5 * .93) / R;
+  const cy = Math.cos(st.yaw), sy = Math.sin(st.yaw), cp = Math.cos(st.pitch), sp = Math.sin(st.pitch);
+  const proj = p => {
+    const q = V3.sub(p, C);
+    const x1 = q[0] * cy - q[1] * sy, y1 = q[0] * sy + q[1] * cy, z1 = q[2];
+    return { x: CW / 2 + x1 * esc, y: CH / 2 - (z1 * cp + y1 * sp) * esc, d: y1 * cp - z1 * sp };
+  };
+  const recorte = (p, v) => {
+    const w = V3.sub(C, p), a = V3.dot(v, v), k = V3.dot(w, v);
+    const d2 = V3.dot(w, w) - k * k / a;
+    if (d2 > L * L) return null;
+    const h = Math.sqrt(L * L - d2) / Math.sqrt(a), t0 = k / a;
+    return [t0 - h, t0 + h];
+  };
+  ctx.clearRect(0, 0, CW, CH);
+
+  /* ejes */
+  ctx.lineWidth = 2;
+  [['x', [1, 0, 0]], ['y', [0, 1, 0]], ['z', [0, 0, 1]]].forEach(([nom, e]) => {
+    const r = recorte([0, 0, 0], e);
+    if (!r) return;
+    const t0 = Math.max(r[0], -L), t1 = Math.min(r[1], L);
+    const a = proj(V3.mul(e, t0)), b = proj(V3.mul(e, t1));
+    ctx.strokeStyle = 'rgba(0,0,0,.18)';
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    if (t1 > 0) rotulo(ctx, nom, b.x + 6, b.y - 4, 'rgba(0,0,0,.38)', 26);
+  });
+
+  /* planos, del más lejano al más cercano */
+  const planos = els.filter(e => e.t === 'plane' && e.s <= st.etapa).map(e => {
+    const q = (a, b) => V3.add(V3.add(e.o, V3.mul(e.u, a)), V3.mul(e.v, b));
+    const c4 = [q(0, 0), q(1, 0), q(1, 1), q(0, 1)].map(proj);
+    return { e, c4, d: (c4[0].d + c4[1].d + c4[2].d + c4[3].d) / 4 };
+  }).sort((p, q) => q.d - p.d);
+  planos.forEach(({ e, c4 }) => {
+    const m0 = { x: (c4[0].x + c4[3].x) / 2, y: (c4[0].y + c4[3].y) / 2 };
+    const m1 = { x: (c4[1].x + c4[2].x) / 2, y: (c4[1].y + c4[2].y) / 2 };
+    const g = ctx.createLinearGradient(m0.x, m0.y, m1.x, m1.y);
+    g.addColorStop(0, rgba(e.c, .62)); g.addColorStop(1, rgba(e.c, .10));
+    ctx.fillStyle = g;
+    ctx.beginPath(); c4.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = rgba(e.c, .55); ctx.lineWidth = 2; ctx.stroke();
+    if (e.l) {
+      const q = V3.add(V3.add(e.o, V3.mul(e.u, e.ld[0])), V3.mul(e.v, e.ld[1])), p = proj(q);
+      rotulo(ctx, e.l, p.x, p.y, rgba(e.c, 1), 30);
+    }
+  });
+
+  /* rectas */
+  els.filter(e => e.t === 'line' && e.s <= st.etapa).forEach(e => {
+    const r = recorte(e.p, e.v);
+    if (!r) return;
+    const a = proj(V3.add(e.p, V3.mul(e.v, r[0]))), b = proj(V3.add(e.p, V3.mul(e.v, r[1])));
+    ctx.strokeStyle = e.c; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    const t = r[1] - (r[1] - r[0]) * .06, p = proj(V3.add(e.p, V3.mul(e.v, t)));
+    rotulo(ctx, e.l, p.x + e.d[0] * K, p.y + e.d[1] * K, e.c, 32);
+  });
+
+  /* vectores */
+  els.filter(e => e.t === 'vec' && e.s <= st.etapa).forEach(e => {
+    const a = proj(e.a), b = proj(e.b);
+    const ang = Math.atan2(b.y - a.y, b.x - a.x), h = 20;
+    ctx.strokeStyle = e.c; ctx.fillStyle = e.c; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x - Math.cos(ang) * h * .6, b.y - Math.sin(ang) * h * .6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(b.x, b.y);
+    ctx.lineTo(b.x - h * Math.cos(ang - .38), b.y - h * Math.sin(ang - .38));
+    ctx.lineTo(b.x - h * Math.cos(ang + .38), b.y - h * Math.sin(ang + .38)); ctx.closePath(); ctx.fill();
+    rotulo(ctx, e.l, (a.x + b.x) / 2 + e.d[0] * K, (a.y + b.y) / 2 + e.d[1] * K, e.c, 30);
+  });
+
+  /* puntos */
+  els.filter(e => e.t === 'pt' && e.s <= st.etapa).forEach(e => {
+    const p = proj(e.p);
+    ctx.fillStyle = e.c; ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(p.x, p.y, e.big ? 11 : 7, 0, 7); ctx.fill(); ctx.stroke();
+    rotulo(ctx, e.l, p.x + e.d[0] * K, p.y + e.d[1] * K, e.c, e.big ? 34 : 32);
+  });
+}
+
+
+/* encuadre (centro y radio) con todo lo que se dibuja; mejor vista inicial */
+function preparar(F) {
+  const pts = [...F.focus];
+  F.els.forEach(e => {
+    if (e.t === 'pt') pts.push(e.p);
+    if (e.t === 'vec') { pts.push(e.a, e.b); }
+    if (e.t === 'plane') [[0, 0], [1, 0], [1, 1], [0, 1]].forEach(([a, b]) => pts.push(V3.add(V3.add(e.o, V3.mul(e.u, a)), V3.mul(e.v, b))));
+  });
+  const mn = [0, 1, 2].map(i => Math.min(...pts.map(p => p[i]))), mx = [0, 1, 2].map(i => Math.max(...pts.map(p => p[i])));
+  F._C = [0, 1, 2].map(i => (mn[i] + mx[i]) / 2);
+  F._R = Math.max(1.5, ...pts.map(p => V3.len(V3.sub(p, F._C))));
+  /* vista: planos vistos en oblicuo y rectas/vectores sin acortar */
+  let mejor = -1e9, vista = [3.55, .4];
+  for (let yaw = 0; yaw < 6.28; yaw += .12) for (let pitch = .25; pitch <= .8; pitch += .11) {
+    const f = [Math.sin(yaw) * Math.cos(pitch), Math.cos(yaw) * Math.cos(pitch), -Math.sin(pitch)];
+    let pl = 1, li = 1;
+    F.els.forEach(e => {
+      if (e.t === 'plane') pl = Math.min(pl, Math.min(Math.abs(V3.dot(V3.unit(V3.cross(e.u, e.v)), f)), .62));
+      if (e.t === 'line') li = Math.min(li, Math.sqrt(1 - V3.dot(V3.unit(e.v), f) ** 2));
+      if (e.t === 'vec') li = Math.min(li, Math.sqrt(1 - V3.dot(V3.unit(V3.sub(e.b, e.a)), f) ** 2));
+    });
+    const sc = 2 * pl + li - .05 * Math.abs(Math.sin((yaw - 3.55) / 2)) - .1 * Math.abs(pitch - .45);
+    if (sc > mejor) { mejor = sc; vista = [yaw, pitch]; }
+  }
+  F._vista = vista;
+}
+
+/* monta cada <div class="fig3d" data-fig="ejN"> dentro de root */
+function initFiguras(root) {
+  root.querySelectorAll('.fig3d').forEach(box => {
+    const F = FIGS[box.dataset.fig];
+    if (!F || box._ok) return;
+    box._ok = true;
+    if (!F._C) preparar(F);
+    const st = { yaw: (F.vista || F._vista)[0], pitch: (F.vista || F._vista)[1], etapa: F.etapas.length - 1 };
+    const ini = { yaw: st.yaw, pitch: st.pitch };
+    box.innerHTML = '<canvas width="' + CW + '" height="' + CH + '"></canvas>' +
+      '<div class="fig-ctl"><span class="fig-pie"></span><span class="fig-botones"></span></div>';
+    const cv = box.querySelector('canvas'), ctx = cv.getContext('2d');
+    const pie = box.querySelector('.fig-pie'), bot = box.querySelector('.fig-botones');
+    const pinta = () => dibujarFigura(F, st, ctx);
+    const poner = () => {
+      pie.innerHTML = F.etapas[st.etapa];
+      mate(pie);
+      bot.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', i === st.etapa));
+      pinta();
+    };
+    F.etapas.forEach((_, i) => {
+      const b = document.createElement('button');
+      b.textContent = i + 1;
+      b.title = 'Etapa ' + (i + 1);
+      b.onclick = () => { st.etapa = i; poner(); };
+      bot.appendChild(b);
+    });
+    const rb = document.createElement('button');
+    rb.textContent = '⟲'; rb.title = 'Vista inicial';
+    rb.onclick = () => { st.yaw = ini.yaw; st.pitch = ini.pitch; pinta(); };
+    bot.appendChild(rb);
+    /* girar arrastrando */
+    let arr = null;
+    cv.addEventListener('pointerdown', ev => { arr = { x: ev.clientX, y: ev.clientY }; cv.setPointerCapture(ev.pointerId); cv.classList.add('arrastrando'); });
+    cv.addEventListener('pointermove', ev => {
+      if (!arr) return;
+      st.yaw -= (ev.clientX - arr.x) * .009;
+      st.pitch = Math.max(-1.45, Math.min(1.45, st.pitch + (ev.clientY - arr.y) * .009));
+      arr = { x: ev.clientX, y: ev.clientY };
+      pinta();
+    });
+    const fin = () => { arr = null; cv.classList.remove('arrastrando'); };
+    cv.addEventListener('pointerup', fin); cv.addEventListener('pointercancel', fin);
+    cv.addEventListener('dblclick', () => { st.yaw = ini.yaw; st.pitch = ini.pitch; pinta(); });
+    /* los clics en la figura no pasan página */
+    box.addEventListener('click', ev => ev.stopPropagation());
+    box.addEventListener('dblclick', ev => ev.stopPropagation());
+    poner();
+  });
+}
+
+/* =====================================================================
+   EJERCICIOS 1-10: RECTAS Y PLANOS EN EL ESPACIO
+   ===================================================================== */
+
+/* un elemento que sale con su propio clic dentro de una fila (.fila-menores) */
+const sub = t => '<span class="sub">$\\displaystyle ' + t + '$</span>';
+
+const EJERCICIOS = [
+
+  /* ===================== EJERCICIO 1 ===================== */
+  {
+    titulo: "Ejercicio 1",
+    enunciado: '<p class="nota">Ecuaciones de la recta</p>' + String.raw`
+      <p>Calcula las ecuaciones de la recta que pasa por $P(2,1,-3)$ con vector director $\vec{v}=(1,-2,4)$.</p>`,
+    pasos: [
+      { titulo: "Interpretación geométrica", html: '<div class="fig3d" data-fig="ej1"></div>' },
+      { titulo: "1. Ecuación vectorial",
+        html: String.raw`<p>La recta pasa por $P$ y tiene la dirección de $\vec{v}$:</p>
+          $$r:\;(x,y,z)=P+\lambda\,\vec{v}=(2,1,-3)+\lambda\,(1,-2,4)$$` },
+      { titulo: "2. Ecuaciones paramétricas",
+        html: '<p>Igualamos las coordenadas una a una:</p>' +
+              sis(['x', '2+\\lambda'], ['y', '1-2\\lambda'], ['z', '-3+4\\lambda']) },
+      { titulo: "3. Ecuación continua",
+        html: String.raw`<p>Eliminamos el parámetro: despejamos $\lambda$ en cada ecuación paramétrica.</p>
+          $$\lambda=x-2=\frac{y-1}{-2}=\frac{z+3}{4}$$
+          <p>Por lo tanto:</p>
+          $$\frac{x-2}{1}=\frac{y-1}{-2}=\frac{z+3}{4}$$
+          <p class="nota">También se escribe directamente: el vector director debajo y el punto, con el signo cambiado, arriba. Por ejemplo, $\dfrac{z-(-3)}{4}$.</p>` },
+      { titulo: "4. Ecuaciones implícitas: primer plano",
+        html: '<p>Cogemos las dos primeras fracciones de la ecuación continua y multiplicamos en cruz:</p>' +
+              '$$' + cajaR('\\dfrac{x-2}{1}=\\dfrac{y-1}{-2}') + '=\\dfrac{z+3}{4}$$\n' +
+              String.raw`$$(x-2)\cdot(-2)=(y-1)\cdot1\;\Rightarrow\;-2x+4=y-1\;\Rightarrow\;2x+y=5$$` },
+      { titulo: "4. Ecuaciones implícitas: segundo plano",
+        html: '<p>Ahora las dos últimas fracciones:</p>' +
+              '$$\\dfrac{x-2}{1}=' + cajaR('\\dfrac{y-1}{-2}=\\dfrac{z+3}{4}') + '$$\n' +
+              String.raw`$$(y-1)\cdot4=(z+3)\cdot(-2)\;\Rightarrow\;4y-4=-2z-6\;\Rightarrow\;4y+2z=-2\;\Rightarrow\;2y+z=-1$$` },
+      { caja: "Ecuaciones implícitas",
+        html: sis(['2x+y', '5'], ['2y+z', '-1']) +
+              String.raw`<p class="nota">Comprobación con $P(2,1,-3)$: $2\cdot2+1=5$ y $2\cdot1+(-3)=-1$.</p>` },
+      { titulo: "Observación importante",
+        html: String.raw`<p>Existen infinitos planos cuya intersección es la recta dada. Cualquier combinación lineal de las dos ecuaciones define un plano que contiene a la recta:</p>
+          $$\alpha\,(2x+y-5)+\beta\,(2y+z+1)=0\qquad(\alpha,\beta\neq0)$$` }
+    ]
+  },
+
+  /* ===================== EJERCICIO 2 ===================== */
+  {
+    titulo: "Ejercicio 2",
+    enunciado: '<p class="nota">Ecuaciones de la recta</p>' + String.raw`
+      <p>Calcula la ecuación de la recta que pasa por los puntos $P(2,1,3)$ y $Q(0,-1,3)$.</p>`,
+    pasos: [
+      { titulo: "Interpretación geométrica", html: '<div class="fig3d" data-fig="ej2"></div>' },
+      { titulo: "1. Vector diferencia",
+        html: String.raw`<p>El vector director se obtiene restando las coordenadas de los dos puntos:</p>
+          $$\vec{V}_d=\overrightarrow{PQ}=Q-P=(0-2,\,-1-1,\,3-3)=(-2,-2,0)$$` },
+      { titulo: "2. Ecuaciones paramétricas",
+        html: '<p>Usamos el punto $P(2,1,3)$ y el vector diferencia:</p>' +
+              sis(['x', '2-2\\lambda'], ['y', '1-2\\lambda'], ['z', '3']) +
+              String.raw`<p class="nota">Observación: $z$ es constante ($z=3$), luego la recta está contenida en el plano $z=3$.</p>` },
+      { titulo: "3. Puntos de la recta",
+        html: String.raw`<p>Hay infinitos puntos, que se obtienen dando valores a $\lambda$:</p>
+          <table class="res">
+            <tr><th>$\lambda$</th><th>Cálculo</th><th>Punto</th></tr>
+            <tr><td>$0$</td><td>$(2-2\cdot0,\;1-2\cdot0,\;3)$</td><td>$P_0=(2,1,3)$</td></tr>
+            <tr><td>$1$</td><td>$(2-2\cdot1,\;1-2\cdot1,\;3)$</td><td>$P_1=(0,-1,3)$</td></tr>
+            <tr><td>$-2$</td><td>$(2-2\cdot(-2),\;1-2\cdot(-2),\;3)$</td><td>$P_{-2}=(6,5,3)$</td></tr>
+            <tr><td>$\tfrac12$</td><td>$(2-2\cdot\tfrac12,\;1-2\cdot\tfrac12,\;3)$</td><td>$P_{1/2}=(1,0,3)$</td></tr>
+          </table>` }
+    ]
+  },
+
+  /* ===================== EJERCICIO 3 ===================== */
+  {
+    titulo: "Ejercicio 3",
+    enunciado: '<p class="nota">Ecuaciones de la recta</p>' + String.raw`
+      <p>Obtener las ecuaciones paramétricas de la recta dada por:</p>
+      $$r\equiv\left\{\begin{array}{rcl} x+y+z&=&0\\ x+y-z&=&2 \end{array}\right.$$`,
+    pasos: [
+      { titulo: "Interpretación geométrica", html: '<div class="fig3d" data-fig="ej3"></div>' },
+      /* ---------- Método 1: resolver el sistema ---------- */
+      { titulo: "Método 1: resolver el sistema",
+        html: '<p>Escribimos la matriz ampliada y buscamos un menor de orden 2 distinto de cero:</p>' +
+              ec(mat([['1','1','1','0'], ['1','1','-1','2']], {bar: 3, box: [[0,1,1,2]], etq: [[0, 'x=\\lambda']]})) +
+              String.raw`<p>El menor marcado (columnas de $y$ y de $z$) vale:</p>
+              $$\begin{vmatrix} 1&1\\ 1&-1 \end{vmatrix}=-1-1=-2\neq0$$
+              <p>Luego el rango es 2. La incógnita que queda fuera del menor, $x$, la tomamos como parámetro: $x=\lambda$.</p>` },
+      { titulo: "Sustituimos $x=\\lambda$",
+        html: '<p>Pasamos $\\lambda$ al segundo miembro:</p>' +
+              sis(['\\lambda+y+z', '0'], ['\\lambda+y-z', '2']) +
+              '<p>y queda:</p>' +
+              sis(['y+z', '-\\lambda'], ['y-z', '2-\\lambda']) },
+      { titulo: "Resolvemos el sistema",
+        html: String.raw`<p>Sumando las dos ecuaciones:</p>
+          $$(y+z)+(y-z)=-\lambda+(2-\lambda)\;\Rightarrow\;2y=2-2\lambda\;\Rightarrow\;y=1-\lambda$$
+          <p>Restando las dos ecuaciones:</p>
+          $$(y+z)-(y-z)=-\lambda-(2-\lambda)\;\Rightarrow\;2z=-2\;\Rightarrow\;z=-1$$` },
+      { caja: "Solución paramétrica",
+        html: sis(['x', '\\lambda'], ['y', '1-\\lambda'], ['z', '-1']) +
+              String.raw`<p style="text-align:center">$\lambda\in\mathbb{R}$</p>` },
+
+      /* ---------- Método 2: Cramer ---------- */
+      { titulo: "Otra forma: regla de Cramer",
+        html: String.raw`<p>Para el sistema en $y$ y $z$:</p>` +
+              sis(['y+z', '-\\lambda'], ['y-z', '2-\\lambda']) +
+              String.raw`<p>El determinante principal es:</p>
+              $$\Delta=\begin{vmatrix} 1&1\\ 1&-1 \end{vmatrix}=(1)(-1)-(1)(1)=-2\neq0$$` },
+      { titulo: "Determinantes de $y$ y de $z$",
+        html: '<p>Sustituimos cada columna por la de términos independientes:</p>' +
+              filaCol(
+                sub(String.raw`\Delta_y=\begin{vmatrix} -\lambda&1\\ 2-\lambda&-1 \end{vmatrix}=(-\lambda)(-1)-(1)(2-\lambda)=\lambda-2+\lambda=2\lambda-2`),
+                sub(String.raw`\Delta_z=\begin{vmatrix} 1&-\lambda\\ 1&2-\lambda \end{vmatrix}=(1)(2-\lambda)-(-\lambda)(1)=2-\lambda+\lambda=2`)) +
+              String.raw`$$y=\frac{\Delta_y}{\Delta}=\frac{2\lambda-2}{-2}=1-\lambda,\qquad z=\frac{\Delta_z}{\Delta}=\frac{2}{-2}=-1$$
+              <p>Coincide con la solución obtenida antes.</p>` },
+
+      /* ---------- Método 3: producto vectorial ---------- */
+      { titulo: "Otra forma: producto vectorial",
+        html: String.raw`<p>Cada ecuación representa un plano. Sus vectores normales son:</p>
+          $$\vec{n}_1=(1,1,1),\qquad\vec{n}_2=(1,1,-1)$$
+          <p>El vector director de la recta es perpendicular a los dos normales:</p>
+          $$\vec{v}=\vec{n}_1\times\vec{n}_2=\begin{vmatrix} \mathbf{i}&\mathbf{j}&\mathbf{k}\\ 1&1&1\\ 1&1&-1 \end{vmatrix}=\mathbf{i}(-1-1)-\mathbf{j}(-1-1)+\mathbf{k}(1-1)=(-2,2,0)$$
+          <p>Dividiendo entre $-2$ obtenemos un vector director más sencillo: $\vec{v}=(1,-1,0)$.</p>` },
+      { titulo: "Un punto de la recta",
+        html: String.raw`<p>Damos a $x$ un valor conveniente, por ejemplo $x=0$, y resolvemos el sistema:</p>` +
+              sis(['y+z', '0'], ['y-z', '2']) +
+              String.raw`<p>Sumando las dos ecuaciones y sustituyendo en la primera:</p>
+              $$2y=2\;\Rightarrow\;y=1,\qquad 1+z=0\;\Rightarrow\;z=-1$$
+              <p>Un punto de la recta es $P(0,1,-1)$.</p>` },
+      { caja: "Solución paramétrica",
+        html: sis(['x', '0+\\lambda'], ['y', '1-\\lambda'], ['z', '-1+0\\lambda']) +
+              String.raw`<p style="text-align:center">que es lo mismo que $x=\lambda,\ y=1-\lambda,\ z=-1\qquad(\lambda\in\mathbb{R})$</p>` }
+    ]
+  },
+
+  /* ===================== EJERCICIO 4 ===================== */
+  {
+    titulo: "Ejercicio 4",
+    enunciado: '<p class="nota">Ecuaciones del plano</p>' + String.raw`
+      <p>Ecuación del plano que pasa por el punto $P(1,2,-3)$ y tiene como vectores directores $\vec{u}=(0,2,1)$ y $\vec{v}=(4,-2,0)$.</p>`,
+    pasos: [
+      { titulo: "Interpretación geométrica", html: '<div class="fig3d" data-fig="ej4"></div>' },
+      { titulo: "Ecuaciones paramétricas del plano",
+        html: String.raw`<p>Un punto cualquiera del plano es $P+\lambda\,\vec{u}+\mu\,\vec{v}$:</p>
+          $$(x,y,z)=(1,2,-3)+\lambda\,(0,2,1)+\mu\,(4,-2,0)$$` +
+              sis(['x', '1+4\\mu'], ['y', '2+2\\lambda-2\\mu'], ['z', '-3+\\lambda']) },
+      { titulo: "Ecuación general del plano",
+        html: String.raw`<p>La ecuación general es $Ax+By+Cz+D=0$. Se obtiene con el determinante de los dos vectores directores y el vector $(x,y,z)$:</p>
+          $$\begin{vmatrix} x&y&z\\ 0&2&1\\ 4&-2&0 \end{vmatrix}+D=0$$
+          <p>Desarrollamos por la primera fila:</p>
+          $$x\begin{vmatrix} 2&1\\ -2&0 \end{vmatrix}-y\begin{vmatrix} 0&1\\ 4&0 \end{vmatrix}+z\begin{vmatrix} 0&2\\ 4&-2 \end{vmatrix}$$
+          $$=x\bigl(2\cdot0-1\cdot(-2)\bigr)-y\bigl(0\cdot0-1\cdot4\bigr)+z\bigl(0\cdot(-2)-2\cdot4\bigr)=2x+4y-8z$$
+          <p>Por tanto, $2x+4y-8z+D=0$.</p>` },
+      { titulo: "Cálculo de $D$",
+        html: String.raw`<p>Imponemos que el plano pase por $P(1,2,-3)$:</p>
+          $$2(1)+4(2)-8(-3)+D=0\;\Rightarrow\;2+8+24+D=0\;\Rightarrow\;34+D=0\;\Rightarrow\;D=-34$$` },
+      { caja: "Ecuación del plano",
+        html: String.raw`$$2x+4y-8z-34=0$$
+          <p class="nota">Dividiendo entre 2: $x+2y-4z-17=0$.</p>` },
+      { titulo: "Observación",
+        html: String.raw`<p>Al calcular el determinante sin la constante $D$ obtenemos $2x+4y-8z=0$: un plano paralelo al buscado que pasa por el origen $(0,0,0)$.</p>
+          <p>Al imponer que $P$ pertenezca al plano, con $D=-34$, desplazamos ese plano paralelo hasta su posición correcta. Todos los planos paralelos tienen los mismos $A$, $B$, $C$ y distinta constante $D$.</p>` },
+      { titulo: "Otra forma: el determinante con el punto",
+        html: String.raw`<p>Restamos el punto $P(1,2,-3)$ a $(x,y,z)$ y el determinante ya se iguala a cero, sin $D$:</p>
+          $$\begin{vmatrix} x-1&y-2&z+3\\ 0&2&1\\ 4&-2&0 \end{vmatrix}=0$$
+          $$2(x-1)+4(y-2)-8(z+3)=2x+4y-8z-34=0$$` },
+      { titulo: "¿Por qué aparece el determinante? Con el rango",
+        html: String.raw`<p>Los vectores $\vec{u}=(0,2,1)$ y $\vec{v}=(4,-2,0)$ son linealmente independientes: tienen rango 2, y por eso definen un plano.</p>
+          <p>Si añadimos el vector $(x,y,z)$, el rango de la matriz no puede ser 3 (el máximo es 2), luego su determinante es cero:</p>` +
+              ec(mat([['x','y','z'],['0','2','1'],['4','-2','0']]), f('\\;\\text{no puede tener rango }3\\;\\Rightarrow\\;\\det=0')) },
+      { titulo: "¿Por qué aparece el determinante? Con el producto vectorial",
+        html: String.raw`<p>El vector normal $\vec{n}$ es perpendicular a $\vec{u}$ y a $\vec{v}$, luego $\vec{n}=\vec{u}\times\vec{v}$:</p>
+          $$\vec{n}=\vec{u}\times\vec{v}=\begin{vmatrix} \mathbf{i}&\mathbf{j}&\mathbf{k}\\ 0&2&1\\ 4&-2&0 \end{vmatrix}=\mathbf{i}(0+2)-\mathbf{j}(0-4)+\mathbf{k}(0-8)=(2,4,-8)$$
+          <p>Y el producto escalar $\vec{n}\cdot(x,y,z)=0$ es exactamente el determinante:</p>
+          $$2x+4y-8z=0$$` }
+    ]
+  },
+
+  /* ===================== EJERCICIO 5 ===================== */
+  {
+    titulo: "Ejercicio 5",
+    enunciado: '<p class="nota">Ecuaciones del plano</p>' + String.raw`
+      <p>Ecuación del plano que pasa por los puntos $A(1,2,-1)$, $B(0,0,1)$ y $C(2,2,2)$.</p>`,
+    pasos: [
+      { titulo: "Interpretación geométrica", html: '<div class="fig3d" data-fig="ej5"></div>' },
+      { titulo: "1. Qué necesitamos",
+        html: String.raw`<p>Para escribir $Ax+By+Cz+D=0$ necesitamos:</p>
+          <p style="margin-left:1.6em">• un <b>punto</b> del plano (sirve $A$, $B$ o $C$);</p>
+          <p style="margin-left:1.6em">• dos <b>vectores diferencia</b> contenidos en el plano.</p>` },
+      { titulo: "2. Vectores diferencia",
+        html: String.raw`<p>Tomamos el punto $A(1,2,-1)$ como referencia:</p>
+          $$\vec{u}=\overrightarrow{AB}=(0-1,\,0-2,\,1-(-1))=(-1,-2,2)$$
+          $$\vec{v}=\overrightarrow{AC}=(2-1,\,2-2,\,2-(-1))=(1,0,3)$$` },
+      { titulo: "3. Método del determinante",
+        html: String.raw`$$\begin{vmatrix} x&y&z\\ -1&-2&2\\ 1&0&3 \end{vmatrix}+D=0$$
+          <p>Desarrollamos por la primera fila:</p>
+          $$x\begin{vmatrix} -2&2\\ 0&3 \end{vmatrix}-y\begin{vmatrix} -1&2\\ 1&3 \end{vmatrix}+z\begin{vmatrix} -1&-2\\ 1&0 \end{vmatrix}$$
+          $$=x(-6-0)-y(-3-2)+z\bigl(0-(-2)\bigr)=-6x+5y+2z$$
+          <p>Luego $-6x+5y+2z+D=0$.</p>` },
+      { titulo: "4. Cálculo de $D$",
+        html: String.raw`<p>Sustituimos $A(1,2,-1)$:</p>
+          $$-6(1)+5(2)+2(-1)+D=0\;\Rightarrow\;-6+10-2+D=0\;\Rightarrow\;2+D=0\;\Rightarrow\;D=-2$$` },
+      { caja: "Ecuación del plano",
+        html: String.raw`$$-6x+5y+2z-2=0$$` },
+      { titulo: "Comprobación",
+        html: String.raw`<p>Los otros dos puntos también cumplen la ecuación:</p>
+          $$B(0,0,1):\;-6\cdot0+5\cdot0+2\cdot1-2=0\ \checkmark$$
+          $$C(2,2,2):\;-6\cdot2+5\cdot2+2\cdot2-2=-12+10+4-2=0\ \checkmark$$` }
+    ]
+  },
+
+  /* ===================== EJERCICIO 6 ===================== */
+  {
+    titulo: "Ejercicio 6",
+    enunciado: '<p class="nota">Ecuación del plano que contiene a una recta y pasa por un punto</p>' + String.raw`
+      <p>Ecuación del plano que contiene la recta $\dfrac{x-1}{2}=y=\dfrac{z-2}{3}$ y pasa por el punto $P(1,2,3)$.</p>`,
+    pasos: [
+      { titulo: "Interpretación geométrica", html: '<div class="fig3d" data-fig="ej6"></div>' },
+      { titulo: "1. Datos de la recta",
+        html: String.raw`<p>La recta es $\dfrac{x-1}{2}=\dfrac{y-0}{1}=\dfrac{z-2}{3}$, luego:</p>
+          $$P_r=(1,0,2),\qquad\vec{v}_r=(2,1,3)$$` },
+      { titulo: "2. Vector diferencia",
+        html: String.raw`$$\overrightarrow{P_rP}=P-P_r=(1-1,\,2-0,\,3-2)=(0,2,1)$$` },
+      { titulo: "3. Vectores directores del plano",
+        html: String.raw`<p>El plano contiene a la recta y pasa por $P$; sus vectores directores son:</p>
+          $$\vec{u}=\vec{v}_r=(2,1,3),\qquad\vec{v}=\overrightarrow{P_rP}=(0,2,1)$$` },
+      { titulo: "4. Ecuación general del plano",
+        html: String.raw`$$\begin{vmatrix} x&y&z\\ 2&1&3\\ 0&2&1 \end{vmatrix}+D=0$$
+          <p>Desarrollamos por la primera fila:</p>
+          $$x\begin{vmatrix} 1&3\\ 2&1 \end{vmatrix}-y\begin{vmatrix} 2&3\\ 0&1 \end{vmatrix}+z\begin{vmatrix} 2&1\\ 0&2 \end{vmatrix}$$
+          $$=x(1-6)-y(2-0)+z(4-0)=-5x-2y+4z$$
+          <p>Luego $-5x-2y+4z+D=0$.</p>` },
+      { titulo: "5. Cálculo de $D$",
+        html: String.raw`<p>Sustituimos $P(1,2,3)$:</p>
+          $$-5(1)-2(2)+4(3)+D=0\;\Rightarrow\;-5-4+12+D=0\;\Rightarrow\;3+D=0\;\Rightarrow\;D=-3$$` },
+      { caja: "Ecuación del plano",
+        html: String.raw`$$-5x-2y+4z-3=0$$` },
+      { titulo: "Comprobación",
+        html: String.raw`<p>También el punto $P_r(1,0,2)$ de la recta cumple la ecuación:</p>
+          $$-5(1)-2(0)+4(2)-3=-5+8-3=0\ \checkmark$$` },
+      { titulo: "Otra forma: con el punto $P$",
+        html: String.raw`<p>Restando las coordenadas de $P(1,2,3)$, el determinante se iguala directamente a cero:</p>
+          $$\begin{vmatrix} x-1&y-2&z-3\\ 2&1&3\\ 0&2&1 \end{vmatrix}=0$$
+          $$-5(x-1)-2(y-2)+4(z-3)=-5x-2y+4z-3=0$$` }
+    ]
+  },
+
+  /* ===================== EJERCICIO 7 ===================== */
+  {
+    titulo: "Ejercicio 7",
+    enunciado: '<p class="nota">Plano que contiene a dos rectas paralelas</p>' + String.raw`
+      <p>Calcula la ecuación del plano que contiene a las dos rectas paralelas:</p>
+      $$r:\left\{\begin{array}{rcl} x&=&2+\lambda\\ y&=&2\lambda\\ z&=&-1+3\lambda \end{array}\right.\qquad\qquad s:\ \frac{x-1}{2}=\frac{y-1}{4}=\frac{z-5}{6}$$`,
+    pasos: [
+      { titulo: "Interpretación geométrica", html: '<div class="fig3d" data-fig="ej7"></div>' },
+      { titulo: "1. Puntos y vectores directores",
+        html: String.raw`<p>Recta $r$ (en paramétricas):</p>
+          $$P_r=(2,0,-1),\qquad\vec{v}_r=(1,2,3)$$
+          <p>Recta $s$ (en forma continua):</p>
+          $$P_s=(1,1,5),\qquad\vec{v}_s=(2,4,6)$$` },
+      { titulo: "2. Son paralelas",
+        html: String.raw`<p>Los vectores directores son proporcionales: $\vec{v}_s=2\,\vec{v}_r$, luego las rectas son paralelas.</p>
+          <p>Además no son coincidentes: $\overrightarrow{P_rP_s}=(-1,1,6)$ no es proporcional a $\vec{v}_r$. Por eso las dos rectas determinan un único plano.</p>` },
+      { titulo: "3. Vectores directores del plano",
+        html: String.raw`<p>Tomamos el punto $P_r$, el vector director $\vec{v}_r$ y el vector diferencia $V_d=P_s-P_r$:</p>
+          $$V_d=P_s-P_r=(1,1,5)-(2,0,-1)=(-1,1,6)$$` },
+      { titulo: "4. Ecuación del plano",
+        html: String.raw`<p>Con $P_r=(2,0,-1)$, $\vec{v}_r=(1,2,3)$ y $V_d=(-1,1,6)$:</p>
+          $$\begin{vmatrix} x-2&y-0&z-(-1)\\ 1&2&3\\ -1&1&6 \end{vmatrix}=0\;\Rightarrow\;\begin{vmatrix} x-2&y&z+1\\ 1&2&3\\ -1&1&6 \end{vmatrix}=0$$` },
+      { titulo: "5. Desarrollo con la regla de Sarrus",
+        html: String.raw`$$\begin{aligned}
+          \begin{vmatrix} x-2&y&z+1\\ 1&2&3\\ -1&1&6 \end{vmatrix}&=(x-2)\cdot2\cdot6+y\cdot3\cdot(-1)+(z+1)\cdot1\cdot1\\[1mm]
+          &\quad-\bigl[(z+1)\cdot2\cdot(-1)+y\cdot1\cdot6+(x-2)\cdot3\cdot1\bigr]\\[1mm]
+          &=12(x-2)-3y+(z+1)+2(z+1)-6y-3(x-2)\\[1mm]
+          &=9(x-2)-9y+3(z+1)
+          \end{aligned}$$` },
+      { titulo: "6. Igualamos a cero y simplificamos",
+        html: String.raw`$$9(x-2)-9y+3(z+1)=0$$
+          <p>Dividimos entre 3:</p>
+          $$3(x-2)-3y+(z+1)=0\;\Rightarrow\;3x-6-3y+z+1=0\;\Rightarrow\;3x-3y+z-5=0$$` },
+      { caja: "Ecuación del plano",
+        html: String.raw`$$3x-3y+z=5$$` },
+      { titulo: "Comprobación",
+        html: String.raw`<p>El plano contiene a los dos puntos:</p>
+          $$P_r=(2,0,-1):\;3\cdot2-3\cdot0+(-1)=6-0-1=5\ \checkmark$$
+          $$P_s=(1,1,5):\;3\cdot1-3\cdot1+5=3-3+5=5\ \checkmark$$
+          <p class="nota">Si hubiéramos tomado $P_s$ como punto de paso, $\begin{vmatrix} x-1&y-1&z-5\\ 2&4&6\\ -1&1&6 \end{vmatrix}=0$ conduce a la misma ecuación $3x-3y+z=5$.</p>` }
+    ]
+  },
+
+  /* ===================== EJERCICIO 8 ===================== */
+  {
+    titulo: "Ejercicio 8",
+    enunciado: '<p class="nota">Intersección entre recta y plano</p>' + String.raw`
+      <p>Sea la recta $r$ dada por sus ecuaciones implícitas</p>
+      $$r:\left\{\begin{array}{rcl} x+y-z&=&1\\ 3x+2y+z&=&1 \end{array}\right.$$
+      <p>y sea el plano $\pi:\ 5x+3y+4z=2$. Determina el punto de intersección entre $r$ y $\pi$.</p>`,
+    pasos: [
+      { titulo: "Interpretación geométrica", html: '<div class="fig3d" data-fig="ej8"></div>' },
+      { titulo: "1. Planteamos el sistema",
+        html: '<p>La recta $r$ es la intersección de dos planos. Un punto pertenece a $r\\cap\\pi$ si y solo si cumple las tres ecuaciones a la vez:</p>' +
+              sis(['x+y-z', '1'], ['3x+2y+z', '1'], ['5x+3y+4z', '2']) +
+              '<p>Si el sistema es compatible determinado, su única solución es el punto buscado. Lo resolvemos con la <b>regla de Cramer</b>.</p>' },
+      { titulo: "2. Matriz de coeficientes",
+        html: ec(f('A='), mat([['1','1','-1'],['3','2','1'],['5','3','4']]),
+                 f('\\qquad b='), mat([['1'],['1'],['2']])) +
+              '<p>$A$ es la matriz de coeficientes y $b$ la columna de términos independientes.</p>' },
+      { titulo: "3. Determinante principal",
+        html: '<p>Desarrollamos $|A|$ con la regla de Sarrus:</p>' +
+              '$$|A|=' + detTex([['1','1','-1'],['3','2','1'],['5','3','4']]) + '=' +
+              sarrusTex([['1','1','-1'],['3','2','1'],['5','3','4']]) + '\\neq0$$' +
+              '<p>Como $|A|=-1\\neq0$, el sistema es compatible determinado: tiene una única solución.</p>' },
+      { titulo: "4. Determinantes de Cramer",
+        html: '<p>En cada uno sustituimos la columna de la incógnita por la de términos independientes $(1,\\,1,\\,2)$:</p>' +
+              filaCol(
+                cramer('D_x', [['1','1','-1'],['1','2','1'],['2','3','4']]),
+                cramer('D_y', [['1','1','-1'],['3','1','1'],['5','2','4']]),
+                cramer('D_z', [['1','1','1'],['3','2','1'],['5','3','2']])) },
+      { caja: "Solución por Cramer",
+        html: String.raw`$$\begin{aligned}
+          x&=\frac{D_x}{|A|}=\frac{4}{-1}=-4\\[2mm]
+          y&=\frac{D_y}{|A|}=\frac{-6}{-1}=6\\[2mm]
+          z&=\frac{D_z}{|A|}=\frac{-1}{-1}=1
+          \end{aligned}$$
+          <p><b class="res">El punto de intersección es $(-4,\,6,\,1)$.</b></p>` },
+      { titulo: "Comprobación",
+        html: String.raw`<p>Sustituimos el punto en las tres ecuaciones:</p>
+          $$-4+6-1=1\ \checkmark$$
+          $$3(-4)+2\cdot6+1=-12+12+1=1\ \checkmark$$
+          $$5(-4)+3\cdot6+4\cdot1=-20+18+4=2\ \checkmark$$` }
+    ]
+  },
+
+  /* ===================== EJERCICIO 9 ===================== */
+  {
+    titulo: "Ejercicio 9",
+    enunciado: '<p class="nota">Intersección entre recta y plano</p>' + String.raw`
+      <p>Calcula la intersección entre la recta $x-1=\dfrac{y-2}{-2}=\dfrac{z+1}{3}$ y el plano $x+y=3$.</p>`,
+    pasos: [
+      { titulo: "Interpretación geométrica", html: '<div class="fig3d" data-fig="ej9"></div>' },
+      { titulo: "1. Ecuaciones paramétricas de la recta",
+        html: String.raw`<p>Tomamos $\lambda\in\mathbb{R}$ como parámetro:</p>
+          $$x-1=\frac{y-2}{-2}=\frac{z+1}{3}=\lambda$$` +
+              sis(['x', '1+\\lambda'], ['y', '2-2\\lambda'], ['z', '-1+3\\lambda']) },
+      { titulo: "2. Sustituimos en la ecuación del plano",
+        html: String.raw`<p>Un punto de la recta está en el plano $x+y=3$ cuando:</p>
+          $$(1+\lambda)+(2-2\lambda)=3\;\Rightarrow\;3-\lambda=3\;\Rightarrow\;\lambda=0$$` },
+      { titulo: "3. Coordenadas del punto",
+        html: String.raw`<p>Evaluamos las ecuaciones paramétricas en $\lambda=0$:</p>
+          $$x=1,\qquad y=2,\qquad z=-1$$` },
+      { caja: "Punto de intersección",
+        html: String.raw`<p><b class="res">La recta y el plano se cortan en el punto $(1,\,2,\,-1)$.</b></p>
+          <p class="nota">Comprobación en el plano: $1+2=3$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== EJERCICIO 10 ===================== */
+  {
+    titulo: "Ejercicio 10",
+    enunciado: '<p class="nota">Intersección entre dos rectas</p>' + String.raw`
+      <p>Calcula el punto de intersección de las dos rectas que se cortan:</p>
+      $$r:\left\{\begin{array}{rcl} x&=&3+\lambda\\ y&=&2+2\lambda\\ z&=&2+3\lambda \end{array}\right.\qquad\qquad s:\ \frac{x-3}{1}=\frac{y-1}{1}=\frac{z-0}{1}$$`,
+    pasos: [
+      { titulo: "Interpretación geométrica", html: '<div class="fig3d" data-fig="ej10"></div>' },
+      { titulo: "1. Ecuaciones paramétricas de $s$",
+        html: '<p>La recta $r$ ya está en paramétricas, con parámetro $\\lambda$. Escribimos $s$ también en paramétricas, con parámetro $\\mu$:</p>' +
+              sis(['x', '3+\\mu'], ['y', '1+\\mu'], ['z', '0+\\mu']) },
+      { titulo: "2. Igualamos las coordenadas",
+        html: '<p>En el punto de corte coinciden las tres coordenadas de $r$ y de $s$:</p>' +
+              sis(['3+\\lambda', '3+\\mu'], ['2+2\\lambda', '1+\\mu'], ['2+3\\lambda', '\\mu']) },
+      { titulo: "3. Resolvemos el sistema",
+        html: String.raw`<p>De la primera ecuación: $\lambda=\mu$.</p>
+          <p>Sustituimos $\lambda=\mu$ en la segunda:</p>
+          $$2+2\mu=1+\mu\;\Rightarrow\;2\mu-\mu=1-2\;\Rightarrow\;\mu=-1$$
+          <p>Por tanto, $\lambda=-1$.</p>` },
+      { titulo: "4. Verificamos con la tercera ecuación",
+        html: String.raw`$$2+3\lambda=2+3(-1)=-1\qquad\text{y}\qquad\mu=-1$$
+          <p>Se cumple la igualdad: el sistema es compatible y las rectas se cortan.</p>` },
+      { caja: "Punto de intersección",
+        html: String.raw`<p>Sustituimos $\lambda=-1$ en $r$:</p>
+          $$P=\bigl(3+(-1),\;2+2(-1),\;2+3(-1)\bigr)=(2,0,-1)$$
+          <p><b class="res">El punto de intersección es $P(2,\,0,\,-1)$.</b></p>` },
+      { titulo: "Comprobación",
+        html: String.raw`<p>El punto también pertenece a $s$: para $\mu=-1$ obtenemos</p>
+          $$(3-1,\;1-1,\;0-1)=(2,0,-1)\ \checkmark$$` }
+    ]
+  }
+];
+
+/* ===================================================================== */
+const OPCIONES_MATE = {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "$",  right: "$",  display: false}
+  ],
+  throwOnError: false
+};
+const $ = id => document.getElementById(id);
+function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
+
+/* ---------------------------------------------------------------------
+   MOTOR DEL LIBRO
+   - Cada ejercicio se trocea en "unidades" (un párrafo, una fórmula, una
+     matriz...). Cada clic escribe la siguiente unidad.
+   - Las unidades se reparten en páginas de tamaño fijo (como un libro).
+     Cada valor crítico ("Si a = ...") empieza en página nueva.
+   - Se ven dos páginas. Cuando se llena la de la derecha, pasa a ser la
+     de la izquierda y aparece una página nueva a la derecha.
+   --------------------------------------------------------------------- */
+const LW = 800;                     // ancho lógico de una página (px)
+let actual = 0;                     // ejercicio activo
+let s = 0;                          // unidades escritas
+let G = {};                         // geometría
+let libro = null;                   // {unidades, paginas}
+let Lprev = 0;
+
+function geometria() {
+  const W = $("libro").clientWidth, H = $("libro").clientHeight;
+  const Sw = W / 2, k = (Sw - 20) / LW;
+  G = { W, H, Sw, k, LH: (H - 20) / k };
+}
+
+/* trocea un ejercicio en secciones y unidades (se hace una sola vez) */
+function extraer(e) {
+  if (e._sec) return e._sec;
+  const stage = $("stage"), secs = [];
+  const add = (tipo, cab, html, salto, mismo) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    stage.appendChild(d);
+    mate(d);
+    initFiguras(d);
+    const unidades = [];
+    d.childNodes.forEach(n => {
+      if (n.nodeType === 1) unidades.push(n);
+      else if (n.nodeType === 3 && n.textContent.trim()) {
+        const sp = document.createElement("span"); sp.textContent = n.textContent; unidades.push(sp);
+      }
+    });
+    let cabHTML = null;
+    if (cab) { const c = document.createElement("div"); c.innerHTML = cab; mate(c); cabHTML = c.innerHTML; }
+    secs.push({ tipo, cabHTML, unidades, salto: !!salto, mismo: !!mismo });
+  };
+  add("titulo", null, "<h1>" + e.titulo + "</h1>");
+  add("enun", null, e.enunciado, false, true);      // título y enunciado salen juntos con un clic
+  e.pasos.forEach(p => add(p.caja ? "caja" : "paso", p.caja || p.titulo, p.html, p.caja && /^Si /.test(p.caja)));
+  stage.innerHTML = "";
+  /* un "tic" = un clic. Cada sección es un bloque; dentro de una fila de menores
+     (.fila-menores) cada .sub sale con su propio clic */
+  let base = 0;
+  secs.forEach(sc => {
+    let cur = sc.mismo ? base : base + 1, nuevo = false;
+    sc.unidades = sc.unidades.map(n => {
+      if (nuevo) { cur++; nuevo = false; }
+      const o = { n, t: cur, subs: [] };
+      if (n.classList && n.classList.contains("fila-menores")) {
+        n.querySelectorAll(".sub").forEach(sb => { cur++; o.subs.push({ n: sb, t: cur }); });
+        nuevo = true;
+      }
+      return o;
+    });
+    base = cur;
+  });
+  e._T = base;
+  e._sec = secs;
+  return secs;
+}
+
+function crearCont(sc, sigue) {
+  const c = document.createElement("div");
+  c.className = "cont";
+  if (sc.tipo === "caja") {
+    c.classList.add("caja");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", '<span class="titulo">' + sc.cabHTML + "</span>");
+  } else if (sc.tipo === "paso") {
+    c.classList.add("paso");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", "<h4>" + sc.cabHTML + "</h4>");
+  } else if (sc.tipo === "enun") {
+    c.classList.add("caja", "enunciado");
+  }
+  if (sigue) c.classList.add("sigue");
+  return c;
+}
+
+/* una fórmula más ancha que la página se reduce hasta caber */
+function ajustar(u) {
+  if (u.classList && u.classList.contains("fila-menores")) {
+    u.style.zoom = "";
+    if (u.scrollWidth > u.clientWidth + 2) u.style.zoom = String(Math.max(.55, u.clientWidth / u.scrollWidth * .97));
+  }
+  u.querySelectorAll(".katex-display").forEach(d => {
+    const k = d.firstElementChild;
+    if (!k) return;
+    k.style.zoom = "";
+    if (d.scrollWidth > d.clientWidth + 2) k.style.zoom = String(Math.max(.55, d.clientWidth / d.scrollWidth * .98));
+  });
+}
+
+/* reparte las unidades en páginas del tamaño actual */
+function paginar(secs, T) {
+  secs.T = T;
+  const pista = $("pista");
+  pista.innerHTML = "";
+  const paginas = [], unidades = [];
+  const nueva = () => {
+    const hoja = document.createElement("div");
+    hoja.className = "hoja";
+    hoja.style.cssText = "left:" + (paginas.length * G.Sw) + "px;width:" + G.Sw + "px;height:" + G.H + "px";
+    const pag = document.createElement("div");
+    pag.className = "pag";
+    pag.style.cssText = "width:" + LW + "px;height:" + G.LH + "px;transform:scale(" + G.k + ")";
+    const cu = document.createElement("div");
+    cu.className = "cuerpo";
+    cu.style.height = (G.LH - 34 - 56) + "px";
+    const num = document.createElement("div");
+    num.className = "num"; num.textContent = paginas.length + 1;
+    pag.append(cu, num); hoja.appendChild(pag); pista.appendChild(hoja);
+    const o = { hoja, cu };
+    paginas.push(o);
+    return o;
+  };
+  let pg = nueva();
+  const desborda = () => pg.cu.scrollHeight > pg.cu.clientHeight + 1;
+  secs.forEach(sc => {
+    if (sc.salto && pg.cu.children.length) pg = nueva();
+    let cont = crearCont(sc, false), puestas = 0;
+    pg.cu.appendChild(cont);
+    /* un bloque (lo que sale con un clic) nunca se parte entre dos páginas */
+    const bloques = [];
+    sc.unidades.forEach(un => {
+      const ult = bloques[bloques.length - 1];
+      if (ult && ult[0].t === un.t) ult.push(un); else bloques.push([un]);
+    });
+    bloques.forEach(bl => {
+      bl.forEach(un => {
+        un.n.classList.add("u"); un.n.classList.remove("on");
+        un.subs.forEach(sb => { sb.n.classList.add("u"); sb.n.classList.remove("on"); });
+        cont.appendChild(un.n);
+      });
+      bl.forEach(un => ajustar(un.n));
+      if (desborda()) {
+        bl.forEach(un => cont.removeChild(un.n));
+        if (!puestas) pg.cu.removeChild(cont);
+        if (pg.cu.children.length) pg = nueva();     // página nueva solo si la actual ya tiene algo
+        cont = crearCont(sc, puestas > 0);
+        pg.cu.appendChild(cont);
+        bl.forEach(un => cont.appendChild(un.n));
+        bl.forEach(un => ajustar(un.n));
+      }
+      puestas += bl.length;
+      const pi = paginas.indexOf(pg);
+      bl.forEach(un => {
+        unidades.push({ u: un.n, cont, pag: pi, t: un.t, on: false });
+        un.subs.forEach(sb => unidades.push({ u: sb.n, cont, pag: pi, t: sb.t, on: false }));
+      });
+    });
+  });
+  libro = { unidades, paginas, T: secs.T };
+}
+
+/* pone al día lo que se ve según s */
+function aplicar(anim) {
+  const U = libro.unidades;
+  s = Math.max(0, Math.min(s, libro.T));
+  const conts = new Map();
+  U.forEach((o, i) => {
+    const on = o.t <= s;
+    if (on !== o.on) {
+      o.on = on;
+      if (on) { o.u.classList.remove("rapido"); o.u.classList.add("on"); }
+      else { o.u.classList.add("rapido"); o.u.classList.remove("on"); }
+    }
+    if (on) conts.set(o.cont, true); else if (!conts.has(o.cont)) conts.set(o.cont, false);
+  });
+  conts.forEach((v, c) => {
+    if (v) { c.classList.remove("rapido"); c.classList.add("on"); }
+    else { c.classList.add("rapido"); c.classList.remove("on"); }
+  });
+  let p = 0;
+  U.forEach(o => { if (o.t <= s) p = Math.max(p, o.pag); });
+  const L = Math.max(p - 1, 0);
+  const pista = $("pista");
+  pista.classList.toggle("anim", !!anim);
+  pista.style.transform = "translateX(" + (-L * G.Sw) + "px)";
+  if (anim && L > Lprev) {
+    const h = libro.paginas[p].hoja;
+    h.classList.remove("gira"); void h.offsetWidth; h.classList.add("gira");
+    setTimeout(() => h.classList.remove("gira"), 1000);
+  }
+  Lprev = L;
+  const n = libro.T;
+  $("contador").textContent = EJERCICIOS[actual].titulo + " · " + s + " / " + n;
+  $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
+  $("btnAtras").disabled = (actual === 0 && s <= 1);
+  $("btnAdelante").disabled = (actual === EJERCICIOS.length - 1 && s === n);
+}
+
+function pintarPestanas() {
+  const nav = $("pestanas");
+  nav.innerHTML = "";
+  EJERCICIOS.forEach((e, i) => {
+    const b = document.createElement("button");
+    b.textContent = e.titulo.replace("Ejercicio ", "Ej. ");
+    b.setAttribute("aria-selected", i === actual);
+    b.onclick = ev => { ev.stopPropagation(); cargar(i, false); };
+    nav.appendChild(b);
+  });
+  const sel = nav.querySelector('[aria-selected="true"]');
+  if (sel) sel.scrollIntoView({ inline: "center", block: "nearest" });
+}
+
+function construir() {
+  geometria();
+  const e = EJERCICIOS[actual];
+  const secs = extraer(e);
+  paginar(secs, e._T);
+}
+
+async function cargar(i, alFinal) {
+  const lib = $("libro");
+  lib.classList.add("fuera");
+  await new Promise(r => setTimeout(r, 200));
+  actual = i;
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  construir();
+  s = alFinal ? libro.T : 1;          // al abrir un ejercicio ya se ve el enunciado
+  Lprev = 0;
+  pintarPestanas();
+  aplicar(false);
+  lib.classList.remove("fuera");
+}
+
+function avanzar() {
+  if (s < libro.T) { s++; aplicar(true); }
+  else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
+}
+function retroceder() {
+  if (s > 1) { s--; aplicar(true); }
+  else if (actual > 0) cargar(actual - 1, true);
+}
+
+/* clic: tercio izquierdo = atrás; resto = adelante */
+$("libro").addEventListener("click", ev => {
+  if (String(window.getSelection())) return;
+  if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
+});
+$("btnAtras").onclick = ev => { ev.stopPropagation(); retroceder(); };
+$("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
+$("tira").onclick = ev => {
+  ev.stopPropagation();
+  const r = $("tira").getBoundingClientRect();
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * libro.T));
+  aplicar(true);
+};
+document.addEventListener("keydown", ev => {
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
+  else if (ev.key === "Home") { s = 1; aplicar(true); }
+  else if (ev.key === "End") { s = libro.T; aplicar(true); }
+});
+let tRes = null;
+window.addEventListener("resize", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); Lprev = 0; aplicar(false); } }, 150);
+});
+
+window.addEventListener("load", () => cargar(0, false));
+if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); aplicar(false); } }, 60);
+});
+</script>
+</body>
+</html>
