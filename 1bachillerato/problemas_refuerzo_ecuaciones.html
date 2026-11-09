@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Problemas de refuerzo: ecuaciones, sistemas y grifos</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#1414E6; --rojo:#E01E1E; --gris:#666; --verde-num:#2e9e2e;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;color:var(--texto);cursor:pointer;
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:20px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+
+  html,body{overflow:hidden}
+  body{background:#fff}
+
+  /* barra superior */
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:0 14px;display:flex;gap:14px;align-items:center;font-size:.85rem;color:var(--gris)}
+  .barra-sup .tit{font-weight:bold;color:#333;white-space:nowrap}
+  .barra-sup .ayuda{white-space:nowrap;font-size:.8rem;color:#888}
+  @media (max-width:1100px){.barra-sup .ayuda{display:none}}
+  .barra-sup .borrar{font:inherit;font-size:.8rem;padding:3px 10px;border-radius:8px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #bbb;color:#555}
+  .barra-sup .borrar:hover{border-color:#333;color:#333}
+  .pestanas{display:flex;gap:6px;flex:1;justify-content:center;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pestanas::-webkit-scrollbar{display:none}
+  /* número de cada problema: verde; los de grifos, azul */
+  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid var(--verde-num);color:var(--verde-num)}
+  .pestanas button[aria-selected="true"]{background:var(--verde-num);color:#fff}
+  .pestanas button.agua{border-color:var(--azul);color:var(--azul)}
+  .pestanas button.agua[aria-selected="true"]{background:var(--azul);color:#fff}
+
+  /* barra inferior: botones grandes (pizarra digital) y progreso */
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:.85rem;color:var(--gris)}
+  .progreso .tira{flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .nav{font:inherit;font-size:1.5rem;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:9.5em;text-align:right;white-space:nowrap}
+
+  /* el libro: dos páginas, separadas solo por una línea fina */
+  #libro{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:hidden;background:#fff;transition:opacity .25s ease}
+  #libro.fuera{opacity:0}
+  #pista{position:absolute;left:0;top:0;height:100%;will-change:transform}
+  #pista.anim{transition:transform .9s cubic-bezier(.65,.05,.25,1)}
+  .hoja{position:absolute;top:0;padding:6px 8px}
+  .pag{position:relative;background:#fff;transform-origin:0 0;padding:30px 40px 0}
+  .pag .cuerpo{display:flow-root;overflow:hidden}
+  .pag .num{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#bbb;font-size:.8rem}
+  #lomo{position:absolute;left:50%;top:14px;bottom:14px;width:0;border-left:1px solid #c9c9c9;pointer-events:none;z-index:2}
+  .hoja.gira .pag{animation:gira .9s ease both}
+  @keyframes gira{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#pista.anim{transition:none}.hoja.gira .pag{animation:none}}
+
+  /* lo que se va escribiendo */
+  .cont{opacity:0;transition:opacity .35s ease}
+  .cont.on{opacity:1}
+  .u{opacity:0;clip-path:inset(-40px 100% -40px -40px);transition:opacity .25s ease,clip-path .85s ease}
+  span.u{display:block}
+  .u.on{opacity:1;clip-path:inset(-40px -40px -40px -40px)}
+  .u.rapido,.cont.rapido{transition:none}
+  .cont.sigue{margin-top:0;padding-top:14px;border-top-left-radius:0;border-top-right-radius:0}
+  h1{margin:0 0 6px;font-size:2.1rem;line-height:1.2}
+  h1 .np{color:var(--verde-num)}
+  h1.agua .np{color:var(--azul)}
+  h4{margin:16px 0 6px;font-size:1.18rem}
+
+  /* cajas verdes del modelo */
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:20px 20px 10px;margin:26px 0 14px}
+  .caja>.titulo{position:absolute;top:-13px;left:12px;background:var(--verde-titulo);color:#fff;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.92rem}
+  .caja.enunciado{color:var(--azul);margin-top:6px;padding-top:12px}
+  .caja p{margin:.3em 0 .5em}
+  .paso{margin:6px 0 10px}
+
+  /* frases del enunciado: subrayador (al pasar el ratón; doble clic = se queda fijado) */
+  .fr{border-radius:4px;padding:1px 1px;cursor:pointer;transition:background-color .15s ease;
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;
+    -webkit-box-decoration-break:clone;box-decoration-break:clone}
+  .fr.c1{--hl:#FFE066} .fr.c2{--hl:#9BE9A8} .fr.c3{--hl:#8FD3FF}
+  .fr.c4{--hl:#FFA8D0} .fr.c5{--hl:#FFC47A} .fr.c6{--hl:#CDB4FF}
+  .fr.hov,.fr.fija{background-color:var(--hl)}
+
+  /* matrices con menores marcados en caja roja */
+  .ec{display:flex;align-items:center;justify-content:center;gap:.5em;margin:.6em 0;flex-wrap:wrap}
+  .mat{--w:2.5em;--h:1.7em;position:relative;display:inline-grid;
+    grid-template-columns:repeat(var(--nc),var(--w));grid-auto-rows:var(--h);
+    margin:1.1em .7em .2em;text-align:center}
+  .mat .c{display:flex;align-items:center;justify-content:center;white-space:nowrap}
+  .mat::before,.mat::after{content:"";position:absolute;top:-.15em;bottom:-.15em;width:.55em;border:2px solid #111}
+  .mat::before{left:-.7em;border-right:0;border-radius:60% 0 0 60%/50% 0 0 50%}
+  .mat::after{right:-.7em;border-left:0;border-radius:0 60% 60% 0/0 50% 50% 0}
+  .mat .bar{position:absolute;top:.1em;bottom:.1em;left:calc(var(--k) * var(--w));border-left:1.5px solid #111}
+  .nota{color:var(--gris);font-size:.9em}
+  b.res{color:var(--rojo)}
+  .katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden}
+
+  /* esquema del depósito (problemas con grifos abiertos por fases) */
+  .tanque-wrap{margin:.6em 0 .8em}
+  .tanque{display:flex;height:74px;border:3px solid var(--azul);border-radius:10px;overflow:hidden;background:#fff}
+  .tanque .seg{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:0 6px;overflow:hidden;font-size:.78em;line-height:1.2;text-align:center;border-right:2px dashed #fff}
+  .tanque .seg:last-child{border-right:0}
+  .tanque .seg.s1{background:#BFD4FF;color:#102a6b}
+  .tanque .seg.s2{background:#B9F0B9;color:#14501a}
+  .tanque .seg .katex{font-size:1em}
+</style>
+</head>
+<body>
+<div class="barra-sup">
+  <nav class="pestanas" id="pestanas" aria-label="Problemas"></nav>
+</div>
+<div id="libro"><div id="pista"></div><div id="lomo"></div></div>
+<div id="stage" style="position:absolute;left:-99999px;top:0;width:720px;visibility:hidden"></div>
+<div class="progreso">
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
+  <span id="contador"></span>
+</div>
+
+<script>
+const R = String.raw;
+
+/* ---------------------------------------------------------------------
+   Matriz con barra opcional.
+   rows: filas (cadenas LaTeX); opts.bar = nº de columnas antes de la barra;
+   opts.w = ancho de columna en em
+   --------------------------------------------------------------------- */
+function mat(rows, opts = {}) {
+  const nr = rows.length, nc = rows[0].length;
+  const largo = Math.max(...rows.map(r => Math.max(...r.map(c => String(c).replace(/\\[a-zA-Z]+|[{}\s]/g, '').length))));
+  const ancho = opts.w || Math.max(2.5, 1.0 + 0.55 * largo);
+  let h = '<span class="mat" style="--nc:' + nc + ';--nr:' + nr + ';--w:' + ancho.toFixed(2) + 'em">';
+  rows.forEach(r => r.forEach(c => { h += '<span class="c">$' + c + '$</span>'; }));
+  if (opts.bar != null) h += '<span class="bar" style="--k:' + opts.bar + '"></span>';
+  return h + '</span>';
+}
+const ec = (...partes) => '<div class="ec">' + partes.join('') + '</div>';
+const f = s => '<span>$' + s + '$</span>';
+
+/* ---------------------------------------------------------------------
+   Ayudantes numéricos (regla de Cramer)
+   --------------------------------------------------------------------- */
+const detTex = filas => '\\begin{vmatrix} ' + filas.map(r => r.join('&')).join('\\\\ ') + ' \\end{vmatrix}';
+const det3 = M => M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1])
+                - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0])
+                + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
+const suma = t => t.map((x, i) => (i && x >= 0) ? '+' + x : String(x)).join('');
+function sarrusTex(M0) {
+  const a = M0.map(r => r.map(Number));
+  const p = [a[0][0] * a[1][1] * a[2][2], a[0][1] * a[1][2] * a[2][0], a[0][2] * a[1][0] * a[2][1]];
+  const n = [a[0][2] * a[1][1] * a[2][0], a[0][0] * a[1][2] * a[2][1], a[0][1] * a[1][0] * a[2][2]];
+  return '(' + suma(p) + ')-(' + suma(n) + ')=' + det3(a);
+}
+
+/* ---------------------------------------------------------------------
+   Frases del enunciado y ecuaciones con el mismo color
+   fr(k, texto): frase que se subraya (las frases con el mismo k forman un grupo)
+   ce(k, tex):   la ecuación que sale de esa frase, con el mismo color de fondo
+   --------------------------------------------------------------------- */
+const HL = ['', '#FFE066', '#9BE9A8', '#8FD3FF', '#FFA8D0', '#FFC47A', '#CDB4FF'];
+const fr = (k, t) => '<span class="fr c' + k + '" data-g="' + k + '">' + t + '</span>';
+const ce = (k, tex) => '\\colorbox{' + HL[k] + '}{$\\,' + tex + '\\,$}';
+const sis = filas => '$$\\left\\{\\begin{array}{l}' + filas.join('\\\\[2mm]') + '\\end{array}\\right.$$';
+const un = tex => '$$' + tex + '$$';
+
+const sustCol = (A, j, b) => A.map((r, i) => r.map((v, k) => k === j ? b[i] : v));
+const detCompleto = M => '$$' + detTex(M) + '=' + sarrusTex(M) + '$$';
+function pasosCramer(A, b) {
+  const nom = ['x', 'y', 'z'];
+  const num = M => M.map(r => r.map(Number));
+  const D = det3(num(A));
+  const Ds = [0, 1, 2].map(j => det3(num(sustCol(A, j, b))));
+  const pasos = [
+    { titulo: 'Escribimos el sistema en forma matricial',
+      html: ec(mat(A), mat([['x'], ['y'], ['z']]), f('='), mat(b.map(v => [v]))) },
+    { titulo: 'Regla de Cramer: determinante del sistema',
+      html: '<p>Calculamos $D=|A|$ con la regla de Sarrus:</p>' + detCompleto(A) +
+            '<p>Como $D\\neq0$, el sistema es compatible determinado y podemos aplicar la regla de Cramer.</p>' }
+  ];
+  [0, 1, 2].forEach(j => pasos.push({
+    titulo: 'Determinante $D_' + nom[j] + '$',
+    html: '<p>Sustituimos la columna de $' + nom[j] + '$ por la columna de los términos independientes:</p>' + detCompleto(sustCol(A, j, b))
+  }));
+  pasos.push({ caja: 'Regla de Cramer',
+    html: '$$' + [0, 1, 2].map(j => nom[j] + '=\\dfrac{D_' + nom[j] + '}{D}=\\dfrac{' + Ds[j] + '}{' + D + '}=' + (Ds[j] / D)).join('\\qquad\\;') + '$$' });
+  return pasos;
+}
+
+/* esquema del depósito: segs = [porcentaje, clase (s1 azul / s2 verde), texto, fracción en TeX] */
+function tanque(segs) {
+  let h = '<div class="tanque-wrap"><div class="tanque">';
+  segs.forEach(s => {
+    h += '<div class="seg ' + s[1] + '" style="width:' + s[0].toFixed(3) + '%"><b>' + s[2] + '</b><span>$' + s[3] + '$</span></div>';
+  });
+  return h + '</div></div>';
+}
+
+/* =====================================================================
+   PROBLEMAS  (grifo:true  → su número sale en azul; el resto, en verde)
+   ===================================================================== */
+const EJERCICIOS = [
+
+  /* ===================== 1 · Pitágoras ===================== */
+  {
+    titulo: "Problema 1",
+    enunciado: '<p>' + fr(1, R`La diagonal de un cuadrado mide $8\sqrt2$ cm.`) + ' ' +
+      fr(2, 'Se construye un rectángulo cuya base es igual al lado del cuadrado') + ' y ' +
+      fr(3, 'cuya altura es 5 cm menos que la base') + '. Calcula el área del rectángulo.</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sea $l$ el lado del cuadrado, y $b$ y $h$ la base y la altura del rectángulo. La diagonal y dos lados forman un triángulo rectángulo, así que aplicamos Pitágoras:</p>' +
+              sis([ce(1, R`l^2+l^2=(8\sqrt2)^2`), ce(2, 'b=l'), ce(3, 'h=b-5')]) },
+      { titulo: 'Calculamos el lado del cuadrado',
+        html: un(R`(8\sqrt2)^2=8^2\cdot(\sqrt2)^2=64\cdot2=128`) +
+              un(R`2l^2=128\;\Rightarrow\;l^2=64\;\Rightarrow\;l=8`) +
+              '<p>Solo la raíz positiva, porque es una longitud.</p>' },
+      { titulo: 'Base y altura del rectángulo',
+        html: un(R`b=l=8\text{ cm}`) + un(R`h=b-5=8-5=3\text{ cm}`) },
+      { titulo: 'Área del rectángulo',
+        html: un(R`A=b\cdot h=8\cdot3=24\text{ cm}^2`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">El área del rectángulo es 24 cm².</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>$8^2+8^2=128=(8\sqrt2)^2$ ✓</p><p>$8\cdot3=24$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 2 · edades ===================== */
+  {
+    titulo: "Problema 2",
+    enunciado: '<p>' + fr(1, 'Tres hermanos tienen edades que suman 58.') + ' ' +
+      fr(2, 'El primero tiene 4 años más que el segundo') + ', y ' +
+      fr(3, 'el tercero tiene 6 años menos que el doble del primero') + '. Calcula la edad de cada uno.</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sean $x$, $y$ y $z$ las edades del primer, el segundo y el tercer hermano.</p>' +
+              sis([ce(1, 'x+y+z=58'), ce(2, 'x=y+4'), ce(3, 'z=2x-6')]) },
+      { titulo: 'Sustituimos $x=y+4$ en la tercera ecuación',
+        html: un(R`z=2(y+4)-6=2y+8-6=2y+2`) },
+      { titulo: 'Sustituimos $x$ y $z$ en la primera ecuación',
+        html: un(R`(y+4)+y+(2y+2)=58`) + un(R`4y+6=58\;\Rightarrow\;4y=52\;\Rightarrow\;y=13`) },
+      { titulo: 'Volvemos atrás',
+        html: un(R`x=y+4=13+4=17`) + un(R`z=2y+2=2\cdot13+2=28`) },
+      { caja: 'Solución',
+        html: un(R`x=17,\qquad y=13,\qquad z=28`) +
+              '<p><b class="res">El primero tiene 17 años, el segundo 13 y el tercero 28.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>$17+13+28=58$ ✓</p><p>$17=13+4$ ✓</p><p>$2\cdot17-6=28$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 3 · mezclas ===================== */
+  {
+    titulo: "Problema 3",
+    enunciado: '<p>' + fr(1, R`Se mezclan 30 L de una disolución de alcohol al 20 % con 50 L de otra al 12 %.`) + ' ' +
+      fr(2, 'Luego se añaden 20 L de agua.') + ' ¿Cuál es la concentración final de la mezcla resultante?</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>La concentración es el alcohol puro que hay dividido entre el volumen total.</p>' +
+              un(R`\text{concentración}=\dfrac{\text{alcohol puro}}{\text{volumen total}}`) },
+      { titulo: 'Alcohol puro de cada disolución',
+        html: '<p>Multiplicamos el porcentaje (en forma decimal) por los litros:</p>' +
+              sis([ce(1, R`0{,}20\cdot30=6\text{ L}`), ce(1, R`0{,}12\cdot50=6\text{ L}`)]) +
+              '<p>El agua no aporta alcohol, así que el alcohol total es</p>' + un(R`6+6=12\text{ L}`) },
+      { titulo: 'Volumen total de la mezcla',
+        html: un(ce(2, R`30+50+20=100\text{ L}`)) },
+      { titulo: 'Concentración final',
+        html: un(R`\dfrac{12}{100}=0{,}12=12\,\%`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">La concentración final es del 12 %.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>$0{,}20\cdot30+0{,}12\cdot50=12$ L de alcohol y $12$ L de $100$ L es el $12\,\%$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 4 · GRIFOS: uno tarda el triple ===================== */
+  {
+    titulo: "Problema 4", grifo: true,
+    enunciado: '<p>' + fr(1, 'Un grifo tarda el triple que otro en llenar un depósito.') + ' ' +
+      fr(2, 'Abriendo los dos a la vez, tardan 6 horas.') + ' ¿Cuánto tardará cada uno de ellos en llenarlo?</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sean $x$ las horas que tarda el grifo rápido e $y$ las del lento. Si un grifo tarda $t$ horas, <b>en 1 hora llena $\\dfrac1t$ del depósito</b>. Juntos, en 1 hora llenan $\\dfrac16$, y eso es la suma de lo que llena cada uno:</p>' +
+              sis([ce(1, 'y=3x'), ce(2, R`\dfrac{1}{x}+\dfrac{1}{y}=\dfrac{1}{6}`)]) },
+      { titulo: 'Sustituimos $y=3x$',
+        html: un(R`\dfrac{1}{x}+\dfrac{1}{3x}=\dfrac{1}{6}`) },
+      { titulo: 'Denominador común $3x$',
+        html: '<p>El primer sumando se multiplica por $3$ arriba y abajo:</p>' +
+              un(R`\dfrac{3}{3x}+\dfrac{1}{3x}=\dfrac{1}{6}\;\Rightarrow\;\dfrac{4}{3x}=\dfrac{1}{6}`) },
+      { titulo: 'Producto cruzado',
+        html: un(R`4\cdot6=3x\cdot1\;\Rightarrow\;24=3x\;\Rightarrow\;x=8`) +
+              un(R`y=3x=3\cdot8=24`) },
+      { caja: 'Solución',
+        html: un(R`x=8,\qquad y=24`) +
+              '<p><b class="res">El grifo rápido tarda 8 horas y el lento 24 horas.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>$24=3\cdot8$ ✓</p><p>$\dfrac18+\dfrac1{24}=\dfrac3{24}+\dfrac1{24}=\dfrac4{24}=\dfrac16$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 5 · móviles (2.º grado) ===================== */
+  {
+    titulo: "Problema 5",
+    enunciado: '<p>Un comerciante ' + fr(1, 'quiere vender por 12 600 € los móviles que tiene en su almacén') + '. Pero ' +
+      fr(2, 'se le estropean dos') + ' y ' + fr(3, 'tiene que vender los otros 30 € más caros para recaudar lo mismo') +
+      '. ¿Cuántos móviles tenía y a qué precio los vendió?</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sea $x$ el número de móviles y $p$ el precio al que pensaba venderlos.</p>' +
+              sis([ce(1, R`x\cdot p=12600`), ce(2, R`\text{quedan }x-2\text{ móviles}`), ce(3, R`(x-2)(p+30)=12600`)]) +
+              '<p>De la primera ecuación, $p=\\dfrac{12600}{x}$. Lo sustituimos en la tercera:</p>' +
+              un(R`(x-2)\left(\dfrac{12600}{x}+30\right)=12600`) },
+      { titulo: 'Quitamos el denominador',
+        html: '<p>Multiplicamos toda la ecuación por $x$:</p>' + un(R`(x-2)(12600+30x)=12600x`) },
+      { titulo: 'Desarrollamos el producto',
+        html: un(R`12600x+30x^2-25200-60x=12600x`) +
+              '<p>El término $12600x$ se cancela en los dos miembros:</p>' +
+              un(R`30x^2-60x-25200=0`) },
+      { titulo: 'Simplificamos',
+        html: '<p>Dividimos entre $30$:</p>' + un(R`x^2-2x-840=0`) },
+      { titulo: 'Fórmula de la ecuación de segundo grado',
+        html: un(R`x=\dfrac{2\pm\sqrt{4+3360}}{2}=\dfrac{2\pm\sqrt{3364}}{2}=\dfrac{2\pm58}{2}`) +
+              un(R`x=30\qquad\text{o}\qquad x=-28\;\text{(no vale)}`) },
+      { titulo: 'Precio de venta',
+        html: '<p>Precio previsto: $12600:30=420$ €. Los vendió $30$ € más caros:</p>' + un(R`420+30=450\text{ €}`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">Tenía 30 móviles y vendió los 28 buenos a 450 € cada uno.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>$30\cdot420=12\,600$ ✓</p><p>$28\cdot450=12\,600$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 6 · GRIFOS por fases (A solo y luego juntos) ===================== */
+  {
+    titulo: "Problema 6", grifo: true,
+    enunciado: '<p>Dos grifos llenan un depósito. ' + fr(1, 'Uno tarda 6 h solo y el otro 12 h solo.') + ' ' +
+      fr(2, 'Se abre primero el grifo de 6 h durante 2 h') + ' ' + fr(3, 'y luego se abren ambos juntos.') +
+      ' ¿Cuánto tiempo tarda en llenarse el depósito desde que se abrió el primero?</p>',
+    pasos: [
+      { titulo: 'Qué llena cada grifo en 1 hora',
+        html: '<p>Si un grifo tarda $t$ horas, en 1 hora llena $\\dfrac1t$ del depósito. Llamamos A al de $6$ h y B al de $12$ h:</p>' +
+              un(ce(1, R`A:\ \dfrac{1}{6}\qquad\qquad B:\ \dfrac{1}{12}`)) },
+      { titulo: 'Primera fase: A solo durante 2 h',
+        html: un(ce(2, R`2\cdot\dfrac{1}{6}=\dfrac{2}{6}=\dfrac{1}{3}`)) +
+              '<p>Lo que falta por llenar:</p>' + un(R`1-\dfrac13=\dfrac23`) },
+      { titulo: 'Segunda fase: A y B juntos',
+        html: '<p>En 1 hora, entre los dos llenan:</p>' +
+              un(ce(3, R`\dfrac{1}{6}+\dfrac{1}{12}=\dfrac{2}{12}+\dfrac{1}{12}=\dfrac{3}{12}=\dfrac{1}{4}`)) +
+              '<p>En $t$ horas llenan $\\dfrac14\\,t$, y eso tiene que ser lo que falta:</p>' +
+              un(R`\dfrac14\,t=\dfrac23\;\Rightarrow\;t=\dfrac23\cdot4=\dfrac83\text{ h}=2\text{ h }40\text{ min}`) },
+      { titulo: 'Esquema del depósito',
+        html: tanque([[100 / 3, 's1', 'A solo · 2 h', R`\dfrac13`], [200 / 3, 's2', 'A y B juntos · 8/3 h', R`\dfrac23`]]) },
+      { titulo: 'Tiempo total',
+        html: un(R`2+\dfrac{8}{3}=\dfrac{14}{3}\text{ h}=4\text{ h }40\text{ min}`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">El depósito se llena en 4 h 40 min (2 h con A solo y 2 h 40 min con los dos).</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>A trabaja $\dfrac{14}{3}$ h: $\dfrac{14}{3}\cdot\dfrac16=\dfrac{14}{18}$. B trabaja $\dfrac83$ h: $\dfrac83\cdot\dfrac1{12}=\dfrac{8}{36}$.</p><p>$\dfrac{14}{18}+\dfrac{8}{36}=\dfrac{28}{36}+\dfrac{8}{36}=1$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 7 · madre e hijos ===================== */
+  {
+    titulo: "Problema 7",
+    enunciado: '<p>' + fr(1, 'La edad de la madre es igual a la suma de las edades de sus tres hijos.') + ' ' +
+      fr(2, 'Dentro de 12 años, la madre tendrá el doble de la edad del hijo mayor.') + ' ' +
+      fr(3, 'Los hijos tienen edades consecutivas') + '. ¿Cuál es la edad de cada uno?</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Si el menor tiene $x$ años, los otros dos tienen $x+1$ y $x+2$. Sea $m$ la edad de la madre.</p>' +
+              sis([ce(3, R`\text{hijos: }x,\ x+1,\ x+2`), ce(1, R`m=x+(x+1)+(x+2)`), ce(2, R`m+12=2\,(x+2+12)`)]) },
+      { titulo: 'Edad de la madre',
+        html: un(R`m=3x+3`) },
+      { titulo: 'Sustituimos en la segunda ecuación',
+        html: un(R`3x+3+12=2(x+14)`) +
+              un(R`3x+15=2x+28`) +
+              un(R`x=28-15=13`) },
+      { titulo: 'Edades actuales',
+        html: un(R`\text{hijos: }13,\ 14\text{ y }15`) + un(R`m=13+14+15=42`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">Los hijos tienen 13, 14 y 15 años, y la madre 42.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>Dentro de 12 años: madre $54$, mayor $27$, y $54=2\cdot27$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 8 · papelería (sistema 3×3, Cramer) ===================== */
+  {
+    titulo: "Problema 8",
+    enunciado: '<p>En una papelería se venden rotuladores, gomas y carpetas. ' +
+      fr(1, 'Un cliente compra 3 rotuladores, 2 gomas y 1 carpeta por 11 €.') + ' ' +
+      fr(2, 'Otro compra 2 rotuladores, 3 gomas y 1 carpeta por 10 €.') + ' ' +
+      fr(3, 'Un tercero compra 1 rotulador, 2 gomas y 3 carpetas por 13 €.') + ' ¿Cuál es el precio de cada artículo?</p>',
+    pasos: [].concat([
+      { titulo: 'Planteamiento',
+        html: '<p>Sean $x$ el precio de un rotulador, $y$ el de una goma y $z$ el de una carpeta. Cada frase del enunciado nos da una ecuación (cantidad × precio):</p>' +
+              sis([ce(1, '3x+2y+z=11'), ce(2, '2x+3y+z=10'), ce(3, 'x+2y+3z=13')]) }
+      ],
+      pasosCramer([['3','2','1'],['2','3','1'],['1','2','3']], ['11','10','13']),
+      [
+      { caja: 'Solución',
+        html: un(R`x=2,\qquad y=1,\qquad z=3`) +
+              '<p><b class="res">Un rotulador cuesta 2 €, una goma 1 € y una carpeta 3 €.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>$3\cdot2+2\cdot1+3=11$ ✓</p><p>$2\cdot2+3\cdot1+3=10$ ✓</p><p>$2+2\cdot1+3\cdot3=13$ ✓</p>` }
+      ])
+  },
+
+  /* ===================== 9 · velas ===================== */
+  {
+    titulo: "Problema 9",
+    enunciado: '<p>' + fr(1, 'Dos velas de igual altura se encienden a la vez.') + ' ' +
+      fr(2, 'Una se consume en 5 horas y la otra en 4 horas.') + ' ¿Cuánto tiempo ha de pasar para que ' +
+      fr(3, 'la altura de la primera sea el doble que la de la segunda') + '?</p>',
+    pasos: [
+      { titulo: 'Qué se consume cada hora',
+        html: '<p>Tomamos como altura inicial la vela entera ($1$). Si una vela se consume en $t$ horas, cada hora se consume $\\dfrac1t$ de ella:</p>' +
+              un(ce(2, R`1.^{\text{a}}:\ \dfrac15\text{ por hora}\qquad\qquad 2.^{\text{a}}:\ \dfrac14\text{ por hora}`)) },
+      { titulo: 'Planteamiento',
+        html: '<p>Tras $t$ horas queda 1 menos lo consumido. La primera tiene el doble de altura que la segunda:</p>' +
+              un(ce(3, R`1-\dfrac{t}{5}=2\left(1-\dfrac{t}{4}\right)`)) },
+      { titulo: 'Quitamos el paréntesis',
+        html: un(R`1-\dfrac{t}{5}=2-\dfrac{t}{2}`) },
+      { titulo: 'Pasamos las $t$ a un lado y los números al otro',
+        html: un(R`\dfrac{t}{2}-\dfrac{t}{5}=2-1`) },
+      { titulo: 'Denominador común 10',
+        html: un(R`\dfrac{5t}{10}-\dfrac{2t}{10}=1\;\Rightarrow\;\dfrac{3t}{10}=1\;\Rightarrow\;t=\dfrac{10}{3}\text{ h}=3\text{ h }20\text{ min}`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">Han de pasar 3 h 20 min.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>La 1.ª queda $1-\dfrac{10/3}{5}=\dfrac13$; la 2.ª queda $1-\dfrac{10/3}{4}=\dfrac16$; y $\dfrac13=2\cdot\dfrac16$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 10 · GRIFOS: caño y desagüe por fases ===================== */
+  {
+    titulo: "Problema 10", grifo: true,
+    enunciado: '<p>' + fr(1, 'Un caño A llena un estanque en 8 horas') + ' y ' + fr(2, 'un desagüe B lo vacía en 12 horas') + '. ¿En cuánto tiempo se llenará el estanque si ' +
+      fr(3, 'B se abre 2 horas después de que estuviera abierto A') + '?</p>',
+    pasos: [
+      { titulo: 'Qué hace cada uno en 1 hora',
+        html: '<p>El caño llena (suma) y el desagüe vacía (resta):</p>' +
+              sis([ce(1, R`A\text{ llena }\dfrac{1}{8}\text{ por hora}`), ce(2, R`B\text{ vacía }\dfrac{1}{12}\text{ por hora}`)]) },
+      { titulo: 'Primera fase: A solo durante 2 h',
+        html: un(ce(3, R`2\cdot\dfrac{1}{8}=\dfrac{1}{4}`)) +
+              '<p>Lo que falta por llenar:</p>' + un(R`1-\dfrac14=\dfrac34`) },
+      { titulo: 'Segunda fase: A y B abiertos',
+        html: '<p>En 1 hora el estanque gana:</p>' +
+              un(R`\dfrac{1}{8}-\dfrac{1}{12}=\dfrac{3}{24}-\dfrac{2}{24}=\dfrac{1}{24}`) +
+              '<p>En $t$ horas gana $\\dfrac1{24}\\,t$, y eso tiene que ser lo que falta:</p>' +
+              un(R`\dfrac{1}{24}\,t=\dfrac34\;\Rightarrow\;t=\dfrac34\cdot24=18\text{ h}`) },
+      { titulo: 'Esquema del estanque',
+        html: tanque([[25, 's1', 'A solo · 2 h', R`\dfrac14`], [75, 's2', 'A llena y B vacía · 18 h', R`\dfrac34`]]) },
+      { titulo: 'Tiempo total desde que se abrió A',
+        html: un(R`2+18=20\text{ h}`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">El estanque se llena en 20 horas.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>A llena durante $20$ h: $\dfrac{20}{8}=\dfrac52$. B vacía durante $18$ h: $\dfrac{18}{12}=\dfrac32$.</p><p>$\dfrac52-\dfrac32=1$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 11 · pastor (2.º grado) ===================== */
+  {
+    titulo: "Problema 11",
+    enunciado: '<p>Un pastor decide repartir ' + fr(1, 'un rebaño de 360 ovejas entre sus hijos e hijas') + '. ' +
+      fr(2, 'Antes del reparto se enfada con los dos únicos varones, que se quedan sin ovejas') + '. Así, ' +
+      fr(3, 'cada hija recibe 9 ovejas más') + '. ¿Cuántas hijas tiene el pastor?</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sea $x$ el número de hijas. En total son $x+2$ hijos. Cada reparto da:</p>' +
+              sis([ce(1, R`\text{entre todos: }\dfrac{360}{x+2}`), ce(2, R`\text{solo entre las hijas: }\dfrac{360}{x}`)]) +
+              '<p>Al quedar fuera los varones, cada hija recibe $9$ más:</p>' +
+              un(ce(3, R`\dfrac{360}{x}=\dfrac{360}{x+2}+9`)) },
+      { titulo: 'Quitamos denominadores',
+        html: '<p>Multiplicamos por $x(x+2)$:</p>' + un(R`360(x+2)=360x+9x(x+2)`) },
+      { titulo: 'Desarrollamos',
+        html: un(R`360x+720=360x+9x^2+18x`) +
+              '<p>Se cancela $360x$ y dividimos entre $9$:</p>' +
+              un(R`720=9x^2+18x\;\Rightarrow\;x^2+2x-80=0`) },
+      { titulo: 'Fórmula de la ecuación de segundo grado',
+        html: un(R`x=\dfrac{-2\pm\sqrt{4+320}}{2}=\dfrac{-2\pm18}{2}`) +
+              un(R`x=8\qquad\text{o}\qquad x=-10\;\text{(no vale)}`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">El pastor tiene 8 hijas.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>$360:8=45$ ovejas por hija; entre los $10$ hijos tocaban $360:10=36$; y $45-36=9$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 12 · parcela ===================== */
+  {
+    titulo: "Problema 12",
+    enunciado: '<p>Sea una parcela rectangular. ' + fr(1, 'Si su base disminuye en 50 m y su altura aumenta en 30 m, se convierte en un cuadrado.') + ' ' +
+      fr(2, 'Si disminuye en 30 m su base y su altura aumenta en 10 m, entonces su área disminuye en 300 m².') +
+      ' ¿Cuáles son las dimensiones de la parcela?</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sean $b$ y $h$ la base y la altura de la parcela; su área es $b\\cdot h$.</p>' +
+              sis([ce(1, 'b-50=h+30'), ce(2, R`(b-30)(h+10)=bh-300`)]) },
+      { titulo: 'Primera ecuación',
+        html: un(R`b=h+80`) },
+      { titulo: 'Desarrollamos la segunda ecuación',
+        html: un(R`bh+10b-30h-300=bh-300`) +
+              '<p>Se cancelan $bh$ y $-300$:</p>' +
+              un(R`10b-30h=0\;\Rightarrow\;b=3h`) },
+      { titulo: 'Sustituimos en la primera',
+        html: un(R`3h=h+80\;\Rightarrow\;2h=80\;\Rightarrow\;h=40`) + un(R`b=3\cdot40=120`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">La parcela mide 120 m de base y 40 m de altura.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>$120-50=70=40+30$ ✓</p><p>Área $120\cdot40=4800$ y $(120-30)(40+10)=90\cdot50=4500=4800-300$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 13 · rectángulo ===================== */
+  {
+    titulo: "Problema 13",
+    enunciado: '<p>' + fr(1, 'Un rectángulo tiene una longitud de 24 cm y una anchura de 12 cm.') + ' ¿Cuánto se debe añadir a la anchura y quitar a la longitud para que ' +
+      fr(2, 'su área disminuya en 64 cm²') + ' y ' + fr(3, 'su perímetro no varíe') + '?</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Para que el perímetro no cambie, lo que se añade a un lado se quita al otro. Sea $x$ esa cantidad:</p>' +
+              sis([ce(3, R`\text{anchura: }12+x\qquad\text{longitud: }24-x`), ce(2, R`(24-x)(12+x)=24\cdot12-64`)]) },
+      { titulo: 'Área final',
+        html: un(R`24\cdot12-64=288-64=224`) +
+              un(R`(24-x)(12+x)=224`) },
+      { titulo: 'Desarrollamos',
+        html: un(R`288+24x-12x-x^2=224\;\Rightarrow\;288+12x-x^2=224`) +
+              '<p>Pasamos todo a un miembro y cambiamos de signo:</p>' +
+              un(R`x^2-12x-64=0`) },
+      { titulo: 'Fórmula de la ecuación de segundo grado',
+        html: un(R`x=\dfrac{12\pm\sqrt{144+256}}{2}=\dfrac{12\pm20}{2}`) +
+              un(R`x=16\qquad\text{o}\qquad x=-4\;\text{(no vale)}`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">Hay que añadir 16 cm a la anchura y quitar 16 cm a la longitud: el rectángulo pasa a medir 8 cm de longitud y 28 cm de anchura.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>$8\cdot28=224=288-64$ ✓</p><p>Perímetro: $2(8+28)=72=2(24+12)$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 14 · GRIFOS: dos grifos juntos ===================== */
+  {
+    titulo: "Problema 14", grifo: true,
+    enunciado: '<p>' + fr(1, 'Un grifo llena un depósito en 10 horas') + ' y ' + fr(2, 'otro lo llena en 15 horas') +
+      '. ¿Cuánto tardarán en llenarlo si se abren los dos a la vez?</p>',
+    pasos: [
+      { titulo: 'Qué llena cada grifo en 1 hora',
+        html: '<p>Si un grifo tarda $t$ horas, en 1 hora llena $\\dfrac1t$ del depósito:</p>' +
+              sis([ce(1, R`A:\ \dfrac{1}{10}`), ce(2, R`B:\ \dfrac{1}{15}`)]) },
+      { titulo: 'Los dos juntos en 1 hora',
+        html: '<p>Se suma. Denominador común $30$:</p>' +
+              un(R`\dfrac{1}{10}+\dfrac{1}{15}=\dfrac{3}{30}+\dfrac{2}{30}=\dfrac{5}{30}=\dfrac{1}{6}`) },
+      { titulo: 'Tiempo hasta llenar el depósito',
+        html: '<p>En $t$ horas llenan $\\dfrac16\\,t$, y tiene que ser el depósito entero ($1$):</p>' +
+              un(R`\dfrac{1}{6}\,t=1\;\Rightarrow\;t=6\text{ h}`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">Tardan 6 horas.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>$6\cdot\dfrac1{10}+6\cdot\dfrac1{15}=\dfrac35+\dfrac25=1$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 15 · GRIFOS: grifo y desagüe ===================== */
+  {
+    titulo: "Problema 15", grifo: true,
+    enunciado: '<p>' + fr(1, 'Un grifo llena una piscina en 6 horas') + ' y ' + fr(2, 'un desagüe la vacía en 9 horas') +
+      '. Si ' + fr(3, 'se abren los dos a la vez con la piscina vacía') + ', ¿cuánto tarda en llenarse?</p>',
+    pasos: [
+      { titulo: 'Qué hace cada uno en 1 hora',
+        html: '<p>El grifo suma y el desagüe resta:</p>' +
+              sis([ce(1, R`\text{grifo llena }\dfrac{1}{6}`), ce(2, R`\text{desagüe vacía }\dfrac{1}{9}`)]) },
+      { titulo: 'Lo que gana la piscina en 1 hora',
+        html: '<p>Denominador común $18$:</p>' +
+              un(ce(3, R`\dfrac{1}{6}-\dfrac{1}{9}=\dfrac{3}{18}-\dfrac{2}{18}=\dfrac{1}{18}`)) },
+      { titulo: 'Tiempo hasta llenar la piscina',
+        html: '<p>En $t$ horas gana $\\dfrac1{18}\\,t$, y tiene que llegar a $1$:</p>' +
+              un(R`\dfrac{1}{18}\,t=1\;\Rightarrow\;t=18\text{ h}`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">La piscina se llena en 18 horas.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>$\dfrac{18}{6}-\dfrac{18}{9}=3-2=1$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 16 · GRIFOS: tiempo del segundo grifo ===================== */
+  {
+    titulo: "Problema 16", grifo: true,
+    enunciado: '<p>' + fr(1, 'Un grifo A llena un depósito en 12 horas.') + ' ' +
+      fr(2, 'Abriendo A y otro grifo B a la vez, lo llenan en 4 horas.') + ' ¿Cuánto tardaría B solo en llenarlo?</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sea $x$ las horas que tarda B solo. Lo que llena cada uno en 1 hora, sumado, es lo que llenan juntos en 1 hora:</p>' +
+              un(ce(1, R`\dfrac{1}{12}`) + '+' + R`\dfrac{1}{x}` + '=' + ce(2, R`\dfrac{1}{4}`)) },
+      { titulo: 'Quitamos denominadores',
+        html: '<p>Multiplicamos toda la ecuación por $12x$:</p>' +
+              un(R`x+12=3x`) },
+      { titulo: 'Despejamos',
+        html: un(R`12=2x\;\Rightarrow\;x=6\text{ h}`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">B solo tardaría 6 horas.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>$\dfrac1{12}+\dfrac16=\dfrac1{12}+\dfrac2{12}=\dfrac3{12}=\dfrac14$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 17 · GRIFOS: tiempo del desagüe ===================== */
+  {
+    titulo: "Problema 17", grifo: true,
+    enunciado: '<p>' + fr(1, 'Un grifo llena un depósito en 8 horas.') + ' ' +
+      fr(2, 'Un desagüe, abierto a la vez que el grifo, hace que el depósito se llene en 24 horas.') +
+      ' ¿Cuánto tardaría el desagüe en vaciar el depósito lleno si estuviera él solo?</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sea $x$ las horas que tarda el desagüe solo en vaciarlo. El grifo suma y el desagüe resta:</p>' +
+              un(ce(1, R`\dfrac{1}{8}`) + '-' + R`\dfrac{1}{x}` + '=' + ce(2, R`\dfrac{1}{24}`)) },
+      { titulo: 'Quitamos denominadores',
+        html: '<p>Multiplicamos toda la ecuación por $24x$:</p>' + un(R`3x-24=x`) },
+      { titulo: 'Despejamos',
+        html: un(R`2x=24\;\Rightarrow\;x=12\text{ h}`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">El desagüe solo vaciaría el depósito en 12 horas.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>$\dfrac18-\dfrac1{12}=\dfrac3{24}-\dfrac2{24}=\dfrac1{24}$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 18 · GRIFOS por fases (juntos y luego A solo) ===================== */
+  {
+    titulo: "Problema 18", grifo: true,
+    enunciado: '<p>' + fr(1, 'Dos grifos A y B llenan un depósito en 6 horas y en 3 horas, respectivamente.') + ' ' +
+      fr(2, 'Se abren los dos durante 1 hora') + ' y ' + fr(3, 'luego se cierra B') +
+      '. ¿Cuánto tiempo más necesita A para terminar de llenarlo? ¿Cuánto ha pasado en total?</p>',
+    pasos: [
+      { titulo: 'Qué llena cada grifo en 1 hora',
+        html: sis([ce(1, R`A:\ \dfrac{1}{6}`), ce(1, R`B:\ \dfrac{1}{3}`)]) },
+      { titulo: 'Primera fase: los dos abiertos 1 hora',
+        html: un(ce(2, R`\dfrac{1}{6}+\dfrac{1}{3}=\dfrac{1}{6}+\dfrac{2}{6}=\dfrac{3}{6}=\dfrac{1}{2}`)) +
+              '<p>Lo que falta por llenar:</p>' + un(R`1-\dfrac12=\dfrac12`) },
+      { titulo: 'Segunda fase: solo A',
+        html: '<p>En $t$ horas A llena $\\dfrac16\\,t$, y tiene que ser lo que falta:</p>' +
+              un(ce(3, R`\dfrac{1}{6}\,t=\dfrac12`)) +
+              un(R`t=\dfrac12\cdot6=3\text{ h}`) },
+      { titulo: 'Esquema del depósito',
+        html: tanque([[50, 's2', 'A y B juntos · 1 h', R`\dfrac12`], [50, 's1', 'A solo · 3 h', R`\dfrac12`]]) },
+      { titulo: 'Tiempo total',
+        html: un(R`1+3=4\text{ h}`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">A necesita 3 horas más; en total pasan 4 horas.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>A trabaja $4$ h: $\dfrac46=\dfrac23$. B trabaja $1$ h: $\dfrac13$. Y $\dfrac23+\dfrac13=1$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 19 · GRIFOS: 2.º grado ===================== */
+  {
+    titulo: "Problema 19", grifo: true,
+    enunciado: '<p>' + fr(1, 'Dos grifos llenan juntos un depósito en 6 horas.') + ' ' +
+      fr(2, 'El primero, solo, tardaría 5 horas menos que el segundo.') + ' ¿Cuánto tardaría cada uno por separado?</p>',
+    pasos: [
+      { titulo: 'Planteamiento',
+        html: '<p>Sea $x$ las horas del primero; el segundo tarda $x+5$. Lo que llena cada uno en 1 hora, sumado, es lo que llenan juntos:</p>' +
+              sis([ce(2, R`\text{1.º: }x\text{ h}\qquad\text{2.º: }x+5\text{ h}`), ce(1, R`\dfrac{1}{x}+\dfrac{1}{x+5}=\dfrac{1}{6}`)]) },
+      { titulo: 'Quitamos denominadores',
+        html: '<p>Multiplicamos toda la ecuación por $6x(x+5)$:</p>' +
+              un(R`6(x+5)+6x=x(x+5)`) },
+      { titulo: 'Desarrollamos',
+        html: un(R`6x+30+6x=x^2+5x`) + un(R`x^2-7x-30=0`) },
+      { titulo: 'Fórmula de la ecuación de segundo grado',
+        html: un(R`x=\dfrac{7\pm\sqrt{49+120}}{2}=\dfrac{7\pm13}{2}`) +
+              un(R`x=10\qquad\text{o}\qquad x=-3\;\text{(no vale)}`) },
+      { titulo: 'Horas del segundo grifo',
+        html: un(R`x+5=10+5=15\text{ h}`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">El primero tardaría 10 horas y el segundo 15 horas.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>$\dfrac1{10}+\dfrac1{15}=\dfrac3{30}+\dfrac2{30}=\dfrac5{30}=\dfrac16$ ✓</p>` }
+    ]
+  },
+
+  /* ===================== 20 · GRIFOS: dos grifos y un desagüe ===================== */
+  {
+    titulo: "Problema 20", grifo: true,
+    enunciado: '<p>Un depósito tiene ' + fr(1, 'dos grifos de entrada, A que lo llena en 6 horas y B que lo llena en 4 horas') + ', y ' +
+      fr(2, 'un desagüe C que lo vacía en 12 horas') + '. Si ' + fr(3, 'se abren los tres a la vez con el depósito vacío') +
+      ', ¿cuánto tarda en llenarse?</p>',
+    pasos: [
+      { titulo: 'Qué hace cada uno en 1 hora',
+        html: '<p>Los grifos suman y el desagüe resta:</p>' +
+              sis([ce(1, R`A\text{ llena }\dfrac{1}{6}`), ce(1, R`B\text{ llena }\dfrac{1}{4}`), ce(2, R`C\text{ vacía }\dfrac{1}{12}`)]) },
+      { titulo: 'Lo que gana el depósito en 1 hora',
+        html: '<p>Denominador común $12$:</p>' +
+              un(ce(3, R`\dfrac{1}{6}+\dfrac{1}{4}-\dfrac{1}{12}=\dfrac{2}{12}+\dfrac{3}{12}-\dfrac{1}{12}=\dfrac{4}{12}=\dfrac{1}{3}`)) },
+      { titulo: 'Tiempo hasta llenar el depósito',
+        html: '<p>En $t$ horas gana $\\dfrac13\\,t$, y tiene que llegar a $1$:</p>' +
+              un(R`\dfrac{1}{3}\,t=1\;\Rightarrow\;t=3\text{ h}`) },
+      { caja: 'Solución',
+        html: '<p><b class="res">El depósito se llena en 3 horas.</b></p>' },
+      { titulo: 'Comprobación',
+        html: R`<p>$\dfrac36+\dfrac34-\dfrac3{12}=\dfrac12+\dfrac34-\dfrac14=1$ ✓</p>` }
+    ]
+  }
+];
+
+/* ===================================================================== */
+const OPCIONES_MATE = {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "$",  right: "$",  display: false}
+  ],
+  throwOnError: false,
+  strict: false
+};
+const $ = id => document.getElementById(id);
+function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
+
+/* ---------------------------------------------------------------------
+   MOTOR DEL LIBRO
+   - Cada ejercicio se trocea en "unidades" (un párrafo, una fórmula, una
+     matriz...). Cada clic escribe la siguiente sección.
+   - Las unidades se reparten en páginas de tamaño fijo (como un libro).
+   - Se ven dos páginas. Cuando se llena la de la derecha, pasa a ser la
+     de la izquierda y aparece una página nueva a la derecha.
+   --------------------------------------------------------------------- */
+const LW = 800;                     // ancho lógico de una página (px)
+let actual = 0;                     // ejercicio activo
+let s = 0;                          // unidades escritas
+let G = {};                         // geometría
+let libro = null;                   // {unidades, paginas}
+let Lprev = 0;
+
+function geometria() {
+  const W = $("libro").clientWidth, H = $("libro").clientHeight;
+  const Sw = W / 2, k = (Sw - 20) / LW;
+  G = { W, H, Sw, k, LH: (H - 20) / k };
+}
+
+/* trocea un ejercicio en secciones y unidades (se hace una sola vez) */
+function extraer(e) {
+  if (e._sec) return e._sec;
+  const stage = $("stage"), secs = [];
+  const add = (tipo, cab, html, salto, mismo) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    stage.appendChild(d);
+    mate(d);
+    const unidades = [];
+    d.childNodes.forEach(n => {
+      if (n.nodeType === 1) unidades.push(n);
+      else if (n.nodeType === 3 && n.textContent.trim()) {
+        const sp = document.createElement("span"); sp.textContent = n.textContent; unidades.push(sp);
+      }
+    });
+    let cabHTML = null;
+    if (cab) { const c = document.createElement("div"); c.innerHTML = cab; mate(c); cabHTML = c.innerHTML; }
+    secs.push({ tipo, cabHTML, unidades, salto: !!salto, mismo: !!mismo });
+  };
+  add("titulo", null, '<h1' + (e.grifo ? ' class="agua"' : '') + '>' + e.titulo.replace(/(\d+)$/, '<span class="np">$1</span>') + "</h1>");
+  add("enun", null, e.enunciado, false, true);      // título y enunciado salen juntos con un clic
+  e.pasos.forEach(p => add(p.caja ? "caja" : "paso", p.caja || p.titulo, p.html, p.caja && /^Si /.test(p.caja)));
+  stage.innerHTML = "";
+  /* un "tic" = un clic. Cada sección es un bloque; dentro de una fila de menores
+     (.fila-menores) cada .sub sale con su propio clic */
+  let base = 0;
+  secs.forEach(sc => {
+    let cur = sc.mismo ? base : base + 1, nuevo = false;
+    sc.unidades = sc.unidades.map(n => {
+      if (nuevo) { cur++; nuevo = false; }
+      const o = { n, t: cur, subs: [] };
+      if (n.classList && n.classList.contains("fila-menores")) {
+        n.querySelectorAll(".sub").forEach(sb => { cur++; o.subs.push({ n: sb, t: cur }); });
+        nuevo = true;
+      }
+      return o;
+    });
+    base = cur;
+  });
+  e._T = base;
+  e._sec = secs;
+  return secs;
+}
+
+function crearCont(sc, sigue) {
+  const c = document.createElement("div");
+  c.className = "cont";
+  if (sc.tipo === "caja") {
+    c.classList.add("caja");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", '<span class="titulo">' + sc.cabHTML + "</span>");
+  } else if (sc.tipo === "paso") {
+    c.classList.add("paso");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", "<h4>" + sc.cabHTML + "</h4>");
+  } else if (sc.tipo === "enun") {
+    c.classList.add("caja", "enunciado");
+  }
+  if (sigue) c.classList.add("sigue");
+  return c;
+}
+
+/* una fórmula más ancha que la página se reduce hasta caber */
+function ajustar(u) {
+  if (u.classList && u.classList.contains("fila-menores")) {
+    u.style.zoom = "";
+    if (u.scrollWidth > u.clientWidth + 2) u.style.zoom = String(Math.max(.55, u.clientWidth / u.scrollWidth * .97));
+  }
+  u.querySelectorAll(".katex-display").forEach(d => {
+    const k = d.firstElementChild;
+    if (!k) return;
+    k.style.zoom = "";
+    if (d.scrollWidth > d.clientWidth + 2) k.style.zoom = String(Math.max(.55, d.clientWidth / d.scrollWidth * .98));
+  });
+}
+
+/* reparte las unidades en páginas del tamaño actual */
+function paginar(secs, T) {
+  secs.T = T;
+  const pista = $("pista");
+  pista.innerHTML = "";
+  const paginas = [], unidades = [];
+  const nueva = () => {
+    const hoja = document.createElement("div");
+    hoja.className = "hoja";
+    hoja.style.cssText = "left:" + (paginas.length * G.Sw) + "px;width:" + G.Sw + "px;height:" + G.H + "px";
+    const pag = document.createElement("div");
+    pag.className = "pag";
+    pag.style.cssText = "width:" + LW + "px;height:" + G.LH + "px;transform:scale(" + G.k + ")";
+    const cu = document.createElement("div");
+    cu.className = "cuerpo";
+    cu.style.height = (G.LH - 34 - 56) + "px";
+    const num = document.createElement("div");
+    num.className = "num"; num.textContent = paginas.length + 1;
+    pag.append(cu, num); hoja.appendChild(pag); pista.appendChild(hoja);
+    const o = { hoja, cu };
+    paginas.push(o);
+    return o;
+  };
+  let pg = nueva();
+  const desborda = () => pg.cu.scrollHeight > pg.cu.clientHeight + 1;
+  secs.forEach(sc => {
+    if (sc.salto && pg.cu.children.length) pg = nueva();
+    let cont = crearCont(sc, false), puestas = 0;
+    pg.cu.appendChild(cont);
+    /* un bloque (lo que sale con un clic) nunca se parte entre dos páginas */
+    const bloques = [];
+    sc.unidades.forEach(un => {
+      const ult = bloques[bloques.length - 1];
+      if (ult && ult[0].t === un.t) ult.push(un); else bloques.push([un]);
+    });
+    bloques.forEach(bl => {
+      bl.forEach(un => {
+        un.n.classList.add("u"); un.n.classList.remove("on");
+        un.subs.forEach(sb => { sb.n.classList.add("u"); sb.n.classList.remove("on"); });
+        cont.appendChild(un.n);
+      });
+      bl.forEach(un => ajustar(un.n));
+      if (desborda()) {
+        bl.forEach(un => cont.removeChild(un.n));
+        if (!puestas) pg.cu.removeChild(cont);
+        if (pg.cu.children.length) pg = nueva();     // página nueva solo si la actual ya tiene algo
+        cont = crearCont(sc, puestas > 0);
+        pg.cu.appendChild(cont);
+        bl.forEach(un => cont.appendChild(un.n));
+        bl.forEach(un => ajustar(un.n));
+      }
+      puestas += bl.length;
+      const pi = paginas.indexOf(pg);
+      bl.forEach(un => {
+        unidades.push({ u: un.n, cont, pag: pi, t: un.t, on: false });
+        un.subs.forEach(sb => unidades.push({ u: sb.n, cont, pag: pi, t: sb.t, on: false }));
+      });
+    });
+  });
+  libro = { unidades, paginas, T: secs.T };
+}
+
+/* pone al día lo que se ve según s */
+function aplicar(anim) {
+  const U = libro.unidades;
+  s = Math.max(0, Math.min(s, libro.T));
+  const conts = new Map();
+  U.forEach((o, i) => {
+    const on = o.t <= s;
+    if (on !== o.on) {
+      o.on = on;
+      if (on) { o.u.classList.remove("rapido"); o.u.classList.add("on"); }
+      else { o.u.classList.add("rapido"); o.u.classList.remove("on"); }
+    }
+    if (on) conts.set(o.cont, true); else if (!conts.has(o.cont)) conts.set(o.cont, false);
+  });
+  conts.forEach((v, c) => {
+    if (v) { c.classList.remove("rapido"); c.classList.add("on"); }
+    else { c.classList.add("rapido"); c.classList.remove("on"); }
+  });
+  let p = 0;
+  U.forEach(o => { if (o.t <= s) p = Math.max(p, o.pag); });
+  const L = Math.max(p - 1, 0);
+  const pista = $("pista");
+  pista.classList.toggle("anim", !!anim);
+  pista.style.transform = "translateX(" + (-L * G.Sw) + "px)";
+  if (anim && L > Lprev) {
+    const h = libro.paginas[p].hoja;
+    h.classList.remove("gira"); void h.offsetWidth; h.classList.add("gira");
+    setTimeout(() => h.classList.remove("gira"), 1000);
+  }
+  Lprev = L;
+  const n = libro.T;
+  $("contador").textContent = EJERCICIOS[actual].titulo + " · " + s + " / " + n;
+  $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
+  $("btnAtras").disabled = (actual === 0 && s <= 1);
+  $("btnAdelante").disabled = (actual === EJERCICIOS.length - 1 && s === n);
+}
+
+function pintarPestanas() {
+  const nav = $("pestanas");
+  nav.innerHTML = "";
+  EJERCICIOS.forEach((e, i) => {
+    const b = document.createElement("button");
+    b.textContent = e.titulo.replace("Problema ", "P. ");
+    if (e.grifo) b.className = "agua";
+    b.setAttribute("aria-selected", i === actual);
+    b.onclick = ev => { ev.stopPropagation(); cargar(i, false); };
+    nav.appendChild(b);
+  });
+  const sel = nav.querySelector('[aria-selected="true"]');
+  if (sel) sel.scrollIntoView({ inline: "center", block: "nearest" });
+}
+
+function construir() {
+  geometria();
+  const e = EJERCICIOS[actual];
+  const secs = extraer(e);
+  paginar(secs, e._T);
+}
+
+async function cargar(i, alFinal) {
+  const lib = $("libro");
+  lib.classList.add("fuera");
+  await new Promise(r => setTimeout(r, 200));
+  actual = i;
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  construir();
+  s = alFinal ? libro.T : 1;          // al abrir un ejercicio ya se ve el enunciado
+  Lprev = 0;
+  pintarPestanas();
+  aplicar(false);
+  lib.classList.remove("fuera");
+}
+
+function avanzar() {
+  if (s < libro.T) { s++; aplicar(true); }
+  else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
+}
+function retroceder() {
+  if (s > 1) { s--; aplicar(true); }
+  else if (actual > 0) cargar(actual - 1, true);
+}
+
+/* ---------------------------------------------------------------------
+   SUBRAYADOR de las frases del enunciado
+   - al pasar el ratón por una frase se colorea (cada frase, su color;
+     si la ecuación sale de varios trozos, se colorean todos a la vez)
+   - doble clic: queda fijada, como con un rotulador; otro doble clic la quita
+   - en pantallas táctiles: un toque la colorea y un doble toque la fija
+   --------------------------------------------------------------------- */
+const frDe = ev => (ev.target && ev.target.closest) ? ev.target.closest(".fr") : null;
+const grupoDe = fr => {
+  const cont = fr.closest(".enunciado");
+  return cont ? cont.querySelectorAll('.fr[data-g="' + fr.dataset.g + '"]') : [fr];
+};
+function alternarFija(fr) {
+  const poner = !fr.classList.contains("fija");
+  grupoDe(fr).forEach(n => n.classList.toggle("fija", poner));
+}
+let tipoPuntero = "mouse", ultimoToque = { el: null, t: 0 };
+$("libro").addEventListener("mouseover", ev => {
+  const fr = frDe(ev);
+  if (fr) grupoDe(fr).forEach(n => n.classList.add("hov"));
+});
+$("libro").addEventListener("mouseout", ev => {
+  const fr = frDe(ev);
+  if (!fr) return;
+  const a = ev.relatedTarget && ev.relatedTarget.closest ? ev.relatedTarget.closest(".fr") : null;
+  if (a && a.dataset.g === fr.dataset.g && a.closest(".enunciado") === fr.closest(".enunciado")) return;
+  grupoDe(fr).forEach(n => n.classList.remove("hov"));
+});
+$("libro").addEventListener("pointerdown", ev => { tipoPuntero = ev.pointerType || "mouse"; }, true);
+$("libro").addEventListener("dblclick", ev => {
+  const fr = frDe(ev);
+  if (!fr) return;
+  ev.preventDefault();
+  if (tipoPuntero === "mouse") alternarFija(fr);
+});
+$("libro").addEventListener("pointerup", ev => {
+  if (ev.pointerType === "mouse") return;
+  const fr = frDe(ev);
+  if (!fr) return;
+  const ahora = Date.now();
+  if (ultimoToque.el === fr && ahora - ultimoToque.t < 400) {
+    alternarFija(fr);
+    ultimoToque = { el: null, t: 0 };
+  } else {
+    document.querySelectorAll(".fr.hov").forEach(n => n.classList.remove("hov"));
+    grupoDe(fr).forEach(n => n.classList.add("hov"));
+    ultimoToque = { el: fr, t: ahora };
+  }
+});
+
+/* clic: tercio izquierdo = atrás; resto = adelante (sobre una frase del enunciado no avanza) */
+$("libro").addEventListener("click", ev => {
+  if (frDe(ev)) return;
+  if (String(window.getSelection())) return;
+  if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
+});
+$("btnAtras").onclick = ev => { ev.stopPropagation(); retroceder(); };
+$("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
+$("tira").onclick = ev => {
+  ev.stopPropagation();
+  const r = $("tira").getBoundingClientRect();
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * libro.T));
+  aplicar(true);
+};
+document.addEventListener("keydown", ev => {
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
+  else if (ev.key === "Home") { s = 1; aplicar(true); }
+  else if (ev.key === "End") { s = libro.T; aplicar(true); }
+});
+let tRes = null;
+window.addEventListener("resize", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); Lprev = 0; aplicar(false); } }, 150);
+});
+
+window.addEventListener("load", () => cargar(0, false));
+if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); aplicar(false); } }, 60);
+});
+</script>
+</body>
+</html>

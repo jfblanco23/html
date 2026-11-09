@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Programación lineal · problemas</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#1414E6; --rojo:#E01E1E; --gris:#666;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;color:var(--texto);cursor:pointer;
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:20px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+
+  html,body{overflow:hidden}
+  body{background:#fff}
+
+  /* barra superior */
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:0 14px;display:flex;gap:14px;align-items:center;font-size:.85rem;color:var(--gris)}
+  .barra-sup .tit{font-weight:bold;color:#333;white-space:nowrap}
+  .barra-sup .ayuda{white-space:nowrap;font-size:.8rem;color:#888}
+  @media (max-width:1100px){.barra-sup .ayuda{display:none}}
+  .barra-sup .borrar{font:inherit;font-size:.8rem;padding:3px 10px;border-radius:8px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #bbb;color:#555}
+  .barra-sup .borrar:hover{border-color:#333;color:#333}
+  .pestanas{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #333;color:#333}
+  .pestanas button[aria-selected="true"]{background:#333;color:#fff}
+
+  /* barra inferior: botones grandes (pizarra digital) y progreso */
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:.85rem;color:var(--gris)}
+  .progreso .tira{flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .nav{font:inherit;font-size:1.5rem;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:9.5em;text-align:right;white-space:nowrap}
+
+  /* el libro: dos páginas, separadas solo por una línea fina */
+  #libro{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:hidden;background:#fff;transition:opacity .25s ease}
+  #libro.fuera{opacity:0}
+  #pista{position:absolute;left:0;top:0;height:100%;will-change:transform}
+  #pista.anim{transition:transform .9s cubic-bezier(.65,.05,.25,1)}
+  .hoja{position:absolute;top:0;padding:6px 8px}
+  .pag{position:relative;background:#fff;transform-origin:0 0;padding:30px 40px 0}
+  .pag .cuerpo{display:flow-root;overflow:hidden}
+  .pag .num{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#bbb;font-size:.8rem}
+  #lomo{position:absolute;left:50%;top:14px;bottom:14px;width:0;border-left:1px solid #c9c9c9;pointer-events:none;z-index:2}
+  .hoja.gira .pag{animation:gira .9s ease both}
+  @keyframes gira{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#pista.anim{transition:none}.hoja.gira .pag{animation:none}}
+
+  /* lo que se va escribiendo */
+  .cont{opacity:0;transition:opacity .35s ease}
+  .cont.on{opacity:1}
+  .u{opacity:0;clip-path:inset(-40px 100% -40px -40px);transition:opacity .25s ease,clip-path .85s ease}
+  span.u{display:block}
+  .u.on{opacity:1;clip-path:inset(-40px -40px -40px -40px)}
+  .u.rapido,.cont.rapido{transition:none}
+  .cont.sigue{margin-top:0;padding-top:14px;border-top-left-radius:0;border-top-right-radius:0}
+  h1{margin:0 0 6px;font-size:2.1rem;line-height:1.2}
+  h4{margin:16px 0 6px;font-size:1.18rem}
+
+  /* cajas verdes del modelo */
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:20px 20px 10px;margin:26px 0 14px}
+  .caja>.titulo{position:absolute;top:-13px;left:12px;background:var(--verde-titulo);color:#fff;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.92rem}
+  .caja.enunciado{color:var(--azul);margin-top:6px;padding-top:12px}
+  .caja p{margin:.3em 0 .5em}
+  .paso{margin:6px 0 10px}
+
+  /* frases del enunciado: subrayador (al pasar el ratón; doble clic = se queda fijado) */
+  .fr{border-radius:4px;padding:1px 1px;cursor:pointer;transition:background-color .15s ease;
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;
+    -webkit-box-decoration-break:clone;box-decoration-break:clone}
+  .fr.c1{--hl:#FFE066} .fr.c2{--hl:#9BE9A8} .fr.c3{--hl:#8FD3FF}
+  .fr.c4{--hl:#FFA8D0} .fr.c5{--hl:#FFC47A} .fr.c6{--hl:#CDB4FF}
+  .fr.hov,.fr.fija{background-color:var(--hl)}
+
+  /* matrices con menores marcados en caja roja */
+  .ec{display:flex;align-items:center;justify-content:center;gap:.5em;margin:.6em 0;flex-wrap:wrap}
+  .mat{--w:2.5em;--h:1.7em;position:relative;display:inline-grid;
+    grid-template-columns:repeat(var(--nc),var(--w));grid-auto-rows:var(--h);
+    margin:1.1em .7em .2em;text-align:center}
+  .mat .c{display:flex;align-items:center;justify-content:center;white-space:nowrap}
+  .mat::before,.mat::after{content:"";position:absolute;top:-.15em;bottom:-.15em;width:.55em;border:2px solid #111}
+  .mat::before{left:-.7em;border-right:0;border-radius:60% 0 0 60%/50% 0 0 50%}
+  .mat::after{right:-.7em;border-left:0;border-radius:0 60% 60% 0/0 50% 50% 0}
+  .mat .bar{position:absolute;top:.1em;bottom:.1em;left:calc(var(--k) * var(--w));border-left:1.5px solid #111}
+  .nota{color:var(--gris);font-size:.9em}
+  .origen{color:var(--gris);font-size:.78rem;margin:0 0 8px;line-height:1.3}
+  .fig{margin:6px 0 4px}
+  .fig svg{display:block;width:100%;height:auto}
+  .fig.tres{display:flex;gap:6px}
+  .fig.tres svg{width:33.33%}
+  table.datos{border-collapse:collapse;margin:10px auto;font-size:1.02rem}
+  table.datos th,table.datos td{border:1.5px solid #8a8a8a;padding:5px 16px;text-align:center}
+  table.datos th{background:#f1f1f1}
+  b.res{color:var(--rojo)}
+  .katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden}
+</style>
+</head>
+<body>
+<div class="barra-sup">
+  <span class="tit">Programación lineal</span>
+  <span class="ayuda">Pasa el ratón por el enunciado · doble clic para fijar el subrayado</span>
+  <button class="borrar" id="btnBorrar" title="Quitar todos los subrayados fijados">Quitar subrayados</button>
+  <nav class="pestanas" id="pestanas" aria-label="Problemas"></nav>
+</div>
+<div id="libro"><div id="pista"></div><div id="lomo"></div></div>
+<div id="stage" style="position:absolute;left:-99999px;top:0;width:720px;visibility:hidden"></div>
+<div class="progreso">
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
+  <span id="contador"></span>
+</div>
+
+<script>
+/* ---------------------------------------------------------------------
+   Matriz con barra opcional.
+   rows: filas (cadenas LaTeX); opts.bar = nº de columnas antes de la barra;
+   opts.w = ancho de columna en em
+   --------------------------------------------------------------------- */
+function mat(rows, opts = {}) {
+  const nr = rows.length, nc = rows[0].length;
+  const largo = Math.max(...rows.map(r => Math.max(...r.map(c => String(c).replace(/\\[a-zA-Z]+|[{}\s]/g, '').length))));
+  const ancho = opts.w || Math.max(2.5, 1.0 + 0.55 * largo);
+  let h = '<span class="mat" style="--nc:' + nc + ';--nr:' + nr + ';--w:' + ancho.toFixed(2) + 'em">';
+  rows.forEach(r => r.forEach(c => { h += '<span class="c">$' + c + '$</span>'; }));
+  if (opts.bar != null) h += '<span class="bar" style="--k:' + opts.bar + '"></span>';
+  return h + '</span>';
+}
+const ec = (...partes) => '<div class="ec">' + partes.join('') + '</div>';
+const ecp = (...partes) => '<div class="ec" style="font-size:.85em">' + partes.join('') + '</div>';   // algo más pequeño
+const f = s => '<span>$' + s + '$</span>';
+
+
+/* ---------------------------------------------------------------------
+   Frases del enunciado y ecuaciones con el mismo color
+   fr(k, texto): frase que se subraya (las frases con el mismo k forman un grupo)
+   ce(k, tex):   la ecuación que sale de esa frase, con el mismo color de fondo
+   --------------------------------------------------------------------- */
+const HL = ['', '#FFE066', '#9BE9A8', '#8FD3FF', '#FFA8D0', '#FFC47A', '#CDB4FF'];
+const fr = (k, t) => '<span class="fr c' + k + '" data-g="' + k + '">' + t + '</span>';
+const ce = (k, tex) => '\\colorbox{' + HL[k] + '}{$\\,' + tex + '\\,$}';
+const sis = filas => '$$\\left\\{\\begin{array}{l}' + filas.join('\\\\[2mm]') + '\\end{array}\\right.$$';
+
+/* =====================================================================
+   FIGURAS (SVG generado a partir de los mismos datos que los cálculos)
+   grafico(P, C): P = datos del problema, C = capas que se ven en este paso
+   ===================================================================== */
+let _gid = 0;
+const fmt = n => String(+(+n).toFixed(2)).replace('.', ',');
+const LIN = ['', '#B88A00', '#1E9E3A', '#1478C8', '#D6357F', '#D9740A', '#7A4FD6'];   // mismo orden que HL, más oscuros para trazar
+
+/* se queda con el semiplano a·x + b·y (op) c */
+function recorta(poly, a, b, op, c) {
+  const val = p => { const v = a * p[0] + b * p[1] - c; return op === '<=' ? -v : v; };
+  const out = [];
+  for (let i = 0; i < poly.length; i++) {
+    const p = poly[i], q = poly[(i + 1) % poly.length], vp = val(p), vq = val(q);
+    if (vp >= -1e-9) out.push(p);
+    if ((vp > 1e-9 && vq < -1e-9) || (vp < -1e-9 && vq > 1e-9)) {
+      const t = vp / (vp - vq);
+      out.push([p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1])]);
+    }
+  }
+  return out;
+}
+/* trozo de la recta a·x + b·y = c que cae dentro de la ventana */
+function segmento(a, b, c, x0, y0, x1, y1) {
+  const pts = [];
+  const add = (x, y) => {
+    if (x >= x0 - 1e-9 && x <= x1 + 1e-9 && y >= y0 - 1e-9 && y <= y1 + 1e-9 &&
+        !pts.some(p => Math.abs(p[0] - x) < 1e-6 && Math.abs(p[1] - y) < 1e-6)) pts.push([x, y]);
+  };
+  if (Math.abs(b) > 1e-12) { add(x0, (c - a * x0) / b); add(x1, (c - a * x1) / b); }
+  if (Math.abs(a) > 1e-12) { add((c - b * y0) / a, y0); add((c - b * y1) / a, y1); }
+  return pts.slice(0, 2);
+}
+
+function grafico(P, C = {}) {
+  const id = 'g' + (++_gid);
+  const [x0, x1, y0, y1, mx, my, px, py] = C.ventana ||
+    [P.xmin || 0, P.xmax, P.ymin || 0, P.ymax, P.mx || P.px, P.my || P.py, P.px, P.py];
+  const W = P.W || 720, H = P.H || 330, L = P.L || 46, R = 16, T = 22, B = 36;
+  const sx = (W - L - R) / (x1 - x0), sy = (H - T - B) / (y1 - y0);
+  const X = x => L + (x - x0) * sx, Y = y => H - B - (y - y0) * sy;
+  const n = v => v.toFixed(1);
+  const halo = 'stroke="#fff" stroke-width="4" stroke-linejoin="round" paint-order="stroke"';
+  let s = '<defs><clipPath id="' + id + '"><rect x="' + L + '" y="' + T + '" width="' + (W - L - R) + '" height="' + (H - T - B) + '"/></clipPath></defs>';
+
+  /* cuadrícula, ejes y números */
+  for (let i = Math.ceil(x0 / mx - 1e-9); i * mx <= x1 + 1e-9; i++) {
+    const v = i * mx, mayor = Math.abs(v / px - Math.round(v / px)) < 1e-9;
+    s += '<line x1="' + n(X(v)) + '" y1="' + T + '" x2="' + n(X(v)) + '" y2="' + (H - B) + '" stroke="' + (mayor ? '#d4d4d4' : '#ececec') + '" stroke-width="1"/>';
+    if (mayor) s += '<text x="' + n(X(v)) + '" y="' + (H - B + 18) + '" text-anchor="middle" font-size="14" fill="#444">' + fmt(v) + '</text>';
+  }
+  for (let i = Math.ceil(y0 / my - 1e-9); i * my <= y1 + 1e-9; i++) {
+    const v = i * my, mayor = Math.abs(v / py - Math.round(v / py)) < 1e-9;
+    s += '<line x1="' + L + '" y1="' + n(Y(v)) + '" x2="' + (W - R) + '" y2="' + n(Y(v)) + '" stroke="' + (mayor ? '#d4d4d4' : '#ececec') + '" stroke-width="1"/>';
+    if (mayor) s += '<text x="' + (L - 8) + '" y="' + n(Y(v) + 5) + '" text-anchor="end" font-size="14" fill="#444">' + fmt(v) + '</text>';
+  }
+  s = s.replace('</defs>', '</defs><rect x="' + L + '" y="' + T + '" width="' + (W - L - R) + '" height="' + (H - T - B) + '" fill="#fff"/>');
+  s += '<rect x="' + L + '" y="' + T + '" width="' + (W - L - R) + '" height="' + (H - T - B) + '" fill="none" stroke="#bbb"/>';
+  if (x0 === 0) s += '<line x1="' + L + '" y1="' + T + '" x2="' + L + '" y2="' + (H - B) + '" stroke="#111" stroke-width="2.4"/>';
+  if (y0 === 0) s += '<line x1="' + L + '" y1="' + (H - B) + '" x2="' + (W - R) + '" y2="' + (H - B) + '" stroke="#111" stroke-width="2.4"/>';
+  s += '<text x="' + (W - R) + '" y="' + (H - 6) + '" text-anchor="end" font-size="17" font-style="italic" fill="#111">' + (P.lx || 'x') + '</text>';
+  s += '<text x="' + L + '" y="' + (T - 6) + '" text-anchor="middle" font-size="17" font-style="italic" fill="#111">' + (P.ly || 'y') + '</text>';
+
+  /* región factible (se calcula recortando la ventana con cada restricción) */
+  s += '<g clip-path="url(#' + id + ')">';
+  if (C.region) {
+    let poly = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+    P.restr.forEach(r => { poly = recorta(poly, r.a, r.b, r.op, r.c); });
+    s += '<polygon points="' + poly.map(p => n(X(p[0])) + ',' + n(Y(p[1]))).join(' ') + '" fill="' + (C.regionColor || 'rgba(20,20,230,.22)') + '" stroke="none"/>';
+  }
+  /* rectas */
+  (C.rectas || []).forEach(i => {
+    const r = P.restr[i], sg = segmento(r.a, r.b, r.c, x0, y0, x1, y1);
+    if (sg.length === 2) s += '<line x1="' + n(X(sg[0][0])) + '" y1="' + n(Y(sg[0][1])) + '" x2="' + n(X(sg[1][0])) + '" y2="' + n(Y(sg[1][1])) +
+      '" stroke="' + (C.color === false ? '#333' : LIN[r.k]) + '" stroke-width="2.6" stroke-linecap="round"/>';
+  });
+  /* rectas de nivel de la función objetivo */
+  (C.nivel || []).forEach(l => {
+    const sg = segmento(l.a, l.b, l.c, x0, y0, x1, y1);
+    if (sg.length === 2) s += '<line x1="' + n(X(sg[0][0])) + '" y1="' + n(Y(sg[0][1])) + '" x2="' + n(X(sg[1][0])) + '" y2="' + n(Y(sg[1][1])) +
+      '" stroke="#E01E1E" stroke-width="2.4" stroke-dasharray="9 6"/>';
+  });
+  s += '</g>';
+  /* etiquetas de las rectas */
+  if (C.etiquetas) (C.rectas || []).forEach(i => {
+    const r = P.restr[i], p = (C.zoom && r.lp2) ? r.lp2 : r.lp, anc = (C.zoom && r.anc2) ? r.anc2 : (r.anc || 'start');
+    if (p) s += '<text x="' + n(X(p[0])) + '" y="' + n(Y(p[1])) + '" text-anchor="' + anc + '" font-size="16" font-weight="bold" ' + halo +
+      ' fill="' + (C.color === false ? '#222' : LIN[r.k]) + '">' + r.lab + '</text>';
+  });
+  (C.nivel || []).forEach(l => {
+    if (l.lp) s += '<text x="' + n(X(l.lp[0])) + '" y="' + n(Y(l.lp[1])) + '" text-anchor="' + (l.anc || 'start') + '" font-size="16" font-weight="bold" ' + halo + ' fill="#E01E1E">' + l.lab + '</text>';
+  });
+  /* puntos sueltos, enteros y vértices */
+  (C.puntos || []).forEach(q => {
+    const cx = X(q.p[0]), cy = Y(q.p[1]);
+    if (q.ok === false) s += '<g stroke="#E01E1E" stroke-width="3.4" stroke-linecap="round"><line x1="' + n(cx - 6) + '" y1="' + n(cy - 6) + '" x2="' + n(cx + 6) + '" y2="' + n(cy + 6) + '"/><line x1="' + n(cx - 6) + '" y1="' + n(cy + 6) + '" x2="' + n(cx + 6) + '" y2="' + n(cy - 6) + '"/></g>';
+    else s += '<circle cx="' + n(cx) + '" cy="' + n(cy) + '" r="6" fill="#2e9e2e" stroke="#fff" stroke-width="2"/>';
+    if (q.lab) s += '<text x="' + n(cx + (q.dx || 0)) + '" y="' + n(cy + (q.dy || 0)) + '" text-anchor="' + (q.anc || 'start') + '" font-size="16" font-weight="bold" ' + halo + ' fill="' + (q.ok === false ? '#E01E1E' : '#1d7a1d') + '">' + q.lab + '</text>';
+  });
+  (C.enteros || []).forEach(q => {
+    s += '<circle cx="' + n(X(q.p[0])) + '" cy="' + n(Y(q.p[1])) + '" r="5.5" fill="#E01E1E" stroke="#fff" stroke-width="1.8"/>';
+    if (q.lab) s += '<text x="' + n(X(q.p[0]) + (q.dx || 0)) + '" y="' + n(Y(q.p[1]) + (q.dy || 0)) + '" text-anchor="' + (q.anc || 'start') + '" font-size="15" font-weight="bold" ' + halo + ' fill="#B01010">' + q.lab + '</text>';
+  });
+  (C.vertices || []).forEach(v => {
+    s += '<circle cx="' + n(X(v.p[0])) + '" cy="' + n(Y(v.p[1])) + '" r="5" fill="#111" stroke="#fff" stroke-width="1.6"/>';
+    s += '<text x="' + n(X(v.p[0]) + (v.dx || 0)) + '" y="' + n(Y(v.p[1]) + (v.dy || 0)) + '" text-anchor="' + (v.anc || 'start') + '" font-size="16" font-weight="bold" ' + halo + ' fill="#111">' + v.lab + '</text>';
+  });
+  if (C.titulo) s += '<text x="' + (L + 8) + '" y="' + (T + 20) + '" font-size="17" font-weight="bold" fill="#111">' + C.titulo + '</text>';
+  const svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" xmlns="http://www.w3.org/2000/svg">' + s + '</svg>';
+  return C.soloSvg ? svg : '<div class="fig">' + svg + '</div>';
+}
+
+/* =====================================================================
+   DATOS DE LAS FIGURAS
+   ===================================================================== */
+/* Convoy (CyL Modelo 0): x = camiones de agua, y = camiones de medicinas */
+const PC = { xmax: 30, ymax: 30, px: 5, py: 5, mx: 1, my: 5, restr: [
+  { a: 1, b: 1,  op: '<=', c: 27, k: 1, lab: 'x + y = 27', lp: [2.4, 26.6] },
+  { a: 1, b: 0,  op: '>=', c: 12, k: 2, lab: 'x = 12',     lp: [12.4, 28.6] },
+  { a: -1, b: 2, op: '>=', c: 0,  k: 3, lab: 'y = x/2',    lp: [29.6, 17.2], anc: 'end' }
+]};
+
+/* Revisiones (CyL Julio 2026, 1.2): x = normales, y = exhaustivas */
+const P12 = { xmax: 75, ymax: 50, px: 10, py: 5, mx: 5, my: 5, H: 300, restr: [
+  { a: 0, b: 1,    op: '>=', c: 7,   k: 2, lab: 'y = 7',          lp: [2.5, 8.8],  lp2: [48.15, 6.45] },
+  { a: 2, b: -5,   op: '>=', c: 5,   k: 3, lab: '2x − 5y = 5',    lp: [53, 27.8],  lp2: [48.2, 13.5] },
+  { a: 3, b: 6,    op: '<=', c: 220, k: 4, lab: '3x + 6y = 220',  lp: [3, 39.4],   lp2: [54.5, 10.1] },
+  { a: 4, b: 3,    op: '<=', c: 240, k: 5, lab: '2x + 1,5y = 120', lp: [29.5, 44.6], lp2: [50.35, 13.35] }
+]};
+const ZOOM12 = [48, 57, 6, 14, 1, 1, 1, 2];
+
+/* =====================================================================
+   PROBLEMAS
+   ===================================================================== */
+const VERT12 = [
+  { p: [20, 7],          lab: 'A(20, 7)',          dx: 10, dy: 21 },
+  { p: [1130 / 27, 425 / 27], lab: 'B(41,85; 15,74)', dx: 0, dy: -20, anc: 'middle' },
+  { p: [52, 32 / 3],     lab: 'C(52; 10,67)',      dx: 12, dy: -9 },
+  { p: [219 / 4, 7],     lab: 'D(54,75; 7)',       dx: -8, dy: 22, anc: 'end' }
+];
+
+const EJ_PROTO = [
+
+  /* ===================== CONVOY · bloque «sin tabla» ===================== */
+  {
+    titulo: "Problema 1",
+    etiqueta: "PAU Castilla y León · Modelo 0 (2025)",
+    enunciado: '<p>Una ONG organiza un convoy de ayuda humanitaria con ' + fr(1, 'un máximo de 27 camiones') +
+      ' para llevar agua potable y medicinas a una zona devastada por unas inundaciones. ' +
+      fr(2, 'Para agua potable dedica un mínimo de 12 camiones') + ' y ' +
+      fr(3, 'para medicinas debe dedicar un número de camiones mayor o igual que la mitad del número de camiones dedicados a llevar agua') + '. ' +
+      fr(4, 'Enviar un camión con agua potable tiene un coste de 9000 euros, mientras que el coste para un camión de medicinas es de 6000 euros') + '. ' +
+      'Calcular, utilizando técnicas de programación lineal, ' + fr(5, 'cómo debe organizarse el convoy para que su coste sea mínimo') +
+      '. ¿Cuánto es el coste de la solución óptima?</p>',
+    pasos: [
+      { titulo: 'Elegimos las incógnitas',
+        html: '<p>Sean $x$ el número de camiones que llevan agua potable e $y$ el número de camiones que llevan medicinas.</p>' },
+      { titulo: 'Restricciones',
+        html: '<p>Traducimos cada frase:</p>' +
+              sis([ce(1, 'x+y\\le 27'), ce(2, 'x\\ge 12'), ce(3, 'y\\ge\\dfrac{x}{2}')]) +
+              '<p>Además, como son camiones, $x\\ge0$ e $y\\ge0$.</p>' },
+      { titulo: 'Función objetivo',
+        html: '<p>Cada camión de agua cuesta $9000$ € y cada uno de medicinas $6000$ €, así que el coste total es</p>' +
+              '$$' + ce(4, 'C(x,y)=9000x+6000y') + '$$' +
+              '<p>y queremos que sea lo menor posible:</p>' +
+              '$$' + ce(5, '\\text{Minimizar }C(x,y)') + '$$' },
+      { titulo: 'Rectas que limitan la región',
+        html: '<p>Cada desigualdad está limitada por una recta (cambiamos $\\le$ o $\\ge$ por $=$). Para dibujarla, dos puntos:</p>' +
+              '$$\\begin{array}{lll}' +
+              ce(1, 'x+y=27') + ' & (0,\\,27) & (27,\\,0)\\\\[2mm]' +
+              ce(2, 'x=12') + ' & (12,\\,0) & (12,\\,30)\\\\[2mm]' +
+              ce(3, 'y=\\dfrac{x}{2}') + ' & (0,\\,0) & (20,\\,10)' +
+              '\\end{array}$$' +
+              '<p class="nota">$x=12$ es una recta vertical.</p>' },
+      { titulo: 'Dibujamos las rectas',
+        html: grafico(PC, { rectas: [0, 1, 2], etiquetas: true }) },
+      { titulo: '¿Qué lado de cada recta?',
+        html: '<p>Probamos un punto que no esté sobre la recta y vemos si cumple la desigualdad.</p>' +
+              '<p>' + f(ce(1, 'x+y\\le27')) + ' con $(0,0)$: $0+0\\le27$ ✓ &nbsp;⇒ el lado del origen.</p>' +
+              '<p>' + f(ce(2, 'x\\ge12')) + ' con $(0,0)$: $0\\ge12$ ✗ &nbsp;⇒ el lado contrario al origen: a la derecha.</p>' +
+              '<p>' + f(ce(3, 'y\\ge\\dfrac{x}{2}')) + ' el origen está sobre la recta, probamos $(0,10)$: $10\\ge0$ ✓ &nbsp;⇒ por encima de la recta.</p>' },
+      { titulo: 'Región factible',
+        html: '<p>Es la zona donde se cumplen las tres desigualdades a la vez:</p>' +
+              grafico(PC, { rectas: [0, 1, 2], etiquetas: true, region: true }) },
+      { titulo: 'Vértices de la región factible',
+        html: '<p>El mínimo está en un vértice. Cada vértice es el corte de dos de las rectas: resolvemos el sistema de cada pareja.</p>' },
+      { titulo: 'Vértice $A$: $x=12$ e $y=\\dfrac{x}{2}$',
+        html: sis([ce(2, 'x=12'), ce(3, 'y=\\dfrac{x}{2}')]) +
+              '$$y=\\dfrac{12}{2}=6\\quad\\Rightarrow\\quad A(12,\\,6)$$' },
+      { titulo: 'Vértice $B$: $x=12$ y $x+y=27$',
+        html: sis([ce(2, 'x=12'), ce(1, 'x+y=27')]) +
+              '$$y=27-12=15\\quad\\Rightarrow\\quad B(12,\\,15)$$' },
+      { titulo: 'Vértice $C$: $x+y=27$ e $y=\\dfrac{x}{2}$',
+        html: sis([ce(1, 'x+y=27'), ce(3, 'y=\\dfrac{x}{2}')]) +
+              '<p>Sustituimos $y$ en la primera ecuación:</p>' +
+              '$$x+\\dfrac{x}{2}=27\\;\\Rightarrow\\;\\dfrac{3x}{2}=27\\;\\Rightarrow\\;x=18,\\qquad y=\\dfrac{18}{2}=9\\quad\\Rightarrow\\quad C(18,\\,9)$$' },
+      { titulo: 'Los tres vértices',
+        html: grafico(PC, { rectas: [0, 1, 2], etiquetas: true, region: true, vertices: [
+          { p: [12, 6],  lab: 'A(12, 6)',  dx: -9, dy: 16, anc: 'end' },
+          { p: [12, 15], lab: 'B(12, 15)', dx: -9, dy: -8, anc: 'end' },
+          { p: [18, 9],  lab: 'C(18, 9)',  dx: 10, dy: 5 } ] }) },
+      { titulo: 'Calculamos el coste en cada vértice',
+        html: '<p>Sustituimos cada vértice en $C(x,y)=9000x+6000y$:</p>' +
+              '$$\\begin{array}{ll}' +
+              'A(12,6): & C=9000\\cdot12+6000\\cdot6=108000+36000=144000\\\\[2mm]' +
+              'B(12,15): & C=9000\\cdot12+6000\\cdot15=108000+90000=198000\\\\[2mm]' +
+              'C(18,9): & C=9000\\cdot18+6000\\cdot9=162000+54000=216000' +
+              '\\end{array}$$' +
+              '<p>El menor de los tres valores es $144000$, en $A$.</p>' },
+      { caja: 'Solución',
+        html: '$$x=12,\\qquad y=6,\\qquad C_{\\min}=144000$$' +
+              '<p><b class="res">El convoy debe llevar 12 camiones de agua potable y 6 de medicinas. El coste mínimo es de 144 000 €.</b></p>' },
+      { titulo: 'Comprobación',
+        html: '<p>$12+6=18\\le27$ ✓</p><p>$12\\ge12$ ✓</p><p>$6\\ge\\dfrac{12}{2}=6$ ✓</p>' +
+              '<p>$9000\\cdot12+6000\\cdot6=144000$ € ✓</p>' }
+    ]
+  },
+
+  /* ===================== REVISIONES 1.2 · bloque «con dibujo» ===================== */
+  {
+    titulo: "Problema 2",
+    etiqueta: "PAU Castilla y León · Julio 2026 (1.2)",
+    enunciado: '<p>En la siguiente figura se muestra sombreada la región factible de un problema de programación lineal planteado para decidir el número de revisiones normales y el número de revisiones exhaustivas.</p>' +
+      grafico(Object.assign({}, P12, { H: 250 }), { rectas: [0, 1, 2, 3], etiquetas: true, color: false, region: true, regionColor: 'rgba(60,60,60,.55)' }) +
+      '<p><b>a)</b> Escribir matemáticamente el conjunto de restricciones que corresponden a este problema. Escribir una solución de la región factible y otra de fuera de la región factible.</p>' +
+      '<p><b>b)</b> Determinar, utilizando técnicas de programación lineal, y teniendo en cuenta la región factible dada en el apartado anterior, ' +
+      fr(1, 'cuál es el número máximo total de revisiones normales y exhaustivas que se pueden realizar') +
+      ', así como el número de ambas revisiones para las que se alcanza este máximo.</p>',
+    pasos: [
+      { titulo: 'Las incógnitas',
+        html: '<p>El enunciado nombra primero las revisiones normales y después las exhaustivas, y en la figura los ejes son $x$ e $y$. Entonces:</p>' +
+              '<p>$x$ = número de revisiones normales, &nbsp;$y$ = número de revisiones exhaustivas.</p>' },
+      { titulo: 'Apartado a) · Un punto de dentro',
+        html: '<p>Cada recta de la figura divide el plano en dos lados. Para saber con qué lado nos quedamos, tomamos un punto que se vea dentro de la región sombreada, por ejemplo $(40,\\,8)$:</p>' +
+              grafico(P12, { rectas: [0, 1, 2, 3], etiquetas: true, region: true, puntos: [{ p: [40, 8], ok: true, lab: '(40, 8)', dy: 22, anc: 'middle' }] }) },
+      { titulo: 'Leemos cada desigualdad',
+        html: '<p>Sustituimos $(40,8)$ en el primer miembro de cada recta y comparamos con el segundo:</p>' +
+              '$$\\begin{array}{lcll}' +
+              ce(2, 'y=7') + ' & 8>7 & \\Rightarrow & ' + ce(2, 'y\\ge7') + '\\\\[2mm]' +
+              ce(3, '2x-5y=5') + ' & 2\\cdot40-5\\cdot8=40>5 & \\Rightarrow & ' + ce(3, '2x-5y\\ge5') + '\\\\[2mm]' +
+              ce(4, '3x+6y=220') + ' & 3\\cdot40+6\\cdot8=168<220 & \\Rightarrow & ' + ce(4, '3x+6y\\le220') + '\\\\[2mm]' +
+              ce(5, '2x+1{,}5y=120') + ' & 2\\cdot40+1{,}5\\cdot8=92<120 & \\Rightarrow & ' + ce(5, '2x+1{,}5y\\le120') +
+              '\\end{array}$$' },
+      { caja: 'Restricciones',
+        html: sis([ce(2, 'y\\ge7'), ce(3, '2x-5y\\ge5'), ce(4, '3x+6y\\le220'), ce(5, '2x+1{,}5y\\le120')]) +
+              '<p>y, como la figura está en el primer cuadrante, $x\\ge0$, $y\\ge0$.</p>' },
+      { titulo: 'Una solución de la región y otra de fuera',
+        html: '<p><b>Dentro:</b> $(40,\\,8)$: &nbsp;$8\\ge7$, &nbsp;$40\\ge5$, &nbsp;$168\\le220$, &nbsp;$92\\le120$ ✓</p>' +
+              '<p><b>Fuera:</b> $(30,\\,20)$ falla $2x-5y\\ge5$, porque $2\\cdot30-5\\cdot20=-40$ y $-40\\ge5$ es falso ✗</p>' +
+              grafico(P12, { rectas: [0, 1, 2, 3], etiquetas: true, region: true, puntos: [
+                { p: [40, 8], ok: true, lab: '(40, 8)', dy: 22, anc: 'middle' },
+                { p: [30, 20], ok: false, lab: '(30, 20)', dx: -12, dy: 22, anc: 'end' }] }) },
+      { titulo: 'Apartado b) · Función objetivo',
+        html: '<p>Queremos el mayor número total de revisiones:</p>' +
+              '$$' + ce(1, 'F(x,y)=x+y') + '\\qquad\\text{Maximizar }F$$' },
+      { titulo: 'Vértices de la región factible',
+        html: '<p>El máximo está en un vértice. En la figura se ve qué dos rectas se cortan en cada uno.</p>' },
+      { titulo: 'Vértice $A$: $y=7$ y $2x-5y=5$',
+        html: sis([ce(2, 'y=7'), ce(3, '2x-5y=5')]) +
+              '$$2x-35=5\\;\\Rightarrow\\;x=20\\quad\\Rightarrow\\quad A(20,\\,7)$$' },
+      { titulo: 'Vértice $B$: $2x-5y=5$ y $3x+6y=220$',
+        html: sis([ce(3, '2x-5y=5'), ce(4, '3x+6y=220')]) +
+              '<p>Reducción: multiplicamos la primera por $6$ y la segunda por $5$ para eliminar $y$:</p>' +
+              '$$\\begin{array}{r}12x-30y=30\\\\ 15x+30y=1100\\\\\\hline 27x=1130\\end{array}\\quad\\Rightarrow\\quad x=\\dfrac{1130}{27}\\approx41{,}85$$' +
+              '$$5y=2x-5=\\dfrac{2125}{27}\\;\\Rightarrow\\;y=\\dfrac{425}{27}\\approx15{,}74\\quad\\Rightarrow\\quad B\\left(\\dfrac{1130}{27},\\,\\dfrac{425}{27}\\right)$$' },
+      { titulo: 'Vértice $C$: $3x+6y=220$ y $2x+1{,}5y=120$',
+        html: sis([ce(4, '3x+6y=220'), ce(5, '2x+1{,}5y=120')]) +
+              '<p>Multiplicamos la segunda por $4$ para que $y$ tenga el mismo coeficiente y restamos:</p>' +
+              '$$\\begin{array}{r}8x+6y=480\\\\ 3x+6y=220\\\\\\hline 5x=260\\end{array}\\quad\\Rightarrow\\quad x=52$$' +
+              '$$2\\cdot52+1{,}5y=120\\;\\Rightarrow\\;y=\\dfrac{16}{1{,}5}=\\dfrac{32}{3}\\approx10{,}67\\quad\\Rightarrow\\quad C\\left(52,\\,\\dfrac{32}{3}\\right)$$' },
+      { titulo: 'Vértice $D$: $2x+1{,}5y=120$ e $y=7$',
+        html: sis([ce(5, '2x+1{,}5y=120'), ce(2, 'y=7')]) +
+              '$$2x+10{,}5=120\\;\\Rightarrow\\;x=54{,}75\\quad\\Rightarrow\\quad D(54{,}75,\\,7)$$' },
+      { titulo: 'Los cuatro vértices',
+        html: grafico(P12, { rectas: [0, 1, 2, 3], etiquetas: true, region: true, vertices: VERT12 }) },
+      { titulo: 'Valor de $F=x+y$ en cada vértice',
+        html: '$$\\begin{array}{ll}' +
+              'A(20,7): & F=27\\\\[2mm]' +
+              'B\\left(\\frac{1130}{27},\\frac{425}{27}\\right): & F=\\dfrac{1555}{27}\\approx57{,}59\\\\[2mm]' +
+              'C\\left(52,\\frac{32}{3}\\right): & F=\\dfrac{188}{3}\\approx62{,}67\\\\[2mm]' +
+              'D(54{,}75,7): & F=61{,}75' +
+              '\\end{array}$$' +
+              '<p>El mayor valor es $62{,}67$, en $C$.</p>' },
+      { titulo: 'Pero las revisiones son números enteros',
+        html: '<p>En $C$ sale $y=\\dfrac{32}{3}$, que no es entero: no se pueden hacer $10{,}67$ revisiones. Como el máximo real es $62{,}67$, el total entero no puede pasar de $62$. Buscamos los puntos enteros de la región con $x+y=62$, sustituyendo $y=62-x$ en las restricciones:</p>' +
+              '$$\\begin{array}{lll}' +
+              ce(2, 'y\\ge7') + ': & 62-x\\ge7 & \\Rightarrow\\;x\\le55\\\\[2mm]' +
+              ce(3, '2x-5y\\ge5') + ': & 2x-310+5x\\ge5 & \\Rightarrow\\;x\\ge45\\\\[2mm]' +
+              ce(4, '3x+6y\\le220') + ': & 3x+372-6x\\le220 & \\Rightarrow\\;x\\ge\\tfrac{152}{3}\\approx50{,}7\\\\[2mm]' +
+              ce(5, '2x+1{,}5y\\le120') + ': & 2x+93-1{,}5x\\le120 & \\Rightarrow\\;x\\le54' +
+              '\\end{array}$$' +
+              '<p>Se cumplen todas con $x=51,\\,52,\\,53,\\,54$.</p>' },
+      { titulo: 'La recta $x+y=62$ sobre la región',
+        html: '<p>Ampliamos la zona del vértice $C$: los cuatro puntos enteros están sobre la recta $x+y=62$, dentro de la región.</p>' +
+          grafico(P12, { ventana: ZOOM12, zoom: true, rectas: [0, 2, 3], etiquetas: true, region: true,
+          nivel: [{ a: 1, b: 1, c: 62, lab: 'x + y = 62', lp: [48.3, 13.62] }],
+          vertices: [{ p: [52, 32 / 3], lab: 'C', dx: 12, dy: -8 }],
+          enteros: [
+            { p: [51, 11], lab: '(51, 11)', dx: -10, dy: -10, anc: 'end' },
+            { p: [52, 10], lab: '(52, 10)', dx: -10, dy: 22, anc: 'end' },
+            { p: [53, 9],  lab: '(53, 9)',  dx: -10, dy: 22, anc: 'end' },
+            { p: [54, 8],  lab: '(54, 8)',  dx: -10, dy: 22, anc: 'end' }] }) },
+      { caja: 'Solución',
+        html: '$$x+y=62,\\qquad (x,y)\\in\\{(51,11),\\;(52,10),\\;(53,9),\\;(54,8)\\}$$' +
+              '<p><b class="res">El máximo es de 62 revisiones en total, y se alcanza, por ejemplo, con 52 normales y 10 exhaustivas (también con 51 y 11, 53 y 9, o 54 y 8).</b></p>' },
+      { titulo: 'Comprobación',
+        html: '<p>Con $(52,10)$: &nbsp;$10\\ge7$ ✓ &nbsp; $104-50=54\\ge5$ ✓ &nbsp; $156+60=216\\le220$ ✓ &nbsp; $104+15=119\\le120$ ✓</p>' +
+              '<p>Con $(54,8)$: &nbsp;$8\\ge7$ ✓ &nbsp; $108-40=68\\ge5$ ✓ &nbsp; $162+48=210\\le220$ ✓ &nbsp; $108+12=120\\le120$ ✓</p>' +
+              '<p>Con $63$ revisiones no se puede: superaría el máximo $62{,}67$.</p>' }
+    ]
+  }
+];
+
+/* =====================================================================
+   GENERADOR DE PASOS PARA UN PROBLEMA DE PROGRAMACIÓN LINEAL
+   A partir de los mismos datos (restricciones, función objetivo) se
+   calculan vértices, valores, figuras y comprobación, de modo que
+   dibujo y números no pueden contradecirse.
+   ===================================================================== */
+const _mcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a; };
+const _mcm = (a, b) => a / _mcd(a, b) * b;
+
+class Fr {
+  constructor(n, d = 1) { if (d < 0) { n = -n; d = -d; } const g = _mcd(n, d) || 1; this.n = n / g; this.d = d / g; }
+  static of(x) {
+    if (x instanceof Fr) return x;
+    if (Number.isInteger(x)) return new Fr(x, 1);
+    let d = 1; while (!Number.isInteger(+(x * d).toFixed(6)) && d < 1e6) d *= 10;
+    return new Fr(Math.round(x * d), d);
+  }
+  add(o) { o = Fr.of(o); return new Fr(this.n * o.d + o.n * this.d, this.d * o.d); }
+  sub(o) { o = Fr.of(o); return new Fr(this.n * o.d - o.n * this.d, this.d * o.d); }
+  mul(o) { o = Fr.of(o); return new Fr(this.n * o.n, this.d * o.d); }
+  div(o) { o = Fr.of(o); return new Fr(this.n * o.d, this.d * o.n); }
+  neg() { return new Fr(-this.n, this.d); }
+  val() { return this.n / this.d; }
+  isInt() { return this.d === 1; }
+  eq(o) { o = Fr.of(o); return this.n === o.n && this.d === o.d; }
+  cmp(o) { return this.sub(o).n; }
+}
+
+/* número en LaTeX: entero, decimal exacto con coma o fracción */
+function tx(q) {
+  q = Fr.of(q);
+  if (q.d === 1) return String(q.n);
+  let d = q.d; while (d % 2 === 0) d /= 2; while (d % 5 === 0) d /= 5;
+  if (d === 1) return String(+q.val().toFixed(6)).replace('.', '{,}');
+  return (q.n < 0 ? '-' : '') + '\\dfrac{' + Math.abs(q.n) + '}{' + q.d + '}';
+}
+const _aprox = q => String(+Fr.of(q).val().toFixed(2)).replace('.', '{,}');
+const _terminaEnDecimal = q => { q = Fr.of(q); let d = q.d; while (d % 2 === 0) d /= 2; while (d % 5 === 0) d /= 5; return d === 1; };
+/* número con aproximación si es una fracción que no termina */
+const txa = q => (_terminaEnDecimal(q) ? tx(q) : tx(q) + '\\approx' + _aprox(q));
+/* en texto plano (no LaTeX), con coma decimal */
+const txt = q => { q = Fr.of(q); return String(+q.val().toFixed(2)).replace('.', ','); };
+/* número grande con espacio fino de miles, para frases */
+const miles = n => { const s = String(Math.round(Math.abs(n))); const g = s.replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0'); return (n < 0 ? '−' : '') + g; };
+
+/* a·x + b·y con los nombres de variable vn */
+function lin(a, b, vn = ['x', 'y']) {
+  let s = '';
+  [[a, vn[0]], [b, vn[1]]].forEach(([k, v]) => {
+    k = Fr.of(k); if (k.n === 0) return;
+    const neg = k.n < 0, ab = neg ? k.neg() : k;
+    const t = ab.eq(1) ? v : tx(ab) + v;
+    s += (s === '' ? (neg ? '-' : '') : (neg ? '-' : '+')) + t;
+  });
+  return s || '0';
+}
+/* la misma expresión con números sustituidos: 3·20+3·30 */
+function exprNum(a, b, xv, yv) {
+  const par = v => (Fr.of(v).isInt() ? tx(v) : '\\left(' + tx(v) + '\\right)');
+  const ts = [];
+  [[a, xv], [b, yv]].forEach(([k, v]) => {
+    k = Fr.of(k); if (k.n === 0) return;
+    if (k.eq(1)) ts.push(par(v));
+    else if (k.eq(-1)) ts.push('-' + par(v));
+    else ts.push(tx(k) + '\\cdot' + par(v));
+  });
+  return ts.reduce((s, t, i) => (i === 0 ? t : s + (t[0] === '-' ? '' : '+') + t), '') || '0';
+}
+const _punto = (x, y) => '(' + tx(x) + ',\\,' + tx(y) + ')';
+const _nom = (n, x, y) => n + '\\left(' + tx(x) + ',\\,' + tx(y) + '\\right)';
+const _nomc = (n, x, y) => (Fr.of(x).isInt() && Fr.of(y).isInt() ? n + _punto(x, y) : _nom(n, x, y));
+
+/* ---------- resolver el sistema de dos rectas con su explicación ---------- */
+/* r = {a,b,c} (Fr), r.eqh = ecuación coloreada (HTML/LaTeX para sis) */
+function _resolver(r1, r2, nombre, vn) {
+  const [X, Y] = vn;
+  const a1 = r1.a, b1 = r1.b, c1 = r1.c, a2 = r2.a, b2 = r2.b, c2 = r2.c;
+  let x, y, html = '';
+  /* dos rectas paralelas a los ejes, o el origen */
+  if (c1.n === 0 && c2.n === 0) {
+    x = new Fr(0); y = new Fr(0);
+    return { x, y, html: '<p>' + (r1.eje && r2.eje ? 'Los dos ejes se cortan en el origen:' : 'Las dos rectas pasan por el origen:') + '</p>$$' + nombre + '(0,\\,0)$$' };
+  }
+  const vert1 = b1.n === 0, vert2 = b2.n === 0, hor1 = a1.n === 0, hor2 = a2.n === 0;
+  if ((vert1 || vert2) && (hor1 || hor2)) {
+    const v = vert1 ? r1 : r2, h = hor1 ? r1 : r2;
+    x = v.c.div(v.a); y = h.c.div(h.b);
+    return { x, y, html: '$$' + X + '=' + tx(x) + ',\\quad ' + Y + '=' + tx(y) + '\\quad\\Rightarrow\\quad ' + _nomc(nombre, x, y) + '$$' };
+  }
+  if (vert1 || vert2) {                       // una vertical: se sustituye x
+    const v = vert1 ? r1 : r2, o = vert1 ? r2 : r1;
+    x = v.c.div(v.a);
+    const rhs = o.c.sub(o.a.mul(x));
+    y = rhs.div(o.b);
+    const izq = (o.a.n === 0 ? '' : exprNum(o.a, 0, x, 0) + (o.b.n < 0 ? '' : '+')) + lin(0, o.b, vn);
+    html = '<p>Sustituimos $' + X + '=' + tx(x) + '$ en la otra ecuación:</p>$$' + izq + '=' + tx(o.c) +
+      (o.b.eq(1) ? '' : '\\;\\Rightarrow\\;' + lin(0, o.b, vn) + '=' + tx(rhs)) +
+      '\\;\\Rightarrow\\;' + Y + '=' + tx(y) + '\\quad\\Rightarrow\\quad ' + _nomc(nombre, x, y) + '$$';
+    return { x, y, html };
+  }
+  if (hor1 || hor2) {                         // una horizontal: se sustituye y
+    const h = hor1 ? r1 : r2, o = hor1 ? r2 : r1;
+    y = h.c.div(h.b);
+    const rhs = o.c.sub(o.b.mul(y));
+    x = rhs.div(o.a);
+    const izq = lin(o.a, 0, vn) + (o.b.n === 0 ? '' : (o.b.n < 0 ? '' : '+') + exprNum(0, o.b, 0, y));
+    html = '<p>Sustituimos $' + Y + '=' + tx(y) + '$ en la otra ecuación:</p>$$' + izq + '=' + tx(o.c) +
+      (o.a.eq(1) ? '' : '\\;\\Rightarrow\\;' + lin(o.a, 0, vn) + '=' + tx(rhs)) +
+      '\\;\\Rightarrow\\;' + X + '=' + tx(x) + '\\quad\\Rightarrow\\quad ' + _nomc(nombre, x, y) + '$$';
+    return { x, y, html };
+  }
+  /* general: reducción. Se pasan a coeficientes enteros */
+  const ent = r => { const m = [r.a, r.b, r.c].reduce((s, q) => _mcm(s, q.d), 1); return [r.a.mul(m), r.b.mul(m), r.c.mul(m)]; };
+  const [A1, B1, C1] = ent(r1), [A2, B2, C2] = ent(r2);
+  const mY = [_mcm(Math.abs(B1.n), Math.abs(B2.n)) / Math.abs(B1.n), _mcm(Math.abs(B1.n), Math.abs(B2.n)) / Math.abs(B2.n)];
+  const mX = [_mcm(Math.abs(A1.n), Math.abs(A2.n)) / Math.abs(A1.n), _mcm(Math.abs(A1.n), Math.abs(A2.n)) / Math.abs(A2.n)];
+  const quitaY = (mY[0] + mY[1]) <= (mX[0] + mX[1]);
+  const m = quitaY ? mY : mX;
+  const e1 = [A1.mul(m[0]), B1.mul(m[0]), C1.mul(m[0])], e2 = [A2.mul(m[1]), B2.mul(m[1]), C2.mul(m[1])];
+  const k = quitaY ? 1 : 0;                   // índice de la variable que se elimina
+  const igual = e1[k].n === e2[k].n;          // mismo signo: se resta; si no, se suma
+  const res = igual ? [e1[0].sub(e2[0]), e1[1].sub(e2[1]), e1[2].sub(e2[2])] : [e1[0].add(e2[0]), e1[1].add(e2[1]), e1[2].add(e2[2])];
+  const vq = quitaY ? X : Y, vo = quitaY ? Y : X;
+  const queda = quitaY ? res[0] : res[1];
+  const sol = res[2].div(queda);
+  if (quitaY) x = sol; else y = sol;
+  const mult = (n, ord) => (n === 1 ? 'la ' + ord + ' se queda igual' : 'la ' + ord + ' por $' + n + '$');
+  const oper = igual ? 'restamos' : 'sumamos';
+  const frase = (m[0] === 1 && m[1] === 1)
+    ? 'el coeficiente de $' + vo + '$ ' + (igual ? 'es el mismo en las dos ecuaciones' : 'es opuesto en las dos ecuaciones') + ', así que ' + oper
+    : (m[0] === 1 ? 'dejamos la primera igual y multiplicamos la segunda por $' + m[1] + '$'
+      : m[1] === 1 ? 'multiplicamos la primera por $' + m[0] + '$ y dejamos la segunda igual'
+      : 'multiplicamos la primera por $' + m[0] + '$ y la segunda por $' + m[1] + '$') + ' para igualar el coeficiente de $' + vo + '$, y ' + oper;
+  html = '<p>Reducción: ' + frase + ':</p>$$\\begin{array}{r}' +
+    lin(e1[0], e1[1], vn) + '=' + tx(e1[2]) + '\\\\ ' + lin(e2[0], e2[1], vn) + '=' + tx(e2[2]) + '\\\\\\hline ' +
+    (quitaY ? lin(res[0], 0, vn) : lin(0, res[1], vn)) + '=' + tx(res[2]) + '\\end{array}\\quad\\Rightarrow\\quad ' + vq + '=' + txa(sol) + '$$';
+  /* la otra variable, sustituyendo en la primera ecuación (sin escalar) */
+  if (quitaY) {
+    const rhs = c1.sub(a1.mul(x)); y = rhs.div(b1);
+    html += '<p>Sustituimos en la primera ecuación:</p>$$' + exprNum(a1, 0, x, 0) + (b1.n < 0 ? '' : '+') + lin(0, b1, vn) + '=' + tx(c1) +
+      (b1.eq(1) ? '' : '\\;\\Rightarrow\\;' + lin(0, b1, vn) + '=' + tx(rhs)) + '\\;\\Rightarrow\\;' + Y + '=' + txa(y) + '$$';
+  } else {
+    const rhs = c1.sub(b1.mul(y)); x = rhs.div(a1);
+    html += '<p>Sustituimos en la primera ecuación:</p>$$' + lin(a1, 0, vn) + (b1.n < 0 ? '' : '+') + exprNum(0, b1, 0, y) + '=' + tx(c1) +
+      (a1.eq(1) ? '' : '\\;\\Rightarrow\\;' + lin(a1, 0, vn) + '=' + tx(rhs)) + '\\;\\Rightarrow\\;' + X + '=' + txa(x) + '$$';
+  }
+  html += '$$' + (Fr.of(x).isInt() && Fr.of(y).isInt() ? nombre + _punto(x, y) : nombre + '\\left(' + tx(x) + ',\\,' + tx(y) + '\\right)') + '$$';
+  return { x, y, html };
+}
+
+/* ---------- vértices de la región ---------- */
+function _vertices(restr) {
+  const L = restr.map(r => ({ a: Fr.of(r.a), b: Fr.of(r.b), c: Fr.of(r.c), op: r.op, i: r.i }));
+  L.push({ a: new Fr(1), b: new Fr(0), c: new Fr(0), op: '>=', i: 'x0' });
+  L.push({ a: new Fr(0), b: new Fr(1), c: new Fr(0), op: '>=', i: 'y0' });
+  const ok = (x, y) => L.every(l => { const v = l.a.mul(x).add(l.b.mul(y)).sub(l.c); return l.op === '<=' ? v.n <= 0 : v.n >= 0; });
+  const V = [];
+  for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) {
+    const det = L[i].a.mul(L[j].b).sub(L[j].a.mul(L[i].b));
+    if (det.n === 0) continue;
+    const x = L[i].c.mul(L[j].b).sub(L[j].c.mul(L[i].b)).div(det);
+    const y = L[i].a.mul(L[j].c).sub(L[j].a.mul(L[i].c)).div(det);
+    if (!ok(x, y)) continue;
+    let v = V.find(w => w.x.eq(x) && w.y.eq(y));
+    if (!v) { v = { x, y, act: new Set() }; V.push(v); }
+    v.act.add(i); v.act.add(j);
+  }
+  /* todas las rectas que pasan por el vértice */
+  V.forEach(v => { v.act = L.map((l, i) => i).filter(i => l_pasa(L[i], v)); });
+  function l_pasa(l, v) { return l.a.mul(v.x).add(l.b.mul(v.y)).eq(l.c); }
+  return { V, L };
+}
+/* orden: en sentido horario empezando por el más a la izquierda (y, de ellos, el más bajo) */
+function _ordenar(V) {
+  const cx = V.reduce((s, v) => s + v.x.val(), 0) / V.length, cy = V.reduce((s, v) => s + v.y.val(), 0) / V.length;
+  const ang = v => Math.atan2(v.y.val() - cy, v.x.val() - cx);
+  const ini = V.slice().sort((p, q) => (p.x.val() - q.x.val()) || (p.y.val() - q.y.val()))[0];
+  const rest = V.filter(v => v !== ini).sort((p, q) => ang(q) - ang(p));      // horario
+  /* el horario desde el inicial: ángulos decrecientes a partir del ángulo del inicial */
+  const a0 = ang(ini);
+  const norm = a => { let d = a0 - a; while (d < 0) d += 2 * Math.PI; while (d >= 2 * Math.PI) d -= 2 * Math.PI; return d; };
+  return [ini].concat(V.filter(v => v !== ini).sort((p, q) => norm(ang(p)) - norm(ang(q))));
+}
+
+/* ---------- puntos para dibujar una recta ---------- */
+function _dosPuntos(r, fig) {
+  if (r.pts) return r.pts;
+  const a = Fr.of(r.a), b = Fr.of(r.b), c = Fr.of(r.c), xm = fig.xmax, ym = fig.ymax;
+  if (b.n === 0) { const v = c.div(a); return [[v, 0], [v, ym]]; }
+  if (a.n === 0) { const v = c.div(b); return [[0, v], [xm, v]]; }
+  if (c.n !== 0) {
+    const ix = c.div(a), iy = c.div(b);
+    if (ix.isInt() && iy.isInt() && ix.val() > 0 && iy.val() > 0 && ix.val() <= xm && iy.val() <= ym) return [[0, iy], [ix, 0]];
+  }
+  /* puntos enteros dentro de la ventana, sobre la malla "grande" si se puede */
+  const cand = [];
+  for (let x = 0; x <= xm; x += (fig.mx || 1)) {
+    const y = c.sub(a.mul(x)).div(b);
+    if (y.isInt() && y.val() >= 0 && y.val() <= ym) cand.push([x, y.n]);
+  }
+  if (cand.length >= 2) return [cand[0], cand[cand.length - 1]];
+  return [[0, c.div(b)], [c.div(a), 0]];
+}
+
+/* posiciones por defecto de las etiquetas de las rectas */
+function _ctx(P) {
+  const W = P.W || 720, H = P.H || 330, L = P.L || 46, R = 16, T = 22, B = 36;
+  const x0 = P.xmin || 0, y0 = P.ymin || 0, x1 = P.xmax, y1 = P.ymax;
+  const sx = (W - L - R) / (x1 - x0), sy = (H - T - B) / (y1 - y0);
+  const X = x => L + (x - x0) * sx, Y = y => H - B - (y - y0) * sy;
+  const inv = (px, py) => [x0 + (px - L) / sx, y0 + (H - B - py) / sy];
+  const segs = P.restr.map(r => {
+    const sg = segmento(r.a, r.b, r.c, x0, y0, x1, y1);
+    return sg.length === 2 ? [[X(sg[0][0]), Y(sg[0][1])], [X(sg[1][0]), Y(sg[1][1])]] : null;
+  });
+  const caja = (px, py, anc, w) => { const xa = anc === 'start' ? px : anc === 'end' ? px - w : px - w / 2; return [xa, py - 14, xa + w, py + 4]; };
+  const toca = (sg, bb) => {
+    if (!sg) return false;
+    for (let k = 0; k <= 30; k++) {
+      const x = sg[0][0] + (sg[1][0] - sg[0][0]) * k / 30, y = sg[0][1] + (sg[1][1] - sg[0][1]) * k / 30;
+      if (x >= bb[0] - 2 && x <= bb[2] + 2 && y >= bb[1] - 2 && y <= bb[3] + 2) return true;
+    }
+    return false;
+  };
+  const solapa = (a, b) => !(a[2] + 3 < b[0] || b[2] + 3 < a[0] || a[3] + 3 < b[1] || b[3] + 3 < a[1]);
+  const fuera = bb => bb[0] < L + 2 || bb[2] > W - R - 2 || bb[1] < T + 2 || bb[3] > H - B - 2;
+  return { W, H, L, R, T, B, X, Y, inv, segs, caja, toca, solapa, fuera };
+}
+
+function _autoLP(P) {
+  const k = _ctx(P), { X, Y, inv, segs, caja, toca, solapa, fuera } = k;
+  const ancho = r => 9.4 * r.lab.length + 4;
+  const puestas = [];
+  P.restr.forEach(r => { if (r.lp) puestas.push(caja(X(r.lp[0]), Y(r.lp[1]), r.anc || 'start', ancho(r))); });
+  P.restr.forEach((r, i) => {
+    if (r.lp || !segs[i]) return;
+    let [p, q] = segs[i]; if (p[0] > q[0]) [p, q] = [q, p];
+    const w = ancho(r), cands = [];
+    const vert = Math.abs(p[0] - q[0]) < 1e-6, hor = Math.abs(p[1] - q[1]) < 1e-6;
+    for (let t = .06; t <= .94; t += .04) {
+      const bx = p[0] + t * (q[0] - p[0]), by = p[1] + t * (q[1] - p[1]);
+      if (vert) { const py = Math.min(p[1], q[1]) + t * Math.abs(q[1] - p[1]); cands.push([bx + 7, py, 'start', t], [bx - 7, py, 'end', t]); }
+      else {
+        cands.push([bx + 6, by - 8, 'start', t], [bx - 6, by - 8, 'end', t], [bx + 6, by + 19, 'start', t], [bx - 6, by + 19, 'end', t]);
+        if (hor) cands.push([bx, by - 8, 'middle', t]);
+      }
+    }
+    let best = null, bs = 1e9;
+    cands.forEach(([px, py, anc, t], n) => {
+      const bb = caja(px, py, anc, w);
+      let sc = 0;
+      if (fuera(bb)) sc += 100;
+      segs.forEach((sg, j) => { if (j !== i && toca(sg, bb)) sc += 14; });
+      if (toca(segs[i], bb)) sc += 16;
+      puestas.forEach(pb => { if (solapa(bb, pb)) sc += 14; });
+      sc += Math.abs(t - .3) * 2 + n * 0.001;
+      if (sc < bs) { bs = sc; best = [px, py, anc]; }
+    });
+    puestas.push(caja(best[0], best[1], best[2], w));
+    r.lp = inv(best[0], best[1]); r.anc = best[2];
+  });
+  P._puestas = puestas;
+}
+
+/* etiquetas de vértices: se prueba alrededor de cada punto y se elige la posición sin choques */
+function _autoVert(P, etV) {
+  const k = _ctx(P), { X, Y, segs, caja, toca, solapa, fuera } = k;
+  const puestas = (P._puestas || []).slice();
+  etV.forEach(e => { if (e.fijo) puestas.push(caja(X(e.p[0]) + e.dx, Y(e.p[1]) + e.dy, e.anc, 9.4 * e.lab.length)); });
+  etV.forEach(e => {
+    if (e.fijo) return;
+    const w = 9.4 * e.lab.length, px = X(e.p[0]), py = Y(e.p[1]);
+    const cands = [[12, -9, 'start'], [12, 21, 'start'], [-12, -9, 'end'], [-12, 21, 'end'], [0, -14, 'middle'], [0, 26, 'middle'], [14, 6, 'start'], [-14, 6, 'end'], [16, -22, 'start'], [-16, -22, 'end'], [16, 34, 'start'], [-16, 34, 'end'], [0, -26, 'middle'], [0, 40, 'middle']];
+    let best = null, bs = 1e9;
+    cands.forEach(([dx, dy, anc], n) => {
+      const bb = caja(px + dx, py + dy, anc, w);
+      let sc = n * .01;
+      if (fuera(bb)) sc += 100;
+      segs.forEach(sg => { if (toca(sg, bb)) sc += 8; });
+      puestas.forEach(pb => { if (solapa(bb, pb)) sc += 25; });
+      if (sc < bs) { bs = sc; best = [dx, dy, anc]; }
+    });
+    e.dx = best[0]; e.dy = best[1]; e.anc = best[2];
+    puestas.push(caja(px + e.dx, py + e.dy, e.anc, w));
+  });
+}
+
+/* ---------- el generador ---------- */
+function pasosPL(c) {
+  const vn = c.vn || ['x', 'y'], [X, Y] = vn;
+  const mx = c.sentido === 'max';
+  const N = c.Fn || 'F';
+  const fa = Fr.of(c.F.a), fb = Fr.of(c.F.b);
+  c.restr.forEach((r, i) => { r.i = i; r.a = Fr.of(r.a).val(); r.b = Fr.of(r.b).val(); r.c = Fr.of(r.c).val(); });
+  const P = Object.assign({ lx: vn[0].replace('_1', '₁').replace('_2', '₂'), ly: vn[1].replace('_1', '₁').replace('_2', '₂') }, c.fig, { restr: c.restr });
+  _autoLP(P);
+  const g = (capas) => grafico(P, capas);
+  const idx = c.restr.map((r, i) => i);
+  const nomV = 'ABCDEFGH';
+
+  /* vértices */
+  const { V: V0 } = _vertices(c.restr);
+  let V = c.orden ? c.orden.map(([x, y]) => V0.find(v => v.x.eq(x) && v.y.eq(y))) : _ordenar(V0);
+  V.forEach((v, i) => { v.nom = nomV[i]; v.F = fa.mul(v.x).add(fb.mul(v.y)); });
+  const mejor = V.reduce((m, v) => (mx ? (v.F.cmp(m.F) > 0) : (v.F.cmp(m.F) < 0)) ? v : m, V[0]);
+  const optimos = V.filter(v => v.F.eq(mejor.F));
+
+  /* ecuación de cada línea (para vértices) */
+  const nR = c.restr.length;
+  const lineaDe = i => {
+    if (i >= nR) { const ex = i === nR; return { a: new Fr(ex ? 1 : 0), b: new Fr(ex ? 0 : 1), c: new Fr(0), eqh: (ex ? X : Y) + '=0', eq: (ex ? X : Y) + '=0', eje: true }; }
+    const r = c.restr[i];
+    return { a: Fr.of(r.a), b: Fr.of(r.b), c: Fr.of(r.c), eqh: ce(r.k, r.eq), eq: r.eq, eje: false, i };
+  };
+  const paralela = l => l.a.n === 0 || l.b.n === 0;
+
+  const pasos = [];
+  pasos.push({ titulo: c.tituloVars || 'Elegimos las incógnitas', html: c.vars });
+  if (c.tabla) pasos.push({ titulo: c.tablaTitulo || 'Organizamos los datos en una tabla', html: c.tabla });
+
+  /* restricciones */
+  pasos.push({ titulo: 'Restricciones',
+    html: (c.restrIntro || '<p>Traducimos cada frase' + (c.tabla ? ' (cada fila de la tabla nos da una desigualdad)' : '') + ':</p>') +
+      sis(c.restr.map(r => ce(r.k, r.ineq0 || r.ineq))) +
+      (c.noNeg || '<p>Además, como son ' + (c.unidades || 'cantidades') + ', $' + X + '\\ge0$ e $' + Y + '\\ge0$.</p>') });
+
+  if (c.trasRestr) (typeof c.trasRestr === 'function' ? c.trasRestr(g, P) : c.trasRestr).forEach(e => pasos.push(e));
+  pasos.push({ titulo: 'Función objetivo', html: c.objetivo });
+
+  /* rectas */
+  const filas = c.restr.map(r => {
+    const [p1, p2] = _dosPuntos(r, P);
+    return ce(r.k, r.eq) + ' & ' + _punto(p1[0], p1[1]) + ' & ' + _punto(p2[0], p2[1]);
+  });
+  const verts = c.restr.filter(r => Math.abs(r.b) < 1e-12), hors = c.restr.filter(r => Math.abs(r.a) < 1e-12);
+  const notaRect = (verts.length || hors.length)
+    ? '<p class="nota">' + [verts.length ? verts.map(r => '$' + r.eq + '$').join(' y ') + (verts.length > 1 ? ' son rectas verticales' : ' es una recta vertical') : '',
+      hors.length ? hors.map(r => '$' + r.eq + '$').join(' y ') + (hors.length > 1 ? ' son rectas horizontales' : ' es una recta horizontal') : ''].filter(Boolean).join('; ') + '.</p>'
+    : '';
+  pasos.push({ titulo: 'Rectas que limitan la región',
+    html: '<p>Cada desigualdad está limitada por una recta (cambiamos $\\le$ o $\\ge$ por $=$). Para dibujarla, dos puntos:</p>' +
+      '$$\\begin{array}{lll}' + filas.join('\\\\[2mm]') + '\\end{array}$$' + notaRect + (c.notaRectas || '') });
+  pasos.push({ titulo: 'Dibujamos las rectas', html: g({ rectas: idx, etiquetas: true }) });
+
+  /* lado de cada recta */
+  const lados = c.restr.map(r => {
+    const a = Fr.of(r.a), b = Fr.of(r.b), cc = Fr.of(r.c);
+    if (r.test) {
+      return '<p>' + f(ce(r.k, r.ineq)) + ' ' + r.test.html + '</p>';
+    }
+    const cumple = r.op === '<=' ? 0 <= cc.val() : 0 >= cc.val();
+    const sust = (a.n !== 0 && b.n !== 0) ? '0+0' : '0';
+    const rel = r.op === '<=' ? '\\le' : '\\ge';
+    let lado;
+    if (b.n === 0) lado = ((r.op === '>=') === (a.val() > 0)) ? 'a la derecha de la recta' : 'a la izquierda de la recta';
+    else if (a.n === 0) lado = ((r.op === '>=') === (b.val() > 0)) ? 'por encima de la recta' : 'por debajo de la recta';
+    else lado = null;
+    const txtLado = cumple
+      ? '⇒ el lado del origen' + (lado ? ': ' + lado : '')
+      : '⇒ el lado contrario al origen' + (lado ? ': ' + lado : '');
+    return '<p>' + f(ce(r.k, r.ineq)) + ' con $(0,0)$: $' + sust + rel + tx(cc) + '$ ' + (cumple ? '✓' : '✗') + ' &nbsp;' + txtLado + '.</p>';
+  });
+  pasos.push({ titulo: '¿Qué lado de cada recta?',
+    html: '<p>Probamos un punto que no esté sobre la recta y vemos si cumple la desigualdad.</p>' + lados.join('') + (c.notaLados || '') });
+
+  /* región */
+  pasos.push({ titulo: 'Región factible',
+    html: '<p>' + (c.regionTexto || 'Es la zona donde se cumplen todas las desigualdades a la vez:') + '</p>' + g({ rectas: idx, etiquetas: true, region: true }) + (c.notaRegion || '') });
+
+  /* vértices */
+  pasos.push({ titulo: 'Vértices de la región factible',
+    html: '<p>' + (c.vertIntro || 'El ' + (mx ? 'máximo' : 'mínimo') + ' está en un vértice. Cada vértice es el corte de dos de las rectas: resolvemos el sistema de cada pareja.') + '</p>' });
+  V.forEach(v => {
+    /* pareja de rectas: mejor si alguna es paralela a un eje; sin ejes si se puede */
+    let best = null, bestS = -1e9;
+    const noEje = v.act.filter(i => i < nR);
+    const cons = noEje.length >= 2 ? noEje : v.act;      // los ejes solo cuentan si no hay otras dos rectas
+    for (let i = 0; i < cons.length; i++) for (let j = i + 1; j < cons.length; j++) {
+      const l1 = lineaDe(cons[i]), l2 = lineaDe(cons[j]);
+      const det = l1.a.mul(l2.b).sub(l2.a.mul(l1.b)); if (det.n === 0) continue;
+      const s = (paralela(l1) ? 2 : 0) + (paralela(l2) ? 2 : 0) + (l1.eje || l2.eje ? 0 : 0.5) - 0.01 * (i + j);
+      if (s > bestS) { bestS = s; best = [l1, l2]; }
+    }
+    const [l1, l2] = best;
+    const sol = _resolver(l1, l2, v.nom, vn);
+    const conj = /^y/.test(l2.eq) ? ' e ' : ' y ';
+    const triple = cons.length > 2 ? (c.nTriple || '<p class="nota">Por este punto pasan más de dos de las rectas; con cualquier pareja sale el mismo resultado.</p>') : '';
+    pasos.push({ titulo: 'Vértice $' + v.nom + '$: $' + l1.eq + '$' + conj + '$' + l2.eq + '$',
+      html: sis([l1.eqh, l2.eqh]) + sol.html + triple + ((c.vnota && c.vnota[v.nom]) || '') });
+  });
+  const etV = V.map(v => {
+    const dx0 = v.x.val(), dy0 = v.y.val();
+    return { p: [dx0, dy0], lab: v.nom + '(' + txt(v.x) + (v.x.isInt() && v.y.isInt() ? ', ' : '; ') + txt(v.y) + ')', ...(c.vdesp && c.vdesp[v.nom] ? c.vdesp[v.nom] : {}) };
+  });
+  etV.forEach(e => { if (e.dx != null) e.fijo = true; });
+  _autoVert(P, etV);
+  pasos.push({ titulo: c.tituloVertices || (V.length === 3 ? 'Los tres vértices' : V.length === 4 ? 'Los cuatro vértices' : V.length === 5 ? 'Los cinco vértices' : 'Los vértices'),
+    html: g({ rectas: idx, etiquetas: true, region: true, vertices: etV }) });
+
+  /* valor de F en cada vértice */
+  const filasF = V.map(v => {
+    const pr1 = fa.n === 0 ? null : fa.mul(v.x), pr2 = fb.n === 0 ? null : fb.mul(v.y);
+    const dosTerminos = pr1 && pr2 && fa.n !== 0 && fb.n !== 0;
+    let calc = N + '=' + exprNum(fa, fb, v.x, v.y);
+    if (dosTerminos && pr1.isInt() && pr2.isInt() && !(fa.eq(1) && fb.eq(1))) calc += '=' + tx(pr1) + (pr2.n < 0 ? '' : '+') + tx(pr2);
+    calc += '=' + txa(v.F);
+    return _nomc(v.nom, v.x, v.y).replace(/\\dfrac/g, '\\tfrac') + ':& ' + calc.replace(/\\dfrac/g, '\\tfrac');
+  });
+  const unid = c.unidadF || '';
+  const hayFrac = V.some(v => !v.x.isInt() || !v.y.isInt() || !v.F.isInt());
+  const concl = c.evalConclusion ||
+    (optimos.length === 1
+      ? '<p>El ' + (mx ? 'mayor' : 'menor') + ' de los valores es $' + tx(mejor.F) + '$, en $' + mejor.nom + '$.</p>'
+      : '<p>El ' + (mx ? 'mayor' : 'menor') + ' valor es $' + tx(mejor.F) + '$ y se alcanza en ' + optimos.map(o => '$' + o.nom + '$').join(' y ') + '.</p>');
+  pasos.push({ titulo: c.tituloEval || 'Valor de $' + N + '$ en cada vértice',
+    html: (c.evalIntro || '<p>Sustituimos cada vértice en $' + c.F.tex + '$:</p>') +
+      '$$\\begin{array}{ll}' + filasF.join(hayFrac ? '\\\\[3mm]' : '\\\\[2mm]') + '\\end{array}$$' + concl });
+
+  if (c.extras) (typeof c.extras === 'function' ? c.extras(g, P, V) : c.extras).forEach(e => pasos.push(e));
+
+  /* solución */
+  const solMath = c.solMath || ('$$' + X + '=' + tx(mejor.x) + ',\\qquad ' + Y + '=' + tx(mejor.y) + ',\\qquad ' + N + '_{\\' + (mx ? 'max' : 'min') + '}=' + tx(mejor.F) + '$$');
+  pasos.push({ caja: 'Solución', html: solMath + '<p><b class="res">' + c.res + '</b></p>' });
+
+  /* comprobación */
+  const sx = (c.solPunto ? Fr.of(c.solPunto[0]) : mejor.x), sy = (c.solPunto ? Fr.of(c.solPunto[1]) : mejor.y);
+  const comp = c.restr.map(r => {
+    const a = Fr.of(r.a), b = Fr.of(r.b), cc = Fr.of(r.c), val = a.mul(sx).add(b.mul(sy));
+    const rel = r.op === '<=' ? '\\le' : '\\ge';
+    const ok = r.op === '<=' ? val.cmp(cc) <= 0 : val.cmp(cc) >= 0;
+    if (r.cmpTex) return '<p>' + r.cmpTex(sx, sy) + ' ✓</p>';
+    const lhs = (a.n !== 0 && b.n !== 0) || (a.n !== 0 ? !a.eq(1) : !b.eq(1)) ? exprNum(a, b, sx, sy) + '=' : '';
+    return '<p>$' + lhs + tx(val) + rel + tx(cc) + '$ ' + (ok ? '✓' : '✗') + '</p>';
+  }).join('');
+  pasos.push({ titulo: 'Comprobación',
+    html: comp + (c.compExtra ? c.compExtra : '<p>$' + N + '=' + exprNum(fa, fb, sx, sy) + '=' + tx(fa.mul(sx).add(fb.mul(sy))) + '$ ' + (c.unidadF || '') + ' ✓</p>') });
+  return pasos;
+}
+
+/* utilidad: ejercicio completo a partir de la configuración */
+function ejercicioPL(c) {
+  return { titulo: c.titulo || 'Problema', etiqueta: c.etiqueta, enunciado: c.enunciado, pasos: pasosPL(c) };
+}
+
+/* =====================================================================
+   LOS 15 PROBLEMAS (+ sección de práctica)
+   ===================================================================== */
+const objetivo = (texto, kF, Ftex, kO, mx, N = 'F', v = 'x,y') =>
+  '<p>' + texto + '</p>$$' + ce(kF, Ftex) + '$$<p>y queremos que sea lo ' + (mx ? 'mayor' : 'menor') + ' posible:</p>$$' +
+  ce(kO, '\\text{' + (mx ? 'Maximizar' : 'Minimizar') + ' }' + N + '(' + v + ')') + '$$';
+
+const ARR = (cols, filas) => '$$\\begin{array}{|' + cols + '|}\\hline ' + filas.join('\\\\\\hline ') + '\\\\\\hline\\end{array}$$';
+const TD = s => '\\text{' + s + '}';
+
+const CFG = [];
+const PR = 'PAU Castilla y León · ';
+
+/* ---------- 1 · refrescos (con tabla que hacemos nosotros) ---------- */
+CFG[1] = {
+  etiqueta: 'Íñigo Zunzunegui · Ejercicios resueltos de programación lineal (ej. 6)',
+  enunciado: '<p>' + fr(1, 'Se dispone de 120 refrescos de cola con cafeína') + ' y ' + fr(2, 'de 180 refrescos de cola sin cafeína') +
+    '. Los refrescos se venden en paquetes de dos tipos: los de tipo A contienen tres refrescos con cafeína y tres sin cafeína; y los de tipo B contienen dos con cafeína y cuatro sin cafeína. ' +
+    fr(3, 'El vendedor gana 6 € por cada paquete que venda de tipo A y 5 € por cada paquete que venda de tipo B') +
+    '. Calcula de forma razonada ' + fr(4, 'cuántos paquetes han de vender de cada tipo para obtener el máximo beneficio') + ', y halla dicho beneficio.</p>',
+  sentido: 'max',
+  vars: '<p>Sean $x$ el número de paquetes de tipo A e $y$ el número de paquetes de tipo B.</p>',
+  tabla: '<p>Una columna por cada tipo de paquete y una fila por cada cosa que se gasta:</p>' +
+    ARR('l|c|c|c', [
+      ' & ' + TD('Tipo A') + ' & ' + TD('Tipo B') + ' & ' + TD('Hay'),
+      ce(1, '\\text{con cafeína}') + ' & 3 & 2 & ' + ce(1, '120'),
+      ce(2, '\\text{sin cafeína}') + ' & 3 & 4 & ' + ce(2, '180'),
+      ce(3, '\\text{ganancia (€)}') + ' & ' + ce(3, '6') + ' & ' + ce(3, '5') + ' & '
+    ]),
+  unidades: 'paquetes',
+  restr: [
+    { a: 3, b: 2, op: '<=', c: 120, k: 1, ineq: '3x+2y\\le120', eq: '3x+2y=120', lab: '3x + 2y = 120', pts: [[0, 60], [40, 0]] },
+    { a: 3, b: 4, op: '<=', c: 180, k: 2, ineq: '3x+4y\\le180', eq: '3x+4y=180', lab: '3x + 4y = 180', pts: [[0, 45], [60, 0]] }
+  ],
+  F: { a: 6, b: 5, tex: 'F(x,y)=6x+5y' },
+  objetivo: objetivo('Cada paquete A deja $6$ € y cada paquete B deja $5$ €, así que el beneficio total es', 3, 'F(x,y)=6x+5y', 4, true),
+  fig: { xmax: 60, ymax: 60, px: 10, py: 10, mx: 5, my: 5 },
+  unidadF: '€',
+  res: 'Hay que vender 20 paquetes de tipo A y 30 de tipo B. El beneficio máximo es de 270 €.'
+};
+
+/* ---------- 2 · fruta (tres recursos) ---------- */
+CFG[2] = {
+  etiqueta: PR + 'Junio 2021',
+  enunciado: '<p>En un almacén de frutas disponen de ' + fr(1, '800 kg de manzanas') + ', ' + fr(2, '800 kg de naranjas') + ' y ' + fr(3, '500 kg de plátanos') +
+    '. Con estas existencias van a poner a la venta dos tipos de lotes de frutas, A y B. El lote A consta de 1 kg de manzanas, 2 kg de naranjas y 1 kg de plátanos, mientras que el lote B consta de 2 kg de manzanas, 1 kg de naranjas y 1 kg de plátanos. ' +
+    fr(4, 'Si los lotes A se venden a 12 euros cada uno y los lotes B a 14 euros cada uno') + ', determinar mediante técnicas de programación lineal, ' +
+    fr(5, 'el número de lotes de cada tipo que ha de vender el almacén para maximizar sus ingresos') + '. ¿A cuánto asciende ese ingreso máximo?</p>',
+  sentido: 'max',
+  vars: '<p>Sean $x$ el número de lotes de tipo A e $y$ el número de lotes de tipo B.</p>',
+  tabla: '<p>Una columna por cada lote y una fila por cada fruta:</p>' +
+    ARR('l|c|c|c', [
+      ' & ' + TD('Lote A') + ' & ' + TD('Lote B') + ' & ' + TD('Hay (kg)'),
+      ce(1, '\\text{manzanas}') + ' & 1 & 2 & ' + ce(1, '800'),
+      ce(2, '\\text{naranjas}') + ' & 2 & 1 & ' + ce(2, '800'),
+      ce(3, '\\text{plátanos}') + ' & 1 & 1 & ' + ce(3, '500'),
+      ce(4, '\\text{precio (€)}') + ' & ' + ce(4, '12') + ' & ' + ce(4, '14') + ' & '
+    ]),
+  unidades: 'lotes',
+  restr: [
+    { a: 1, b: 2, op: '<=', c: 800, k: 1, ineq: 'x+2y\\le800', eq: 'x+2y=800', lab: 'x + 2y = 800', pts: [[0, 400], [400, 200]] },
+    { a: 2, b: 1, op: '<=', c: 800, k: 2, ineq: '2x+y\\le800', eq: '2x+y=800', lab: '2x + y = 800', pts: [[400, 0], [200, 400]] },
+    { a: 1, b: 1, op: '<=', c: 500, k: 3, ineq: 'x+y\\le500', eq: 'x+y=500', lab: 'x + y = 500', pts: [[0, 500], [500, 0]] }
+  ],
+  F: { a: 12, b: 14, tex: 'F(x,y)=12x+14y' },
+  objetivo: objetivo('Cada lote A se vende a $12$ € y cada lote B a $14$ €, así que los ingresos son', 4, 'F(x,y)=12x+14y', 5, true),
+  fig: { xmax: 500, ymax: 500, px: 100, py: 100, mx: 50, my: 50 },
+  unidadF: '€',
+  res: 'Hay que vender 200 lotes de tipo A y 300 de tipo B. El ingreso máximo es de 6600 €.'
+};
+
+/* ---------- 3 · impresoras 3D ---------- */
+CFG[3] = {
+  etiqueta: PR + 'Julio 2022',
+  enunciado: '<p>Una empresa de diseño dispone de dos impresoras 3D para fabricar figuras y fichas de juegos de mesa. ' +
+    fr(1, 'La impresora 1 funciona como máximo 300 horas') + ' y ' + fr(2, 'la impresora 2, como máximo 200 horas') +
+    '. Una figura necesita 6 horas en la impresora 1 y 2 horas en la impresora 2; una ficha necesita 5 horas en cada una de las dos impresoras. ' +
+    fr(3, 'Se pueden fabricar como máximo 25 figuras') + '. ' + fr(4, 'El beneficio neto es de 1 € por figura y de 1,5 € por ficha') +
+    '. Determinar, utilizando técnicas de programación lineal, ' + fr(5, 'cuántas figuras y fichas conviene imprimir para maximizar el beneficio neto') +
+    ' y cuál es ese beneficio máximo.</p>',
+  sentido: 'max',
+  vars: '<p>Sean $x$ el número de figuras e $y$ el número de fichas que se imprimen.</p>',
+  tabla: '<p>Una columna por cada pieza y una fila por cada impresora (horas que necesita cada pieza):</p>' +
+    ARR('l|c|c|c', [
+      ' & ' + TD('Figura') + ' & ' + TD('Ficha') + ' & ' + TD('Horas máx.'),
+      ce(1, '\\text{impresora 1}') + ' & 6 & 5 & ' + ce(1, '300'),
+      ce(2, '\\text{impresora 2}') + ' & 2 & 5 & ' + ce(2, '200'),
+      ce(4, '\\text{beneficio (€)}') + ' & ' + ce(4, '1') + ' & ' + ce(4, '1{,}5') + ' & '
+    ]) + '<p>«Como máximo 25 figuras» no entra en la tabla: es una frase suelta que da su propia desigualdad.</p>',
+  unidades: 'piezas',
+  restr: [
+    { a: 6, b: 5, op: '<=', c: 300, k: 1, ineq: '6x+5y\\le300', eq: '6x+5y=300', lab: '6x + 5y = 300', pts: [[0, 60], [25, 30]] },
+    { a: 2, b: 5, op: '<=', c: 200, k: 2, ineq: '2x+5y\\le200', eq: '2x+5y=200', lab: '2x + 5y = 200', pts: [[0, 40], [25, 30]] },
+    { a: 1, b: 0, op: '<=', c: 25, k: 3, ineq: 'x\\le25', eq: 'x=25', lab: 'x = 25' }
+  ],
+  F: { a: 1, b: 1.5, tex: 'F(x,y)=x+1{,}5y' },
+  objetivo: objetivo('Cada figura deja $1$ € y cada ficha $1{,}5$ €, así que el beneficio neto es', 4, 'F(x,y)=x+1{,}5y', 5, true),
+  fig: { xmax: 35, ymax: 60, px: 5, py: 10, mx: 1, my: 5 },
+  notaRegion: '<p class="nota">La recta de la impresora 1 solo toca la región en un punto: con la impresora 2 y el máximo de figuras, la impresora 1 nunca llega a su límite.</p>',
+  unidadF: '€',
+  res: 'Hay que imprimir 25 figuras y 30 fichas. El beneficio neto máximo es de 70 €.'
+};
+
+/* ---------- 4 · VITAMIN y MAGNE (tipo dieta, tabla con mínimos y máximos) ---------- */
+CFG[4] = {
+  etiqueta: PR + 'Junio 2024',
+  enunciado: '<p>En una concentración deportiva, el médico indica que cada deportista debe tomar entre ' + fr(1, 'un mínimo de 110 mg') + ' y ' +
+    fr(2, 'un máximo de 250 mg') + ' de vitamina C al día, y también ' + fr(3, 'entre 80') + ' y ' + fr(4, '150 mg') +
+    ' de magnesio. Los deportistas toman comprimidos de VITAMIN que contienen, cada uno, 40 mg de vitamina C y 10 mg de magnesio. Asimismo, ingieren comprimidos MAGNE con 10 mg de vitamina C y 20 mg de magnesio cada uno. Calcular, utilizando técnicas de programación lineal, ' +
+    fr(5, 'el número de comprimidos de cada tipo que son necesarios si se desea tomar el menor número posible de comprimidos') +
+    ' e ingerir la dosis necesaria de vitamina C y de magnesio.</p>',
+  sentido: 'min',
+  vars: '<p>Sean $x$ el número de comprimidos VITAMIN e $y$ el número de comprimidos MAGNE.</p>',
+  tablaTitulo: 'Organizamos los datos en una tabla',
+  tabla: '<p>Una columna por cada comprimido y una fila por cada sustancia. Aquí hay un mínimo y un máximo de cada una:</p>' +
+    ARR('l|c|c|c|c', [
+      ' & ' + TD('VITAMIN') + ' & ' + TD('MAGNE') + ' & ' + TD('mínimo') + ' & ' + TD('máximo'),
+      TD('vitamina C (mg)') + ' & 40 & 10 & ' + ce(1, '110') + ' & ' + ce(2, '250'),
+      TD('magnesio (mg)') + ' & 10 & 20 & ' + ce(3, '80') + ' & ' + ce(4, '150')
+    ]),
+  restrIntro: '<p>Cada fila da dos desigualdades: la cantidad tomada tiene que ser al menos el mínimo y a lo sumo el máximo. Simplificamos dividiendo entre $10$:</p>',
+  unidades: 'comprimidos',
+  restr: [
+    { a: 4, b: 1, op: '>=', c: 11, k: 1, ineq0: '40x+10y\\ge110\\;\\Rightarrow\\;4x+y\\ge11', ineq: '4x+y\\ge11', eq: '4x+y=11', lab: '4x + y = 11', pts: [[0, 11], [2, 3]] },
+    { a: 4, b: 1, op: '<=', c: 25, k: 2, ineq0: '40x+10y\\le250\\;\\Rightarrow\\;4x+y\\le25', ineq: '4x+y\\le25', eq: '4x+y=25', lab: '4x + y = 25', pts: [[5, 5], [6, 1]] },
+    { a: 1, b: 2, op: '>=', c: 8, k: 3, ineq0: '10x+20y\\ge80\\;\\Rightarrow\\;x+2y\\ge8', ineq: 'x+2y\\ge8', eq: 'x+2y=8', lab: 'x + 2y = 8', pts: [[0, 4], [8, 0]] },
+    { a: 1, b: 2, op: '<=', c: 15, k: 4, ineq0: '10x+20y\\le150\\;\\Rightarrow\\;x+2y\\le15', ineq: 'x+2y\\le15', eq: 'x+2y=15', lab: 'x + 2y = 15', pts: [[1, 7], [5, 5]] }
+  ],
+  F: { a: 1, b: 1, tex: 'F(x,y)=x+y' },
+  objetivo: '<p>El número total de comprimidos es</p>$$' + ce(5, 'F(x,y)=x+y') + '$$<p>y queremos que sea lo menor posible:</p>$$' + ce(5, '\\text{Minimizar }F(x,y)') + '$$',
+  fig: { xmax: 9, ymax: 16, px: 1, py: 2, mx: 1, my: 1 },
+  unidadF: 'comprimidos',
+  res: 'Hay que tomar 2 comprimidos VITAMIN y 3 comprimidos MAGNE: 5 comprimidos en total, que es el menor número posible.'
+};
+
+/* ---------- 5 · Navarra Julio 2022 (la tabla ya viene en el enunciado) ---------- */
+const celdas = (k, ...v) => v.map(t => '<td>' + fr(k, t) + '</td>').join('');
+CFG[5] = {
+  etiqueta: 'PAU Navarra · Julio 2022',
+  enunciado: '<p>Una empresa fabrica dos productos P1 y P2, con ' + fr(5, 'un coste de fabricación de 20 y 15 euros/kg, respectivamente') +
+    '. Para ello utiliza tres recursos (R1, R2 y R3). La siguiente tabla muestra la cantidad necesaria de cada recurso para obtener un kg de cada producto y la disponibilidad semanal de los recursos. ' +
+    'Determine cuántos kg de cada producto deberá fabricar semanalmente esta empresa si desea ' + fr(6, 'minimizar el coste de producción') + ', ' +
+    fr(4, 'garantizando un nivel de fabricación total de al menos 30 kg') + '.</p>' +
+    '<table class="datos"><tr><th></th><th>P1</th><th>P2</th><th>Disponibilidad semanal</th></tr>' +
+    '<tr><th>R1</th>' + celdas(1, '6', '3', '180') + '</tr>' +
+    '<tr><th>R2</th>' + celdas(2, '4', '5', '200') + '</tr>' +
+    '<tr><th>R3</th>' + celdas(3, '1', '1,5', '70') + '</tr></table>' +
+    '<p><b>i)</b> Plantee el problema. &nbsp; <b>ii)</b> Resuélvalo gráficamente.</p>',
+  sentido: 'min',
+  vars: '<p>Sean $x$ los kg de P1 e $y$ los kg de P2 que se fabrican cada semana.</p>',
+  restrIntro: '<p>Cada fila de la tabla da una desigualdad: lo que se gasta de cada recurso no puede pasar de lo que hay. Y la última frase del enunciado da otra:</p>',
+  unidades: 'kilogramos',
+  restr: [
+    { a: 6, b: 3, op: '<=', c: 180, k: 1, ineq: '6x+3y\\le180', eq: '6x+3y=180', lab: 'R1: 6x + 3y = 180', pts: [[0, 60], [30, 0]] },
+    { a: 4, b: 5, op: '<=', c: 200, k: 2, ineq: '4x+5y\\le200', eq: '4x+5y=200', lab: 'R2: 4x + 5y = 200', pts: [[0, 40], [50, 0]] },
+    { a: 1, b: 1.5, op: '<=', c: 70, k: 3, ineq: 'x+1{,}5y\\le70', eq: 'x+1{,}5y=70', lab: 'R3: x + 1,5y = 70', pts: [[10, 40], [40, 20]] },
+    { a: 1, b: 1, op: '>=', c: 30, k: 4, ineq: 'x+y\\ge30', eq: 'x+y=30', lab: 'x + y = 30', pts: [[0, 30], [30, 0]] }
+  ],
+  F: { a: 20, b: 15, tex: 'F(x,y)=20x+15y' },
+  objetivo: objetivo('El coste de fabricación es de $20$ € por cada kg de P1 y $15$ € por cada kg de P2:', 5, 'F(x,y)=20x+15y', 6, false),
+  fig: { xmax: 70, ymax: 60, px: 10, py: 10, mx: 5, my: 5 },
+  notaRegion: '<p class="nota">La recta del recurso R3 no toca la región: esa restricción nunca limita.</p>',
+  unidadF: '€',
+  res: 'Hay que fabricar 0 kg de P1 y 30 kg de P2 cada semana. El coste mínimo es de 450 €.'
+};
+
+/* ---------- 7 · producto S y L (restricción proporcional) ---------- */
+CFG[7] = {
+  etiqueta: PR + 'Julio 2023',
+  enunciado: '<p>Un centro logístico debe repartir a una de sus tiendas dos formatos, S y L, de un producto. ' +
+    fr(1, 'La cantidad total máxima que puede transportarse de ambos formatos a la vez es de 70 unidades') + ', ' +
+    fr(2, 'la tienda necesita recibir del formato L al menos una quinta parte del total de unidades') + ' y ' +
+    fr(3, 'solo hay disponibles para enviar un máximo de 40 unidades del formato L') + '. ' +
+    fr(4, 'La tienda gana 3000 € por cada unidad vendida del formato S y 2500 € por cada unidad vendida del formato L') +
+    '. Determinar, utilizando técnicas de programación lineal, ' + fr(5, 'cuántas unidades de cada formato hay que repartir para maximizar el beneficio') +
+    ' y cuál es ese beneficio máximo.</p>',
+  sentido: 'max',
+  vars: '<p>Sean $x$ el número de unidades del formato S e $y$ el número de unidades del formato L.</p>',
+  unidades: 'unidades',
+  restr: [
+    { a: 1, b: 1, op: '<=', c: 70, k: 1, ineq: 'x+y\\le70', eq: 'x+y=70', lab: 'x + y = 70', pts: [[70, 0], [30, 40]] },
+    { a: 1, b: -4, op: '<=', c: 0, k: 2, ineq0: 'y\\ge\\dfrac{x+y}{5}\\;\\Rightarrow\\;5y\\ge x+y\\;\\Rightarrow\\;x-4y\\le0', ineq: 'x-4y\\le0', eq: 'x=4y', lab: 'x = 4y', pts: [[0, 0], [40, 10]],
+      test: { html: 'la recta pasa por el origen: probamos $(0,10)$: &nbsp;$0-4\\cdot10=-40\\le0$ ✓ &nbsp;⇒ por encima de la recta.' } },
+    { a: 0, b: 1, op: '<=', c: 40, k: 3, ineq: 'y\\le40', eq: 'y=40', lab: 'y = 40' }
+  ],
+  F: { a: 3000, b: 2500, tex: 'F(x,y)=3000x+2500y' },
+  objetivo: objetivo('Cada unidad de S deja $3000$ € y cada unidad de L deja $2500$ €:', 4, 'F(x,y)=3000x+2500y', 5, true),
+  fig: { xmax: 80, ymax: 50, px: 10, py: 10, mx: 5, my: 5 },
+  unidadF: '€',
+  res: 'Hay que repartir 56 unidades del formato S y 14 unidades del formato L. El beneficio máximo es de 203 000 €.'
+};
+
+/* ---------- 8 · apartamentos T2 y T3 ---------- */
+CFG[8] = {
+  etiqueta: PR + 'Julio 2024 (mejora de nota)',
+  enunciado: '<p>Una empresa constructora obtiene una licencia del ayuntamiento para construir dos tipos de apartamentos: T2 (de 2 habitaciones) y T3 (de 3 habitaciones). ' +
+    fr(4, 'Cada apartamento T2 se venderá por 150 000 euros y cada apartamento T3 por 250 000 euros') +
+    '. La licencia del ayuntamiento obliga a cumplir una serie de condiciones: ' +
+    fr(1, 'el número de apartamentos T2 construidos no puede exceder al doble de apartamentos T3') + ', ' +
+    fr(2, 'el número de apartamentos T3 no puede sobrepasar al triple de apartamentos T2') + ' y, ' +
+    fr(3, 'como máximo, se pueden construir 60 apartamentos en total') + '. Determinar, utilizando técnicas de programación lineal, ' +
+    fr(5, 'el número de apartamentos de cada tipo que debe construir la empresa para obtener el máximo beneficio con su venta') + ' y cuál será ese beneficio.</p>',
+  sentido: 'max',
+  vars: '<p>Sean $x$ el número de apartamentos T2 e $y$ el número de apartamentos T3.</p>',
+  unidades: 'apartamentos',
+  restr: [
+    { a: 1, b: -2, op: '<=', c: 0, k: 1, ineq0: 'x\\le2y\\;\\Rightarrow\\;x-2y\\le0', ineq: 'x\\le2y', eq: 'x=2y', lab: 'x = 2y', pts: [[0, 0], [40, 20]],
+      test: { html: 'la recta pasa por el origen: probamos $(0,10)$: &nbsp;$0\\le2\\cdot10$ ✓ &nbsp;⇒ por encima de la recta.' } },
+    { a: -3, b: 1, op: '<=', c: 0, k: 2, ineq0: 'y\\le3x\\;\\Rightarrow\\;-3x+y\\le0', ineq: 'y\\le3x', eq: 'y=3x', lab: 'y = 3x', pts: [[0, 0], [15, 45]],
+      test: { html: 'la recta pasa por el origen: probamos $(10,0)$: &nbsp;$0\\le3\\cdot10$ ✓ &nbsp;⇒ por debajo de la recta.' } },
+    { a: 1, b: 1, op: '<=', c: 60, k: 3, ineq: 'x+y\\le60', eq: 'x+y=60', lab: 'x + y = 60', pts: [[0, 60], [60, 0]] }
+  ],
+  F: { a: 150, b: 250, tex: 'F(x,y)=150x+250y' },
+  objetivo: objetivo('Trabajamos en miles de euros: cada T2 deja $150$ y cada T3 deja $250$.', 4, 'F(x,y)=150x+250y', 5, true),
+  fig: { xmax: 60, ymax: 60, px: 10, py: 10, mx: 5, my: 5 },
+  unidadF: 'miles de €',
+  res: 'Hay que construir 15 apartamentos T2 y 45 apartamentos T3. El beneficio máximo es de 13 500 000 € (13 500 miles de euros).'
+};
+
+/* ---------- 9 · academia (región no acotada) ---------- */
+CFG[9] = {
+  etiqueta: PR + 'Julio 2024',
+  enunciado: '<p>Una academia de idiomas ofrece dos cursos de portugués: elemental (A1) y avanzado (A2). Por motivos de organización se puede admitir ' +
+    fr(1, 'como máximo 66 estudiantes en el A1') + ', aunque ' + fr(2, 'en el A2 se deben admitir 60 o más estudiantes') +
+    '. Por razones de espacio, ' + fr(3, 'el número de estudiantes del curso A1 debe ser inferior o igual a dos tercios del número de estudiantes del A2') +
+    '. ' + fr(4, 'Por cada estudiante matriculado, los beneficios mensuales del curso A1 y del curso avanzado A2 son de 145 euros y 150 euros, respectivamente') +
+    '. Calcular, utilizando técnicas de programación lineal, ' + fr(5, 'el número de estudiantes de cada curso que la academia ha de matricular para maximizar el beneficio mensual') +
+    ' y cuál es ese beneficio máximo.</p>',
+  sentido: 'max',
+  vars: '<p>Sean $x$ el número de estudiantes del curso A1 e $y$ el número de estudiantes del curso A2.</p>',
+  unidades: 'estudiantes',
+  restr: [
+    { a: 1, b: 0, op: '<=', c: 66, k: 1, ineq: 'x\\le66', eq: 'x=66', lab: 'x = 66' },
+    { a: 0, b: 1, op: '>=', c: 60, k: 2, ineq: 'y\\ge60', eq: 'y=60', lab: 'y = 60' },
+    { a: 3, b: -2, op: '<=', c: 0, k: 3, ineq0: 'x\\le\\dfrac{2}{3}y\\;\\Rightarrow\\;3x\\le2y\\;\\Rightarrow\\;3x-2y\\le0', ineq: '3x-2y\\le0', eq: '3x=2y', lab: '3x = 2y', pts: [[0, 0], [40, 60]],
+      test: { html: 'la recta pasa por el origen: probamos $(0,10)$: &nbsp;$0-2\\cdot10=-20\\le0$ ✓ &nbsp;⇒ por encima de la recta.' } }
+  ],
+  orden: [[0, 60], [40, 60], [66, 99]],
+  F: { a: 145, b: 150, tex: 'F(x,y)=145x+150y' },
+  objetivo: objetivo('Cada estudiante del A1 deja $145$ € y cada uno del A2 deja $150$ €:', 4, 'F(x,y)=145x+150y', 5, true),
+  fig: { xmax: 80, ymax: 120, px: 10, py: 20, mx: 5, my: 10 },
+  regionTexto: 'Es la zona donde se cumplen las tres desigualdades. Fíjate: <b>no está cerrada por arriba</b>, sigue hacia arriba sin límite.',
+  vertIntro: 'Aun así, la región tiene tres vértices (los puntos donde se cortan dos de sus rectas). Calculamos cada uno.',
+  evalConclusion: '<p>Entre los vértices, el mayor valor es $24420$, en $C$. Pero la región no está acotada, así que hay que mirar más allá de los vértices.</p>',
+  extras: [
+    { titulo: 'Pero la región no está acotada',
+      html: '<p>Si la región se acaba en un polígono, el máximo está en un vértice. Aquí la región sigue hacia arriba, y allí $F$ puede ser mayor. Probamos puntos de la recta $x=66$ por encima de $C$:</p>' +
+        '$$\\begin{array}{lll}(66,\\,99): & F=145\\cdot66+150\\cdot99 & =24420\\\\[2mm](66,\\,100): & F=145\\cdot66+150\\cdot100 & =24570\\\\[2mm](66,\\,200): & F=145\\cdot66+150\\cdot200 & =39570\\\\[2mm](66,\\,1000): & F=145\\cdot66+150\\cdot1000 & =159570\\end{array}$$' +
+        '<p>Siempre podemos subir $y$ y conseguir más beneficio: <b>no hay un máximo</b>.</p>' }
+  ],
+  solMath: '$$F(66,\\,99)=24420\\;&lt;\\;F(66,\\,100)=24570\\;&lt;\\;F(66,\\,200)=39570\\;&lt;\\;\\dots$$',
+  res: 'El problema no tiene solución: la región factible no está acotada y el beneficio puede crecer tanto como se quiera, así que no existe un beneficio máximo.',
+  solPunto: [66, 100],
+  compExtra: '<p>$F(66,100)=24570>24420$: ya supera al valor de cualquier vértice ✓</p>',
+  unidadF: '€'
+};
+
+/* ---------- 10 · revisiones 1.1 (con integridad) ---------- */
+CFG[10] = {
+  etiqueta: PR + 'Julio 2026 (1.1)',
+  enunciado: '<p>En una industria alimentaria se planifica la supervisión que se va a realizar a los lotes producidos el próximo mes. Se han establecido dos protocolos de revisión, la revisión normal y la exhaustiva. Los recursos humanos y materiales de esa supervisión limitan el número de lotes que se pueden revisar.</p>' +
+    '<p>Una revisión exhaustiva de un lote consume 6 horas del departamento de envasado y 2 horas en el de etiquetado, mientras que una revisión normal de un lote consume 3 horas del departamento de envasado y 1,5 horas en el de etiquetado. En esta planificación de la supervisión se fija que, ' +
+    fr(3, 'como mínimo, 5 revisiones deben ser exhaustivas') + ' y, ' + fr(4, 'al menos la mitad, con el protocolo normal') + '. Se disponen de ' +
+    fr(1, 'un máximo de 180 horas en el departamento de envasado') + ' y ' + fr(2, 'un máximo de 80 horas en el de etiquetado') + '.</p>' +
+    '<p><b>a)</b> Determinar el sistema de restricciones y representar la región factible, utilizando técnicas de programación lineal.</p>' +
+    '<p><b>b)</b> Determinar, utilizando técnicas de programación lineal, ' + fr(5, 'cuál es el número máximo total de revisiones normales y exhaustivas que se pueden realizar') +
+    ' con los recursos disponibles, así como el número de ambas revisiones para las que se alcanza este máximo.</p>',
+  sentido: 'max',
+  vars: '<p>Sean $x$ el número de revisiones normales e $y$ el número de revisiones exhaustivas.</p>',
+  tabla: '<p>Una columna por cada tipo de revisión y una fila por cada departamento (horas por revisión):</p>' +
+    ARR('l|c|c|c', [
+      ' & ' + TD('Normal') + ' & ' + TD('Exhaustiva') + ' & ' + TD('Horas máx.'),
+      ce(1, '\\text{envasado}') + ' & 3 & 6 & ' + ce(1, '180'),
+      ce(2, '\\text{etiquetado}') + ' & 1{,}5 & 2 & ' + ce(2, '80')
+    ]) + '<p>Las otras dos frases («al menos 5 exhaustivas» y «al menos la mitad normales») no entran en la tabla: se traducen directamente.</p>',
+  unidades: 'revisiones',
+  restr: [
+    { a: 1, b: 2, op: '<=', c: 60, k: 1, ineq0: '3x+6y\\le180\\;\\Rightarrow\\;x+2y\\le60', ineq: 'x+2y\\le60', eq: 'x+2y=60', lab: 'x + 2y = 60', pts: [[0, 30], [60, 0]] },
+    { a: 3, b: 4, op: '<=', c: 160, k: 2, ineq0: '1{,}5x+2y\\le80\\;\\Rightarrow\\;3x+4y\\le160', ineq: '3x+4y\\le160', eq: '3x+4y=160', lab: '3x + 4y = 160', pts: [[0, 40], [40, 10]] },
+    { a: 0, b: 1, op: '>=', c: 5, k: 3, ineq: 'y\\ge5', eq: 'y=5', lab: 'y = 5' },
+    { a: 1, b: -1, op: '>=', c: 0, k: 4, ineq0: 'x\\ge\\dfrac{x+y}{2}\\;\\Rightarrow\\;2x\\ge x+y\\;\\Rightarrow\\;x-y\\ge0', ineq: 'x-y\\ge0', eq: 'x=y', lab: 'x = y', pts: [[0, 0], [40, 40]],
+      test: { html: 'la recta pasa por el origen: probamos $(10,0)$: &nbsp;$10-0=10\\ge0$ ✓ &nbsp;⇒ por debajo de la recta.' } }
+  ],
+  F: { a: 1, b: 1, tex: 'F(x,y)=x+y' },
+  objetivo: objetivo('El número total de revisiones es', 5, 'F(x,y)=x+y', 5, true),
+  fig: { xmax: 60, ymax: 40, px: 10, py: 10, mx: 5, my: 5 },
+  evalConclusion: '<p>El mayor valor es $\\dfrac{155}{3}\\approx51{,}67$, en $D$.</p>',
+  extras: (g, P) => [
+    { titulo: 'Pero las revisiones son números enteros',
+      html: '<p>En $D$ sale $x=\\dfrac{140}{3}\\approx46{,}67$: no se pueden hacer revisiones a medias. Como el máximo real es $51{,}67$, el total entero no puede pasar de $51$. Buscamos los puntos enteros de la región con $x+y=51$, sustituyendo $y=51-x$:</p>' +
+        '$$\\begin{array}{lll}' +
+        ce(1, 'x+2y\\le60') + ': & x+102-2x\\le60 & \\Rightarrow\\;x\\ge42\\\\[2mm]' +
+        ce(2, '3x+4y\\le160') + ': & 3x+204-4x\\le160 & \\Rightarrow\\;x\\ge44\\\\[2mm]' +
+        ce(3, 'y\\ge5') + ': & 51-x\\ge5 & \\Rightarrow\\;x\\le46\\\\[2mm]' +
+        ce(4, 'x\\ge y') + ': & x\\ge51-x & \\Rightarrow\\;x\\ge25{,}5' +
+        '\\end{array}$$' +
+        '<p>Se cumplen todas con $x=44,\\,45,\\,46$.</p>' },
+    { titulo: 'La recta $x+y=51$ sobre la región',
+      html: '<p>Ampliamos la zona del vértice $D$: los tres puntos enteros están sobre la recta $x+y=51$, dentro de la región.</p>' +
+        g({ ventana: [42, 49, 3, 10, 1, 1, 1, 1], zoom: true, rectas: [0, 1, 2], etiquetas: true, region: true,
+          nivel: [{ a: 1, b: 1, c: 51, lab: 'x + y = 51', lp: [47.2, 5.3] }],
+          vertices: [{ p: [140 / 3, 5], lab: 'D', dx: 10, dy: -10 }],
+          enteros: [
+            { p: [44, 7], lab: '(44, 7)', dx: -10, dy: 22, anc: 'end' },
+            { p: [45, 6], lab: '(45, 6)', dx: -10, dy: 22, anc: 'end' },
+            { p: [46, 5], lab: '(46, 5)', dx: -10, dy: 22, anc: 'end' }] }) }
+  ],
+  solMath: '$$x+y=51,\\qquad (x,y)\\in\\{(44,7),\\;(45,6),\\;(46,5)\\}$$',
+  solPunto: [45, 6],
+  res: 'El máximo real es 51,67, pero con revisiones enteras el máximo es de 51 revisiones en total. Se alcanza, por ejemplo, con 45 normales y 6 exhaustivas (también con 44 y 7, o con 46 y 5).',
+  compExtra: '<p>$x+y=45+6=51$ ✓. Con $52$ no se puede: superaría el máximo real $51{,}67$.</p>'
+};
+
+/* ---------- 12 · máquinas (libre) ---------- */
+CFG[12] = {
+  etiqueta: PR + 'Julio 2025',
+  enunciado: '<p>Una empresa fabrica dos tipos de máquinas, A y B. Para satisfacer toda la demanda, debe producir, mensualmente, ' +
+    fr(1, 'al menos 6 unidades del tipo A') + ' y ' + fr(2, 'como mucho 15 unidades del tipo B') + '. ' +
+    fr(3, 'El coste de fabricación es de 500 euros por cada unidad de tipo A y 300 euros por unidad de tipo B, sin que puedan superarse los 12000 euros mensuales en la fabricación total de ambos tipos') +
+    '. Sabiendo que ' + fr(4, 'el beneficio por unidad vendida de tipo A es 250 euros y por unidad vendida de tipo B es 200 euros') +
+    ', determinar, utilizando técnicas de programación lineal, ' + fr(5, 'el número de unidades de cada tipo de máquina que se han de fabricar mensualmente para obtener el beneficio máximo de su venta') +
+    '. ¿A cuánto asciende ese beneficio?</p>',
+  sentido: 'max',
+  vars: '<p>Sean $x$ el número de máquinas de tipo A e $y$ el número de máquinas de tipo B que se fabrican al mes.</p>',
+  unidades: 'máquinas',
+  restr: [
+    { a: 1, b: 0, op: '>=', c: 6, k: 1, ineq: 'x\\ge6', eq: 'x=6', lab: 'x = 6' },
+    { a: 0, b: 1, op: '<=', c: 15, k: 2, ineq: 'y\\le15', eq: 'y=15', lab: 'y = 15' },
+    { a: 5, b: 3, op: '<=', c: 120, k: 3, ineq0: '500x+300y\\le12000\\;\\Rightarrow\\;5x+3y\\le120', ineq: '5x+3y\\le120', eq: '5x+3y=120', lab: '5x + 3y = 120', pts: [[24, 0], [15, 15]] }
+  ],
+  F: { a: 250, b: 200, tex: 'F(x,y)=250x+200y' },
+  objetivo: objetivo('El coste de fabricación ya está en la restricción. Lo que queremos maximizar es el beneficio: $250$ € por cada máquina A y $200$ € por cada máquina B.', 4, 'F(x,y)=250x+200y', 5, true),
+  fig: { xmax: 30, ymax: 25, px: 5, py: 5, mx: 1, my: 1 },
+  unidadF: '€',
+  res: 'Hay que fabricar 15 máquinas de tipo A y 15 de tipo B al mes. El beneficio máximo es de 6750 €.'
+};
+
+/* ---------- 13 · inversión (libre) ---------- */
+CFG[13] = {
+  etiqueta: PR + 'Junio 2024 (mejora de nota)',
+  enunciado: '<p>Una empresa dispone de ' + fr(1, '12 000 €') + ' para invertir en la fabricación de dos tipos de artículos, A y B. ' +
+    fr(2, 'La inversión en artículos del tipo B debe ser de al menos 3 000 €') + ' y ' +
+    fr(3, 'no se quiere invertir en artículos del tipo A más del doble de lo invertido en el tipo B') + '. ' +
+    fr(4, 'Los artículos del tipo A rinden el 10 % de lo invertido en ellos, y los del tipo B, el 5 %') +
+    '. Se pide, utilizando técnicas de programación lineal: ' + fr(5, '¿cuánto se ha de invertir en la fabricación de cada producto para obtener el beneficio máximo?') +
+    ' ¿A cuánto asciende dicho beneficio máximo?</p>',
+  sentido: 'max',
+  vars: '<p>Sean $x$ los euros invertidos en artículos de tipo A e $y$ los euros invertidos en artículos de tipo B.</p>',
+  unidades: 'euros',
+  restr: [
+    { a: 1, b: 1, op: '<=', c: 12000, k: 1, ineq: 'x+y\\le12000', eq: 'x+y=12000', lab: 'x + y = 12000', pts: [[0, 12000], [12000, 0]] },
+    { a: 0, b: 1, op: '>=', c: 3000, k: 2, ineq: 'y\\ge3000', eq: 'y=3000', lab: 'y = 3000' },
+    { a: 1, b: -2, op: '<=', c: 0, k: 3, ineq0: 'x\\le2y\\;\\Rightarrow\\;x-2y\\le0', ineq: 'x\\le2y', eq: 'x=2y', lab: 'x = 2y', pts: [[0, 0], [8000, 4000]],
+      test: { html: 'la recta pasa por el origen: probamos $(0,6000)$: &nbsp;$0\\le2\\cdot6000$ ✓ &nbsp;⇒ por encima de la recta.' } }
+  ],
+  F: { a: 0.1, b: 0.05, tex: 'F(x,y)=0{,}10x+0{,}05y' },
+  objetivo: objetivo('El $10\\,\\%$ de lo invertido en A es $0{,}10x$ y el $5\\,\\%$ de lo invertido en B es $0{,}05y$. El beneficio total es', 4, 'F(x,y)=0{,}10x+0{,}05y', 5, true),
+  fig: { xmax: 12000, ymax: 12000, px: 2000, py: 2000, mx: 1000, my: 1000 },
+  unidadF: '€',
+  res: 'Hay que invertir 8000 € en artículos de tipo A y 4000 € en artículos de tipo B. El beneficio máximo es de 1000 €.'
+};
+
+/* ---------- 14 · lavadoras y frigoríficos (infinitas soluciones) ---------- */
+CFG[14] = {
+  etiqueta: 'PAU Andalucía · Reserva 2 (2025)',
+  enunciado: '<p>Un servicio técnico recibe un encargo para revisar lavadoras y frigoríficos de una empresa de apartahoteles. ' +
+    fr(1, 'La revisión de cada lavadora requiere 100 minutos de trabajo, mientras que cada frigorífico requiere 50 minutos') + '. El servicio técnico ' +
+    fr(1, 'dispone de 26 horas y 40 minutos') + ' para hacer las revisiones. Por política de empresa, ' +
+    fr(2, 'no se aceptan encargos de más de 12 lavadoras') + ' ni ' + fr(3, 'de más de 16 frigoríficos') + '. Sabiendo que ' +
+    fr(4, 'las revisiones se pagan a 50 € la hora, en ambos tipos de electrodomésticos') + ', ' +
+    fr(5, '¿cuántos electrodomésticos de cada clase debe revisar el servicio técnico para maximizar el ingreso con el encargo?') + ' ¿A cuánto asciende este ingreso máximo?</p>',
+  sentido: 'max',
+  vars: '<p>Sean $x$ el número de lavadoras e $y$ el número de frigoríficos que se revisan.</p><p>Ojo con las unidades: el tiempo está en horas y en minutos. Lo pasamos todo a minutos: $26\\text{ h }40\\text{ min}=26\\cdot60+40=1600$ minutos.</p>',
+  unidades: 'electrodomésticos',
+  restr: [
+    { a: 2, b: 1, op: '<=', c: 32, k: 1, ineq0: '100x+50y\\le1600\\;\\Rightarrow\\;2x+y\\le32', ineq: '2x+y\\le32', eq: '2x+y=32', lab: '2x + y = 32', pts: [[0, 32], [16, 0]] },
+    { a: 1, b: 0, op: '<=', c: 12, k: 2, ineq: 'x\\le12', eq: 'x=12', lab: 'x = 12' },
+    { a: 0, b: 1, op: '<=', c: 16, k: 3, ineq: 'y\\le16', eq: 'y=16', lab: 'y = 16' }
+  ],
+  F: { a: new Fr(250, 3), b: new Fr(125, 3), tex: 'F(x,y)=\\dfrac{250}{3}x+\\dfrac{125}{3}y' },
+  objetivo: '<p>Se paga $50$ € la hora, es decir, $\\dfrac{50}{60}=\\dfrac56$ € cada minuto.</p>' +
+    '<p>Una lavadora son $100$ minutos: $100\\cdot\\dfrac56=\\dfrac{250}{3}$ €. Un frigorífico son $50$ minutos: $50\\cdot\\dfrac56=\\dfrac{125}{3}$ €.</p>' +
+    '$$' + ce(4, 'F(x,y)=\\dfrac{250}{3}x+\\dfrac{125}{3}y') + '$$<p>y queremos que sea lo mayor posible:</p>$$' + ce(5, '\\text{Maximizar }F(x,y)') + '$$',
+  fig: { xmax: 16, ymax: 32, px: 2, py: 4, mx: 1, my: 2 },
+  evalConclusion: '<p>El mayor valor es $\\dfrac{4000}{3}\\approx1333{,}33$ y aparece <b>dos veces</b>: en $C$ y en $D$.</p>',
+  extras: (g, P) => [
+    { titulo: 'Dos vértices con el mismo valor',
+      html: '<p>No es casualidad. Sacando factor común, $F=\\dfrac{125}{3}\\,(2x+y)$, y la recta del tiempo es justamente $2x+y=32$. Todos los puntos del segmento $CD$ están sobre esa recta y tienen el mismo ingreso:</p>' +
+        '$$F=\\dfrac{125}{3}\\cdot32=\\dfrac{4000}{3}\\approx1333{,}33$$' +
+        '<p>Como los electrodomésticos son enteros, sirven los puntos del segmento con coordenadas enteras:</p>' +
+        g({ rectas: [0, 1, 2], etiquetas: true, region: true,
+          enteros: [{ p: [8, 16], lab: '(8, 16)', dx: -10, dy: 22, anc: 'end' }, { p: [9, 14], lab: '(9, 14)', dx: -10, dy: 22, anc: 'end' },
+            { p: [10, 12], lab: '(10, 12)', dx: -10, dy: 22, anc: 'end' }, { p: [11, 10], lab: '(11, 10)', dx: -10, dy: 22, anc: 'end' },
+            { p: [12, 8], lab: '(12, 8)', dx: 10, dy: -8 }] }) }
+  ],
+  solMath: '$$F_{\\max}=\\dfrac{4000}{3}\\approx1333{,}33,\\qquad (x,y)\\in\\{(8,16),\\,(9,14),\\,(10,12),\\,(11,10),\\,(12,8)\\}$$',
+  solPunto: [10, 12],
+  res: 'El ingreso máximo es de 1333,33 € y se alcanza en todo el segmento $CD$. Con números enteros: 8 lavadoras y 16 frigoríficos, 9 y 14, 10 y 12, 11 y 10, o 12 y 8.',
+  compExtra: '<p>$F=\\dfrac{250}{3}\\cdot10+\\dfrac{125}{3}\\cdot12=\\dfrac{4000}{3}\\approx1333{,}33$ € ✓ (lo mismo con cualquiera de los cinco puntos)</p>'
+};
+
+/* ---------- 15 · Madrid: elegir la región entre tres gráficas ---------- */
+const GM = (restr) => ({ W: 300, H: 225, L: 36, xmax: 6, ymax: 10, px: 2, py: 2, mx: 1, my: 1, lx: 'x₁', ly: 'x₂', restr });
+const RM = { x5: { a: 1, b: 0, op: '<=', c: 5 }, y2: { a: 0, b: 1, op: '>=', c: 2 }, s6: { a: 1, b: 1, op: '>=', c: 6 }, s7: { a: 1, b: 1, op: '>=', c: 7 }, m2: { a: 2, b: -1, op: '>=', c: 0 }, m1: { a: 1, b: -1, op: '>=', c: 0 } };
+const GRAF3 = [GM([RM.x5, RM.y2, RM.m1, RM.s6]), GM([RM.x5, RM.y2, RM.m2, RM.s7]), GM([RM.x5, RM.y2, RM.m2, RM.s6])];
+const tresGraficas = (punto) =>
+  '<div class="fig tres">' + GRAF3.map((p, i) => grafico(p, { region: true, regionColor: 'rgba(0,150,150,.38)', titulo: 'Gráfica ' + (i + 1), soloSvg: true,
+    puntos: punto ? [{ p: punto, ok: i === 2 }] : [] })).join('') + '</div>';
+CFG[15] = {
+  etiqueta: 'PAU Madrid · Modelo 2027',
+  enunciado: '<p>La receta de una salsa lleva dos ingredientes, $I_1$ e $I_2$, y su mezcla se diluye en un caldo para obtener un litro de salsa. Para que sea satisfactoria, hay que usar ' +
+    fr(1, 'a lo sumo 5 g de $I_1$') + ' y ' + fr(2, 'al menos 2 g de $I_2$') + '. ' +
+    fr(3, 'La suma de las cantidades de ambos ingredientes debe ser al menos 6 g') + ' y ' +
+    fr(4, 'la cantidad de $I_2$ no puede exceder dos veces la de $I_1$') + '. ' +
+    fr(5, 'Los costes por gramo de $I_1$ e $I_2$ son 20 y 30 céntimos de euro, respectivamente') + '.</p>' +
+    tresGraficas(null) +
+    '<p><b>a)</b> Si $x_1$ y $x_2$ son las cantidades usadas de $I_1$ e $I_2$, indicar cuál de las tres gráficas representa los valores posibles de acuerdo con el enunciado.</p>' +
+    '<p><b>b)</b> Obtener las cantidades de los ingredientes que ' + fr(6, 'minimizan el coste') + ' de la mezcla manteniendo su calidad, e indicar el coste de un litro de salsa.</p>',
+  sentido: 'min',
+  vn: ['x_1', 'x_2'],
+  vars: '<p>Sean $x_1$ los gramos del ingrediente $I_1$ y $x_2$ los gramos del ingrediente $I_2$ que lleva un litro de salsa.</p>',
+  tituloVars: 'Las incógnitas',
+  unidades: 'gramos',
+  restr: [
+    { a: 1, b: 0, op: '<=', c: 5, k: 1, ineq: 'x_1\\le5', eq: 'x_1=5', lab: 'x₁ = 5' },
+    { a: 0, b: 1, op: '>=', c: 2, k: 2, ineq: 'x_2\\ge2', eq: 'x_2=2', lab: 'x₂ = 2' },
+    { a: 1, b: 1, op: '>=', c: 6, k: 3, ineq: 'x_1+x_2\\ge6', eq: 'x_1+x_2=6', lab: 'x₁ + x₂ = 6', pts: [[0, 6], [6, 0]] },
+    { a: 2, b: -1, op: '>=', c: 0, k: 4, ineq0: 'x_2\\le2x_1\\;\\Rightarrow\\;2x_1-x_2\\ge0', ineq: '2x_1-x_2\\ge0', eq: 'x_2=2x_1', lab: 'x₂ = 2x₁', pts: [[0, 0], [5, 10]],
+      test: { html: 'la recta pasa por el origen: probamos $(4,0)$: &nbsp;$2\\cdot4-0=8\\ge0$ ✓ &nbsp;⇒ por debajo de la recta.' } }
+  ],
+  F: { a: 20, b: 30, tex: 'F(x_1,x_2)=20x_1+30x_2' },
+  objetivo: objetivo('Cada gramo de $I_1$ cuesta $20$ céntimos y cada gramo de $I_2$ cuesta $30$ céntimos:', 5, 'F(x_1,x_2)=20x_1+30x_2', 6, false, 'F', 'x_1,x_2'),
+  fig: { xmax: 6, ymax: 12, px: 1, py: 2, mx: 1, my: 1 },
+  trasRestr: () => [
+    { titulo: 'Apartado a) · Elegimos la gráfica',
+      html: '<p>Buscamos un punto que cumpla las cuatro condiciones y miramos en qué gráficas está. Probamos $(2,\\,4)$:</p>' +
+        '$$\\begin{array}{ll}' + ce(1, 'x_1\\le5') + ': & 2\\le5\\;✓\\\\[2mm]' + ce(2, 'x_2\\ge2') + ': & 4\\ge2\\;✓\\\\[2mm]' +
+        ce(3, 'x_1+x_2\\ge6') + ': & 2+4=6\\ge6\\;✓\\\\[2mm]' + ce(4, 'x_2\\le2x_1') + ': & 4\\le2\\cdot2\\;✓\\end{array}$$' +
+        '<p>El punto $(2,4)$ es una solución posible, así que tiene que estar dentro de la región correcta:</p>' + tresGraficas([2, 4]) +
+        '<p>Solo está en la <b>gráfica 3</b>. Lo comprobamos dibujando nosotros la región.</p>' }
+  ],
+  regionTexto: 'Es la zona donde se cumplen las cuatro desigualdades a la vez. Coincide con la <b>gráfica 3</b>.',
+  unidadF: 'céntimos',
+  res: 'La mezcla correcta es la de la gráfica 3. Hay que usar 4 g del ingrediente $I_1$ y 2 g del ingrediente $I_2$. El coste de un litro de salsa es de 140 céntimos, es decir, 1,40 €.'
+};
+
+/* =====================================================================
+   SECCIÓN DE PRÁCTICA (Extremadura): enunciado y, al pulsar, solo el resultado
+   ===================================================================== */
+const PRACTICA = [
+  { etiqueta: 'PAU Extremadura · Modelo 2024 (ejercicio 4)',
+    enunciado: '<p>Un taller de confección textil produce dos categorías de trajes: de señora y de caballero. Dispone de material para fabricar diariamente 850 trajes de señora y 650 de trajes de caballero. Si tiene que fabricar diariamente como máximo 1000 unidades totales y el beneficio obtenido por cada traje de señora es de 150 euros y de 200 euros por traje de caballero, ¿cuántos trajes de cada tipo han de fabricarse diariamente para hacer máximos los beneficios? ¿Cuáles serán dichos beneficios máximos? Justifica las respuestas.</p>',
+    res: 'Hay que fabricar 350 trajes de señora y 650 trajes de caballero al día. El beneficio máximo es de 182 500 €.' },
+  { etiqueta: 'PAU Extremadura · Ordinaria 2024 (ejercicio 4)',
+    enunciado: '<p>Una almazara peleña comercializa dos tipos de aceite de oliva de excelente calidad: el virgen extra, que se vende a 10 euros el litro y el de orujo, del que cada litro se vende a 7 euros. Sabemos que por motivos de almacenamiento no puede producir más de un total de 3.000 litros de aceite al día (entre los dos tipos) ni más de 2.000 litros de aceite de orujo y que, para atender a la demanda, la cantidad de aceite de oliva virgen extra que produce debe ser, como mucho, el doble que la de orujo. Suponiendo que vende todo el aceite que produce, calcular, justificando las respuestas, el número de litros de cada tipo de aceite de oliva que debe producir diariamente esta almazara para obtener unos ingresos máximos, así como el valor de dichos ingresos máximos.</p>',
+    res: 'Hay que producir 2000 litros de aceite virgen extra y 1000 litros de aceite de orujo al día. Los ingresos máximos son de 27 000 €.' },
+  { etiqueta: 'PAU Extremadura · Extraordinaria 2024 (ejercicio 4)',
+    enunciado: '<p>Un charcutero dispone de 390 chorizos y 480 salchichones para su venta y los organiza en dos tipos de lotes A y B. Cada lote de tipo A contiene 6 chorizos y 6 salchichones, reportándole un beneficio de 20 euros. Por otra parte, cada lote de tipo B está compuesto por 10 chorizos y 16 salchichones, con un beneficio de 36 euros. Calcular, justificando la respuesta, el número de lotes de cada tipo que debe vender para obtener un beneficio máximo y el valor de dicho beneficio máximo.</p>',
+    res: 'Debe vender 40 lotes de tipo A y 15 lotes de tipo B. El beneficio máximo es de 1340 €.' },
+  { etiqueta: 'PAU Extremadura · Ordinaria 2025 (opción B, ejercicio 2)',
+    enunciado: '<p>Una granja produce dos tipos de cultivos: maíz y trigo, generando un beneficio de 50 euros por hectárea de maíz y 40 euros por hectárea de trigo. La granja dispone de 120 hectáreas para cultivar y de 300 depósitos de agua. Cada hectárea de maíz requiere 3 depósitos de agua y cada hectárea de trigo requiere 2. Además, la granja debe dedicar al menos 20 hectáreas al maíz y 15 hectáreas al trigo. Determinar el número de hectáreas que se deben dedicar a cada cultivo para obtener los beneficios máximos y calcular dichos beneficios.</p>',
+    res: 'Hay que dedicar 60 hectáreas al maíz y 60 hectáreas al trigo. El beneficio máximo es de 5400 €.' },
+  { etiqueta: 'PAU Extremadura · Extraordinaria 2025 (opción B, ejercicio 2)',
+    enunciado: '<p>Un pastor elabora quesos de oveja y de cabra. Los gastos de producción de cada queso de oveja ascienden a 10 € con unos beneficios de 5 €. Por otra parte, fabricar cada queso de cabra le cuesta 15 € y le reporta unos beneficios de 11 €. Se sabe que diariamente dispone de 300 € para la fabricación de estos quesos y que, para atender a las exigencias del mercado, debe fabricar, al menos, un total de 25 unidades entre los dos tipos de queso. Además, por normativa sanitaria, el número de quesos de oveja más el doble de los de cabra no puede superar las 30 unidades. Calcular, razonando la respuesta, el número de quesos de cada tipo que deben fabricarse diariamente para obtener unos beneficios máximos, así como el valor de dichos beneficios máximos.</p>',
+    res: 'Hay que fabricar 20 quesos de oveja y 5 quesos de cabra al día. El beneficio máximo es de 155 €.' },
+  { etiqueta: 'PAU Extremadura · Ordinaria 2026 (opción B, ejercicio 2)',
+    enunciado: '<p>Una panadería fabrica cajas de mantecados y de perrunillas. Para su elaboración cuenta diariamente con 40 kg de harina y 50 kg de azúcar, necesitando 1 kg de harina y 2 kg de azúcar para cada caja de mantecados, con un beneficio de 10 €. Por otra parte, para fabricar una caja de perrunillas, que le aporta un beneficio de 15 €, utiliza 2 kg de harina y 1 kg de azúcar. Sabiendo que, por cuestiones de abastecimiento, el número de cajas de perrunillas debe ser, como mucho, el doble que el de cajas de mantecados, calcula el número de cajas de cada producto que debe fabricar diariamente para obtener unos beneficios máximos y el valor de esos beneficios.</p>',
+    res: 'Hay que fabricar 20 cajas de mantecados y 10 cajas de perrunillas al día. El beneficio máximo es de 350 €.' }
+].map(p => ({ titulo: 'Práctica', etiqueta: p.etiqueta, enunciado: p.enunciado,
+  pasos: [{ caja: 'Respuesta', html: '<p><b class="res">' + p.res + '</b></p>' }] }));
+
+/* =====================================================================
+   ORDEN FINAL: 15 problemas + práctica
+   ===================================================================== */
+const _pl = n => ejercicioPL(CFG[n]);
+const EJERCICIOS = [
+  _pl(1), _pl(2), _pl(3), _pl(4), _pl(5),          // con tabla (la hacemos nosotros / viene dada)
+  EJ_PROTO[0], _pl(7), _pl(8), _pl(9),             // sin tabla
+  _pl(10), EJ_PROTO[1],                            // con dibujo
+  _pl(12), _pl(13), _pl(14), _pl(15)               // libres
+];
+EJERCICIOS.forEach((e, i) => { e.titulo = 'Problema ' + (i + 1); });
+PRACTICA.forEach((e, i) => { e.titulo = 'Práctica ' + (i + 1); EJERCICIOS.push(e); });
+
+/* ===================================================================== */
+const OPCIONES_MATE = {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "$",  right: "$",  display: false}
+  ],
+  throwOnError: false,
+  strict: false
+};
+const $ = id => document.getElementById(id);
+function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
+
+/* ---------------------------------------------------------------------
+   MOTOR DEL LIBRO
+   - Cada ejercicio se trocea en "unidades" (un párrafo, una fórmula, una
+     matriz...). Cada clic escribe la siguiente sección.
+   - Las unidades se reparten en páginas de tamaño fijo (como un libro).
+   - Se ven dos páginas. Cuando se llena la de la derecha, pasa a ser la
+     de la izquierda y aparece una página nueva a la derecha.
+   --------------------------------------------------------------------- */
+const LW = 800;                     // ancho lógico de una página (px)
+let actual = 0;                     // ejercicio activo
+let s = 0;                          // unidades escritas
+let G = {};                         // geometría
+let libro = null;                   // {unidades, paginas}
+let Lprev = 0;
+
+function geometria() {
+  const W = $("libro").clientWidth, H = $("libro").clientHeight;
+  const Sw = W / 2, k = (Sw - 20) / LW;
+  G = { W, H, Sw, k, LH: (H - 20) / k };
+}
+
+/* trocea un ejercicio en secciones y unidades (se hace una sola vez) */
+function extraer(e) {
+  if (e._sec) return e._sec;
+  const stage = $("stage"), secs = [];
+  const add = (tipo, cab, html, salto, mismo) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    stage.appendChild(d);
+    mate(d);
+    const unidades = [];
+    d.childNodes.forEach(n => {
+      if (n.nodeType === 1) unidades.push(n);
+      else if (n.nodeType === 3 && n.textContent.trim()) {
+        const sp = document.createElement("span"); sp.textContent = n.textContent; unidades.push(sp);
+      }
+    });
+    let cabHTML = null;
+    if (cab) { const c = document.createElement("div"); c.innerHTML = cab; mate(c); cabHTML = c.innerHTML; }
+    secs.push({ tipo, cabHTML, unidades, salto: !!salto, mismo: !!mismo });
+  };
+  add("titulo", null, "<h1>" + e.titulo + "</h1>" + (e.etiqueta ? '<div class="origen">' + e.etiqueta + "</div>" : ""));
+  add("enun", null, e.enunciado, false, true);      // título y enunciado salen juntos con un clic
+  e.pasos.forEach((p, i) => add(p.caja ? "caja" : "paso", p.caja || p.titulo, p.html, i === 0 || (p.caja && /^Si /.test(p.caja))));   // el primer paso siempre empieza en la página de la derecha: enunciado a la izquierda, planteamiento a la derecha
+  stage.innerHTML = "";
+  /* un "tic" = un clic. Cada sección es un bloque; dentro de una fila de menores
+     (.fila-menores) cada .sub sale con su propio clic */
+  let base = 0;
+  secs.forEach(sc => {
+    let cur = sc.mismo ? base : base + 1, nuevo = false;
+    sc.unidades = sc.unidades.map(n => {
+      if (nuevo) { cur++; nuevo = false; }
+      const o = { n, t: cur, subs: [] };
+      if (n.classList && n.classList.contains("fila-menores")) {
+        n.querySelectorAll(".sub").forEach(sb => { cur++; o.subs.push({ n: sb, t: cur }); });
+        nuevo = true;
+      }
+      return o;
+    });
+    base = cur;
+  });
+  e._T = base;
+  e._sec = secs;
+  return secs;
+}
+
+function crearCont(sc, sigue) {
+  const c = document.createElement("div");
+  c.className = "cont";
+  if (sc.tipo === "caja") {
+    c.classList.add("caja");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", '<span class="titulo">' + sc.cabHTML + "</span>");
+  } else if (sc.tipo === "paso") {
+    c.classList.add("paso");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", "<h4>" + sc.cabHTML + "</h4>");
+  } else if (sc.tipo === "enun") {
+    c.classList.add("caja", "enunciado");
+  }
+  if (sigue) c.classList.add("sigue");
+  return c;
+}
+
+/* una fórmula más ancha que la página se reduce hasta caber */
+function ajustar(u) {
+  if (u.classList && u.classList.contains("fila-menores")) {
+    u.style.zoom = "";
+    if (u.scrollWidth > u.clientWidth + 2) u.style.zoom = String(Math.max(.55, u.clientWidth / u.scrollWidth * .97));
+  }
+  u.querySelectorAll(".katex-display").forEach(d => {
+    const k = d.firstElementChild;
+    if (!k) return;
+    k.style.zoom = "";
+    if (d.scrollWidth > d.clientWidth + 2) k.style.zoom = String(Math.max(.55, d.clientWidth / d.scrollWidth * .98));
+  });
+}
+
+/* reparte las unidades en páginas del tamaño actual */
+function paginar(secs, T) {
+  secs.T = T;
+  const pista = $("pista");
+  pista.innerHTML = "";
+  const paginas = [], unidades = [];
+  const nueva = () => {
+    const hoja = document.createElement("div");
+    hoja.className = "hoja";
+    hoja.style.cssText = "left:" + (paginas.length * G.Sw) + "px;width:" + G.Sw + "px;height:" + G.H + "px";
+    const pag = document.createElement("div");
+    pag.className = "pag";
+    pag.style.cssText = "width:" + LW + "px;height:" + G.LH + "px;transform:scale(" + G.k + ")";
+    const cu = document.createElement("div");
+    cu.className = "cuerpo";
+    cu.style.height = (G.LH - 34 - 56) + "px";
+    const num = document.createElement("div");
+    num.className = "num"; num.textContent = paginas.length + 1;
+    pag.append(cu, num); hoja.appendChild(pag); pista.appendChild(hoja);
+    const o = { hoja, cu };
+    paginas.push(o);
+    return o;
+  };
+  let pg = nueva();
+  const desborda = () => pg.cu.scrollHeight > pg.cu.clientHeight + 1;
+  secs.forEach(sc => {
+    if (sc.salto && pg.cu.children.length) pg = nueva();
+    let cont = crearCont(sc, false), puestas = 0;
+    pg.cu.appendChild(cont);
+    /* un bloque (lo que sale con un clic) nunca se parte entre dos páginas */
+    const bloques = [];
+    sc.unidades.forEach(un => {
+      const ult = bloques[bloques.length - 1];
+      if (ult && ult[0].t === un.t) ult.push(un); else bloques.push([un]);
+    });
+    bloques.forEach(bl => {
+      bl.forEach(un => {
+        un.n.classList.add("u"); un.n.classList.remove("on");
+        un.subs.forEach(sb => { sb.n.classList.add("u"); sb.n.classList.remove("on"); });
+        cont.appendChild(un.n);
+      });
+      bl.forEach(un => ajustar(un.n));
+      if (desborda()) {
+        bl.forEach(un => cont.removeChild(un.n));
+        if (!puestas) pg.cu.removeChild(cont);
+        if (pg.cu.children.length) pg = nueva();     // página nueva solo si la actual ya tiene algo
+        cont = crearCont(sc, puestas > 0);
+        pg.cu.appendChild(cont);
+        bl.forEach(un => cont.appendChild(un.n));
+        bl.forEach(un => ajustar(un.n));
+      }
+      puestas += bl.length;
+      const pi = paginas.indexOf(pg);
+      bl.forEach(un => {
+        unidades.push({ u: un.n, cont, pag: pi, t: un.t, on: false });
+        un.subs.forEach(sb => unidades.push({ u: sb.n, cont, pag: pi, t: sb.t, on: false }));
+      });
+    });
+  });
+  libro = { unidades, paginas, T: secs.T };
+}
+
+/* pone al día lo que se ve según s */
+function aplicar(anim) {
+  const U = libro.unidades;
+  s = Math.max(0, Math.min(s, libro.T));
+  const conts = new Map();
+  U.forEach((o, i) => {
+    const on = o.t <= s;
+    if (on !== o.on) {
+      o.on = on;
+      if (on) { o.u.classList.remove("rapido"); o.u.classList.add("on"); }
+      else { o.u.classList.add("rapido"); o.u.classList.remove("on"); }
+    }
+    if (on) conts.set(o.cont, true); else if (!conts.has(o.cont)) conts.set(o.cont, false);
+  });
+  conts.forEach((v, c) => {
+    if (v) { c.classList.remove("rapido"); c.classList.add("on"); }
+    else { c.classList.add("rapido"); c.classList.remove("on"); }
+  });
+  let p = 0;
+  U.forEach(o => { if (o.t <= s) p = Math.max(p, o.pag); });
+  const L = Math.max(p - 1, 0);
+  const pista = $("pista");
+  pista.classList.toggle("anim", !!anim);
+  pista.style.transform = "translateX(" + (-L * G.Sw) + "px)";
+  if (anim && L > Lprev) {
+    const h = libro.paginas[p].hoja;
+    h.classList.remove("gira"); void h.offsetWidth; h.classList.add("gira");
+    setTimeout(() => h.classList.remove("gira"), 1000);
+  }
+  Lprev = L;
+  const n = libro.T;
+  $("contador").textContent = EJERCICIOS[actual].titulo + " · " + s + " / " + n;
+  $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
+  $("btnAtras").disabled = (actual === 0 && s <= 1);
+  $("btnAdelante").disabled = (actual === EJERCICIOS.length - 1 && s === n);
+}
+
+function pintarPestanas() {
+  const nav = $("pestanas");
+  nav.innerHTML = "";
+  EJERCICIOS.forEach((e, i) => {
+    const b = document.createElement("button");
+    b.textContent = e.titulo.replace("Problema ", "P. ").replace("Práctica ", "Pr. ");
+    b.setAttribute("aria-selected", i === actual);
+    b.onclick = ev => { ev.stopPropagation(); cargar(i, false); };
+    nav.appendChild(b);
+  });
+  const sel = nav.querySelector('[aria-selected="true"]');
+  if (sel) sel.scrollIntoView({ inline: "center", block: "nearest" });
+}
+
+function construir() {
+  geometria();
+  const e = EJERCICIOS[actual];
+  const secs = extraer(e);
+  paginar(secs, e._T);
+}
+
+async function cargar(i, alFinal) {
+  const lib = $("libro");
+  lib.classList.add("fuera");
+  await new Promise(r => setTimeout(r, 200));
+  actual = i;
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  construir();
+  s = alFinal ? libro.T : 1;          // al abrir un ejercicio ya se ve el enunciado
+  Lprev = 0;
+  pintarPestanas();
+  aplicar(false);
+  lib.classList.remove("fuera");
+}
+
+function avanzar() {
+  if (s < libro.T) { s++; aplicar(true); }
+  else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
+}
+function retroceder() {
+  if (s > 1) { s--; aplicar(true); }
+  else if (actual > 0) cargar(actual - 1, true);
+}
+
+/* ---------------------------------------------------------------------
+   SUBRAYADOR de las frases del enunciado
+   - al pasar el ratón por una frase se colorea (cada frase, su color;
+     si la ecuación sale de varios trozos, se colorean todos a la vez)
+   - doble clic: queda fijada, como con un rotulador; otro doble clic la quita
+   - en pantallas táctiles: un toque la colorea y un doble toque la fija
+   --------------------------------------------------------------------- */
+const frDe = ev => (ev.target && ev.target.closest) ? ev.target.closest(".fr") : null;
+const grupoDe = fr => {
+  const cont = fr.closest(".enunciado");
+  return cont ? cont.querySelectorAll('.fr[data-g="' + fr.dataset.g + '"]') : [fr];
+};
+function alternarFija(fr) {
+  const poner = !fr.classList.contains("fija");
+  grupoDe(fr).forEach(n => n.classList.toggle("fija", poner));
+}
+let tipoPuntero = "mouse", ultimoToque = { el: null, t: 0 };
+$("libro").addEventListener("mouseover", ev => {
+  const fr = frDe(ev);
+  if (fr) grupoDe(fr).forEach(n => n.classList.add("hov"));
+});
+$("libro").addEventListener("mouseout", ev => {
+  const fr = frDe(ev);
+  if (!fr) return;
+  const a = ev.relatedTarget && ev.relatedTarget.closest ? ev.relatedTarget.closest(".fr") : null;
+  if (a && a.dataset.g === fr.dataset.g && a.closest(".enunciado") === fr.closest(".enunciado")) return;
+  grupoDe(fr).forEach(n => n.classList.remove("hov"));
+});
+$("libro").addEventListener("pointerdown", ev => { tipoPuntero = ev.pointerType || "mouse"; }, true);
+$("libro").addEventListener("dblclick", ev => {
+  const fr = frDe(ev);
+  if (!fr) return;
+  ev.preventDefault();
+  if (tipoPuntero === "mouse") alternarFija(fr);
+});
+$("libro").addEventListener("pointerup", ev => {
+  if (ev.pointerType === "mouse") return;
+  const fr = frDe(ev);
+  if (!fr) return;
+  const ahora = Date.now();
+  if (ultimoToque.el === fr && ahora - ultimoToque.t < 400) {
+    alternarFija(fr);
+    ultimoToque = { el: null, t: 0 };
+  } else {
+    document.querySelectorAll(".fr.hov").forEach(n => n.classList.remove("hov"));
+    grupoDe(fr).forEach(n => n.classList.add("hov"));
+    ultimoToque = { el: fr, t: ahora };
+  }
+});
+$("btnBorrar").onclick = ev => {
+  ev.stopPropagation();
+  document.querySelectorAll(".fr.fija, .fr.hov").forEach(n => n.classList.remove("fija", "hov"));
+};
+
+/* clic: tercio izquierdo = atrás; resto = adelante (sobre una frase del enunciado no avanza) */
+$("libro").addEventListener("click", ev => {
+  if (frDe(ev)) return;
+  if (String(window.getSelection())) return;
+  if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
+});
+$("btnAtras").onclick = ev => { ev.stopPropagation(); retroceder(); };
+$("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
+$("tira").onclick = ev => {
+  ev.stopPropagation();
+  const r = $("tira").getBoundingClientRect();
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * libro.T));
+  aplicar(true);
+};
+document.addEventListener("keydown", ev => {
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
+  else if (ev.key === "Home") { s = 1; aplicar(true); }
+  else if (ev.key === "End") { s = libro.T; aplicar(true); }
+});
+let tRes = null;
+window.addEventListener("resize", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); Lprev = 0; aplicar(false); } }, 150);
+});
+
+window.addEventListener("load", () => cargar(0, false));
+if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); aplicar(false); } }, 60);
+});
+</script>
+</body>
+</html>
