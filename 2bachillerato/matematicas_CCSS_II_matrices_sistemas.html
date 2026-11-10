@@ -23,6 +23,11 @@
   .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
     padding:0 14px;display:flex;gap:14px;align-items:center;font-size:.85rem;color:var(--gris)}
   .barra-sup .tit{font-weight:bold;color:#333;white-space:nowrap}
+  .barra-sup .ayuda{white-space:nowrap;font-size:.8rem;color:#888}
+  @media (max-width:1300px){.barra-sup .ayuda{display:none}}
+  .barra-sup .borrar{font:inherit;font-size:.8rem;padding:3px 10px;border-radius:8px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #bbb;color:#555}
+  .barra-sup .borrar:hover{border-color:#333;color:#333}
   .pestanas{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;padding:2px 0}
   .pestanas::-webkit-scrollbar{display:none}
   .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
@@ -76,6 +81,14 @@
   .caja p{margin:.3em 0 .5em}
   .paso{margin:6px 0 10px}
 
+  /* frases del enunciado: subrayador (al pasar el ratón; doble clic = se queda fijado) */
+  .fr{border-radius:4px;padding:1px 1px;cursor:pointer;transition:background-color .15s ease;
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;
+    -webkit-box-decoration-break:clone;box-decoration-break:clone}
+  .fr.c1{--hl:#FFE066} .fr.c2{--hl:#9BE9A8} .fr.c3{--hl:#8FD3FF}
+  .fr.c4{--hl:#FFA8D0} .fr.c5{--hl:#FFC47A} .fr.c6{--hl:#CDB4FF}
+  .fr.hov,.fr.fija{background-color:var(--hl)}
+
   .ec{display:flex;align-items:center;justify-content:center;gap:.5em;margin:.6em 0;flex-wrap:wrap}
   .mat{--w:2.5em;--h:1.7em;position:relative;display:inline-grid;
     grid-template-columns:repeat(var(--nc),var(--w));grid-auto-rows:var(--h);
@@ -85,16 +98,6 @@
   .mat::before{left:-.7em;border-right:0;border-radius:60% 0 0 60%/50% 0 0 50%}
   .mat::after{right:-.7em;border-left:0;border-radius:0 60% 60% 0/0 50% 50% 0}
   .mat .bar{position:absolute;top:.1em;bottom:.1em;left:calc(var(--k) * var(--w));border-left:1.5px solid #111}
-  .mat .caja-roja{position:absolute;border:1.5px solid var(--rojo);pointer-events:none;
-    left:calc(var(--c0) * var(--w) + .15em);top:calc(var(--r0) * var(--h) + .12em);
-    width:calc(var(--cs) * var(--w) - .3em);height:calc(var(--rs) * var(--h) - .24em)}
-  .mat .caja-roja i{position:absolute;left:50%;top:-1.35em;transform:rotate(-40deg);transform-origin:left bottom;
-    color:var(--rojo);font-style:normal;white-space:nowrap}
-  .mat .tacha{position:absolute;left:-.2em;right:-.2em;top:calc((var(--r) + .5) * var(--h));
-    border-top:1.5px solid var(--rojo);pointer-events:none}
-  .mat .etq{position:absolute;left:calc((var(--c) + .5) * var(--w));top:-.15em;width:0;height:0;pointer-events:none}
-  .mat .etq i{position:absolute;left:0;bottom:0;transform:rotate(-40deg);transform-origin:left bottom;
-    color:var(--rojo);font-style:normal;white-space:nowrap}
   .instr{color:var(--azul);border:1.5px solid #E6C200;border-radius:14px;padding:6px 16px;margin:10px 0;text-align:center}
   .nota{color:var(--gris);font-size:.9em}
   .comu{display:inline-block;background:#fff;border:1.5px solid var(--azul);border-radius:999px;padding:0 12px;font-size:.85em;font-weight:bold;color:var(--azul)}
@@ -110,6 +113,8 @@
 <body>
 <div class="barra-sup">
   <span class="tit">Matemáticas CCSS II · Matrices y sistemas · Modelos 0</span>
+  <span class="ayuda">Pasa el ratón por el enunciado · doble clic para fijar el subrayado</span>
+  <button class="borrar" id="btnBorrar" title="Quitar todos los subrayados fijados">Quitar subrayados</button>
   <nav class="pestanas" id="pestanas" aria-label="Ejercicios"></nav>
 </div>
 <div id="libro"><div id="pista"></div><div id="lomo"></div></div>
@@ -123,36 +128,23 @@
 
 <script>
 /* ---------------------------------------------------------------------
-   Matriz con barra opcional y menor marcado en caja roja.
+   Matriz con barra opcional.
    rows: filas (cadenas LaTeX); opts.bar = nº de columnas antes de la barra;
-   opts.box = [f0,c0,f1,c1] (o lista de cajas); opts.tach = [filas a tachar];
-   opts.etq = [[columna,'texto'],...]
+   opts.w = ancho de columna en em
    --------------------------------------------------------------------- */
 function mat(rows, opts = {}) {
   const nr = rows.length, nc = rows[0].length;
   const largo = Math.max(...rows.map(r => Math.max(...r.map(c => String(c).replace(/\\[a-zA-Z]+|[{}\s]/g, '').length))));
   const ancho = opts.w || Math.max(2.5, 1.0 + 0.55 * largo);
-  let h = '<span class="mat" style="--nc:' + nc + ';--nr:' + nr + ';--w:' + ancho.toFixed(2) + 'em' + (opts.etq ? ';margin-top:2.3em' : '') + (opts.h ? ';--h:' + opts.h + 'em' : '') + '">';
+  let h = '<span class="mat" style="--nc:' + nc + ';--nr:' + nr + ';--w:' + ancho.toFixed(2) + 'em' + (opts.h ? ';--h:' + opts.h + 'em' : '') + '">';
   rows.forEach(r => r.forEach(c => { h += '<span class="c">$' + c + '$</span>'; }));
   if (opts.bar != null) h += '<span class="bar" style="--k:' + opts.bar + '"></span>';
-  if (opts.box) {
-    const cajas = Array.isArray(opts.box[0]) ? opts.box : [opts.box];
-    cajas.forEach(([r0, c0, r1, c1], i) => {
-      h += '<span class="caja-roja" style="--r0:' + r0 + ';--c0:' + c0 + ';--rs:' + (r1 - r0 + 1) +
-           ';--cs:' + (c1 - c0 + 1) + '">' + (i === 0 ? '<i>$\\neq0$</i>' : '') + '</span>';
-    });
-  }
-  if (opts.tach) opts.tach.forEach(r => { h += '<span class="tacha" style="--r:' + r + '"></span>'; });
-  if (opts.etq) opts.etq.forEach(([c, t]) => { h += '<span class="etq" style="--c:' + c + '"><i>$' + t + '$</i></span>'; });
   return h + '</span>';
 }
 const ec = (...partes) => '<div class="ec">' + partes.join('') + '</div>';
 const f = s => '<span>$' + s + '$</span>';
-const rg = x => '\\operatorname{rg}(' + x + ')';
 const detTex = filas => '\\begin{vmatrix} ' + filas.map(r => r.join('&')).join('\\\\ ') + ' \\end{vmatrix}';
 
-const strs = M => M.map(r => r.map(String));
-const pn = v => (v < 0 ? '(' + v + ')' : String(v));
 const det3 = M => M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1])
                 - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0])
                 + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
@@ -164,34 +156,20 @@ function sarrusTex(M0) {
   return '(' + suma(p) + ')-(' + suma(n) + ')=' + det3(a);
 }
 
-/* bloque de cálculos que sale ENTERO con un solo clic */
-const item = (n, i, j, t, v) => '<span class="item">$\\displaystyle ' + n + '_{' + i + j + '}=' + t + '=' + v + '$</span>';
-const juntoDe = (porFila, items) => {
-  let h = '<div class="fila-menores col junto">';
-  for (let k = 0; k < items.length; k += porFila) h += '<div class="fila3">' + items.slice(k, k + porFila).join('') + '</div>';
-  return h + '</div>';
-};
-/* producto numérico: bloque de un clic + matriz resultado */
-function prodJunto(A, B, nom, porFila) {
-  const items = [], res = A.map(() => []);
-  A.forEach((fila, i) => B[0].forEach((_, j) => {
-    const t = fila.map((a, k) => pn(a) + '\\cdot ' + pn(B[k][j])).join('+');
-    const v = fila.reduce((acc, a, k) => acc + a * B[k][j], 0);
-    res[i].push(v);
-    items.push(item(nom, i + 1, j + 1, t, v));
-  }));
-  return { html: juntoDe(porFila, items), res };
-}
-
-const INSTR = v => '<p class="instr">Tachamos la fila que queda fuera del menor distinto de cero que hemos seleccionado ' +
-  'y le damos a la variable cuya columna queda fuera del menor el valor del parámetro; en este caso $' + v + '$.</p>';
-
-/* menores de orden 3 que salen uno a uno */
-const menores3 = ms => '<div class="fila-menores col">' +
-  ms.map(m => '<span class="sub">$\\displaystyle ' + detTex(m) + '=' + sarrusTex(m) + '$</span>').join('') + '</div>';
-
 /* etiqueta de comunidad para el enunciado */
 const comu = (c, resto) => '<p class="nota"><span class="comu">' + c + '</span> · ' + resto + '</p>';
+
+/* ---------------------------------------------------------------------
+   Frases del enunciado y ecuaciones con el mismo color
+   fr(k, texto): frase que se subraya (las frases con el mismo k forman un grupo)
+   ce(k, tex):   la ecuación que sale de esa frase, con el mismo color de fondo
+                 (solo dentro de fórmulas $$...$$)
+   --------------------------------------------------------------------- */
+const HL = ['', '#FFE066', '#9BE9A8', '#8FD3FF', '#FFA8D0', '#FFC47A', '#CDB4FF'];
+const fr = (k, t) => '<span class="fr c' + k + '" data-g="' + k + '">' + t + '</span>';
+const ce = (k, tex) => '\\colorbox{' + HL[k] + '}{$\\,' + tex + '\\,$}';
+const sis = filas => '$$\\left\\{\\begin{array}{l}' + filas.join('\\\\[2mm]') + '\\end{array}\\right.$$';
+const dsp = tex => '$$' + tex + '$$';
 
 const EJERCICIOS = [];
 /* ===================== EJERCICIO 1: MADRID, PREGUNTA 1.c ===================== */
@@ -205,15 +183,17 @@ EJERCICIOS.push((() => {
   return {
     titulo: 'Ejercicio 1', corto: 'Madrid · 1.c',
     enunciado: comu('Comunidad de Madrid', 'Modelo PAU 2027 · Pregunta 1, apartado 1.c (1 punto)') +
-      String.raw`<p>El chef ha preparado $10$ litros de salsa secreta para elaborar $3$ platos diferentes $P_1$, $P_2$ y $P_3$. Para evitar el desperdicio, se debe consumir la totalidad de la salsa. Además, se sabe que el plato $P_1$ usa exactamente el doble de salsa que el plato $P_2$ y que los platos $P_2$ y $P_3$ usan conjuntamente $4$ litros.</p>
-      <p style="margin-left:1.6em">¿Es posible realizar este reparto de salsa secreta entre los tres platos? En caso afirmativo, obténgase la cantidad de salsa que necesitará cada plato.</p>`,
+      '<p>' + fr(1, 'El chef ha preparado $10$ litros de salsa secreta') + ' para elaborar $3$ platos diferentes $P_1$, $P_2$ y $P_3$. ' +
+      fr(1, 'Para evitar el desperdicio, se debe consumir la totalidad de la salsa') + '. Además, se sabe que ' +
+      fr(2, 'el plato $P_1$ usa exactamente el doble de salsa que el plato $P_2$') + ' y que ' +
+      fr(3, 'los platos $P_2$ y $P_3$ usan conjuntamente $4$ litros') + '.</p>' +
+      '<p style="margin-left:1.6em">¿Es posible realizar este reparto de salsa secreta entre los tres platos? En caso afirmativo, obténgase la cantidad de salsa que necesitará cada plato.</p>',
     pasos: [
       { titulo: 'Definimos las variables y planteamos el sistema',
-        html: String.raw`<p>Llamamos $x$, $y$ y $z$ a los litros de salsa de los platos $P_1$, $P_2$ y $P_3$:</p>
-          <p>• Se consumen los $10$ litros: $x+y+z=10$.</p>
-          <p>• $P_1$ usa el doble que $P_2$: $x=2y\;\Rightarrow\;x-2y=0$.</p>
-          <p>• $P_2$ y $P_3$ usan $4$ litros entre los dos: $y+z=4$.</p>
-          $$\left\{\begin{array}{rcl} x+y+z&=&10\\ x-2y&=&0\\ y+z&=&4 \end{array}\right.$$` },
+        html: '<p>Llamamos $x$, $y$ y $z$ a los litros de salsa de los platos $P_1$, $P_2$ y $P_3$. Cada frase del enunciado nos da una ecuación:</p>' +
+              sis([ce(1, 'x+y+z=10'), ce(2, 'x=2y'), ce(3, 'y+z=4')]) +
+              '<p>Pasamos las incógnitas al primer miembro:</p>' +
+              sis([ce(1, 'x+y+z=10'), ce(2, 'x-2y=0'), ce(3, 'y+z=4')]) },
       { nueva: true, titulo: 'Escribimos el sistema en forma matricial',
         html: ec(mat(A), mat([['x'],['y'],['z']]), f('='), mat([['10'],['0'],['4']])) +
               ec(f('\\text{Matriz de coeficientes: }'), mat(A)) +
@@ -237,11 +217,9 @@ EJERCICIOS.push((() => {
         html: String.raw`$$x=\frac{-12}{-2}=6,\qquad y=\frac{-6}{-2}=3,\qquad z=\frac{-2}{-2}=1$$
           <p><b class="res">Hay que dedicar $6$ litros al plato $P_1$, $3$ litros al plato $P_2$ y $1$ litro al plato $P_3$.</b></p>` },
       { nueva: true, titulo: 'Comprobación',
-        html: String.raw`$$\begin{aligned}
-          x+y+z&=6+3+1=10\ \checkmark\\
-          x-2y&=6-2\cdot3=0\ \checkmark\\
-          y+z&=3+1=4\ \checkmark
-          \end{aligned}$$` }
+        html: String.raw`<p>$6+3+1=10$ litros ✓</p>
+          <p>$6=2\cdot3$ ✓</p>
+          <p>$3+1=4$ litros ✓</p>` }
     ]
   };
 })());
@@ -254,19 +232,21 @@ EJERCICIOS.push((() => {
   return {
     titulo: 'Ejercicio 2', corto: 'Canarias · 4.2',
     enunciado: comu('Canarias', 'PAU 2026-2027 (ejemplo) · Pregunta 4.2 (3 puntos)') +
-      String.raw`<p>Ciento diez alumnos que superaron la EBAU el año anterior se han matriculado en el presente curso en carreras universitarias de ciencias, ciencias sociales e ingenierías. Por cada seis alumnos que se han matriculado en ciencias sociales, hay dos que se han matriculado en ingenierías; y los que lo han hecho en ciencias sociales superan en diez a los que se han matriculado en ciencias más los que han optado por ingenierías.</p>
-      <p style="margin-left:1.6em">a)&nbsp; [1,5 puntos] Fórmulese el correspondiente sistema de ecuaciones.</p>
+      '<p>' + fr(1, 'Ciento diez alumnos') + ' que superaron la EBAU el año anterior se han matriculado en el presente curso en carreras universitarias de ciencias, ciencias sociales e ingenierías. ' +
+      fr(2, 'Por cada seis alumnos que se han matriculado en ciencias sociales, hay dos que se han matriculado en ingenierías') + '; y ' +
+      fr(3, 'los que lo han hecho en ciencias sociales superan en diez a los que se han matriculado en ciencias más los que han optado por ingenierías') + '.</p>' +
+      String.raw`<p style="margin-left:1.6em">a)&nbsp; [1,5 puntos] Fórmulese el correspondiente sistema de ecuaciones.</p>
       <p style="margin-left:1.6em">b)&nbsp; [1 punto] Determínese el número de estudiantes matriculados en ciencias, ciencias sociales e ingenierías.</p>
       <p style="margin-left:1.6em">c)&nbsp; [0,5 puntos] El coste de la matrícula anual para alumnos de nuevo ingreso es de $1\,100$ € para ciencias sociales y $1\,400$ € para ciencias e ingenierías. Para los alumnos repetidores el coste se incrementa en un $15\%$. Si a los $110$ alumnos anteriores se les añaden $25$ repetidores, de los cuales $6$ son de ciencias sociales, ¿cuál será el importe total de las matrículas abonadas por los $135$ alumnos?</p>`,
     pasos: [
-      { titulo: 'a) Definimos las variables',
-        html: String.raw`<p>Llamamos $x$ al número de alumnos matriculados en ciencias, $y$ en ciencias sociales y $z$ en ingenierías.</p>` },
-      { nueva: true, titulo: 'Planteamos las ecuaciones',
-        html: String.raw`<p>• En total son $110$ alumnos: $x+y+z=110$.</p>
-          <p>• Por cada $6$ de ciencias sociales hay $2$ de ingenierías:</p>
-          $$\frac{y}{z}=\frac{6}{2}=3\;\Rightarrow\;y=3z\;\Rightarrow\;y-3z=0$$
-          <p>• Los de ciencias sociales superan en $10$ a los de ciencias más los de ingenierías:</p>
-          $$y=x+z+10\;\Rightarrow\;x-y+z=-10$$` },
+      { salto: true, titulo: 'a) Definimos las variables y planteamos las ecuaciones',
+        html: String.raw`<p>Llamamos $x$ al número de alumnos matriculados en ciencias, $y$ en ciencias sociales y $z$ en ingenierías.</p>` +
+              '<p>Cada frase del enunciado nos da una ecuación. Pasamos las incógnitas al primer miembro:</p>' +
+              '$$\\left\\{\\begin{array}{l}' +
+                [ce(1, 'x+y+z=110'), ce(2, '\\dfrac{y}{z}=\\dfrac{6}{2}\\;\\Rightarrow\\;y=3z'), ce(3, 'y=x+z+10')].join('\\\\[2mm]') +
+              '\\end{array}\\right.\\;\\Longrightarrow\\;\\left\\{\\begin{array}{l}' +
+                [ce(1, 'x+y+z=110'), ce(2, 'y-3z=0'), ce(3, 'x-y+z=-10')].join('\\\\[2mm]') +
+              '\\end{array}\\right.$$' },
       { caja: 'Sistema de ecuaciones',
         html: String.raw`$$\left\{\begin{array}{rcl} x+y+z&=&110\\ y-3z&=&0\\ x-y+z&=&-10 \end{array}\right.$$` +
               ec(mat(A), mat([['x'],['y'],['z']]), f('='), mat([['110'],['0'],['-10']])) },
@@ -305,19 +285,20 @@ EJERCICIOS.push((() => {
   return {
     titulo: 'Ejercicio 3', corto: 'C-La Mancha · 2',
     enunciado: comu('Castilla-La Mancha', 'PAU 2026-2027 · Ejercicio 2 (2,5 puntos)') +
-      String.raw`<p>Una determinada compañía de teatro presenta una obra en el Recinto Ferial de Albacete, dando solo tres representaciones. Se sabe que el número de espectadores que asiste a la segunda representación se incrementó en un $12\%$ respecto a la primera, que en la tercera representación asistieron $336$ espectadores menos que a la segunda y que el número de espectadores de la primera superó en $36$ el de la tercera.</p>
-      <p style="margin-left:1.6em">Calcúlese el número de espectadores que asistieron a cada representación.</p>
-      <p class="nota">Planteamiento: 1,5 puntos. Resolución: 1 punto.</p>`,
+      '<p>Una determinada compañía de teatro presenta una obra en el Recinto Ferial de Albacete, dando solo tres representaciones. Se sabe que ' +
+      fr(1, 'el número de espectadores que asiste a la segunda representación se incrementó en un 12&nbsp;% respecto a la primera') + ', que ' +
+      fr(2, 'en la tercera representación asistieron $336$ espectadores menos que a la segunda') + ' y que ' +
+      fr(3, 'el número de espectadores de la primera superó en $36$ el de la tercera') + '.</p>' +
+      '<p style="margin-left:1.6em">Calcúlese el número de espectadores que asistieron a cada representación.</p>' +
+      '<p class="nota">Planteamiento: 1,5 puntos. Resolución: 1 punto.</p>',
     pasos: [
       { titulo: 'Definimos las variables',
         html: String.raw`<p>Llamamos $x$, $y$ y $z$ al número de espectadores de la primera, la segunda y la tercera representación.</p>` },
       { nueva: true, titulo: 'Planteamos las ecuaciones',
-        html: String.raw`<p>• La segunda aumenta un $12\%$ respecto a la primera, es decir, se multiplica por $1{,}12=\dfrac{28}{25}$:</p>
-          $$y=1{,}12\,x\;\Rightarrow\;28x-25y=0$$
-          <p>• En la tercera hubo $336$ menos que en la segunda:</p>
-          $$z=y-336\;\Rightarrow\;y-z=336$$
-          <p>• La primera superó en $36$ a la tercera:</p>
-          $$x=z+36\;\Rightarrow\;x-z=36$$` },
+        html: '<p>Aumentar un $12\\,\\%$ es multiplicar por $1{,}12=\\dfrac{28}{25}$. Cada frase del enunciado nos da una ecuación:</p>' +
+              sis([ce(1, 'y=1{,}12\\,x'), ce(2, 'z=y-336'), ce(3, 'x=z+36')]) +
+              '<p>Multiplicamos la primera por $25$ y pasamos las incógnitas al primer miembro:</p>' +
+              sis([ce(1, '28x-25y=0'), ce(2, 'y-z=336'), ce(3, 'x-z=36')]) },
       { caja: 'Sistema de ecuaciones',
         html: String.raw`$$\left\{\begin{array}{rcl} 28x-25y&=&0\\ y-z&=&336\\ x-z&=&36 \end{array}\right.$$` +
               ec(mat(A), mat([['x'],['y'],['z']]), f('='), mat([['0'],['336'],['36']])) },
@@ -334,11 +315,9 @@ EJERCICIOS.push((() => {
       { caja: 'Solución',
         html: String.raw`<p><b class="res">Asistieron $2\,500$ espectadores a la primera representación, $2\,800$ a la segunda y $2\,464$ a la tercera.</b></p>` },
       { nueva: true, titulo: 'Comprobación',
-        html: String.raw`$$\begin{aligned}
-          1{,}12\cdot2500&=2800\ \checkmark\\
-          2800-336&=2464\ \checkmark\\
-          2500-2464&=36\ \checkmark
-          \end{aligned}$$` }
+        html: String.raw`<p>$1{,}12\cdot2500=2800$ ✓</p>
+          <p>$2800-336=2464$ ✓</p>
+          <p>$2500-2464=36$ ✓</p>` }
     ]
   };
 })());
@@ -349,18 +328,19 @@ EJERCICIOS.push((() => {
   return {
     titulo: 'Ejercicio 4', corto: 'Galicia · 4.3',
     enunciado: comu('Galicia', 'PAU 2027 · Pregunta 4 · Álgebra · 4.3 (1,5 puntos)') +
-      String.raw`<p>Disponemos de tres granjas $A$, $B$ y $C$ para la cría ecológica de pollos. La granja $A$ tiene capacidad para criar un $20\%$ más de pollos que la granja $B$, y la granja $B$ tiene capacidad para criar el doble de pollos que la granja $C$. Se sabe además que entre las tres granjas pueden criarse un total de $405$ pollos.</p>
-      <p style="margin-left:1.6em">Fórmulese el sistema de ecuaciones asociado a este problema y exprésese matricialmente.</p>`,
+      '<p>Disponemos de tres granjas $A$, $B$ y $C$ para la cría ecológica de pollos. ' +
+      fr(1, 'La granja $A$ tiene capacidad para criar un 20&nbsp;% más de pollos que la granja $B$') + ', y ' +
+      fr(2, 'la granja $B$ tiene capacidad para criar el doble de pollos que la granja $C$') + '. Se sabe además que ' +
+      fr(3, 'entre las tres granjas pueden criarse un total de $405$ pollos') + '.</p>' +
+      '<p style="margin-left:1.6em">Fórmulese el sistema de ecuaciones asociado a este problema y exprésese matricialmente.</p>',
     pasos: [
       { titulo: 'Definimos las variables',
         html: String.raw`<p>Llamamos $x$, $y$ y $z$ al número de pollos que pueden criarse en las granjas $A$, $B$ y $C$, respectivamente.</p>` },
       { nueva: true, titulo: 'Planteamos las ecuaciones',
-        html: String.raw`<p>• La granja $A$ cría un $20\%$ más que la $B$, es decir, $1{,}2$ veces lo de $B$:</p>
-          $$x=1{,}2\,y\;\Rightarrow\;x-1{,}2\,y=0$$
-          <p>• La granja $B$ cría el doble que la $C$:</p>
-          $$y=2z\;\Rightarrow\;y-2z=0$$
-          <p>• Entre las tres pueden criar $405$ pollos:</p>
-          $$x+y+z=405$$` },
+        html: '<p>Un $20\\,\\%$ más es multiplicar por $1{,}2$. Cada frase del enunciado nos da una ecuación:</p>' +
+              sis([ce(1, 'x=1{,}2\\,y'), ce(2, 'y=2z'), ce(3, 'x+y+z=405')]) +
+              '<p>Pasamos las incógnitas al primer miembro:</p>' +
+              sis([ce(1, 'x-1{,}2\\,y=0'), ce(2, 'y-2z=0'), ce(3, 'x+y+z=405')]) },
       { caja: 'Sistema de ecuaciones',
         html: String.raw`$$\left\{\begin{array}{rcl} x-1{,}2\,y&=&0\\ y-2z&=&0\\ x+y+z&=&405 \end{array}\right.$$` },
       { nueva: true, caja: 'Forma matricial',
@@ -375,93 +355,51 @@ EJERCICIOS.push((() => {
     ]
   };
 })());
-/* ===================== EJERCICIO 5: GALICIA 4.4 ===================== */
+/* ===================== EJERCICIO 5: CASTILLA Y LEÓN, JUNIO 2026, APARTADO 1 ===================== */
 EJERCICIOS.push((() => {
-  const D0 = [['x','y','0'],['2','1','z'],['-1','-1','-1']];
+  const A  = [['1','1','1'],['24','15','13'],['2','2','-1']];
   return {
-    titulo: 'Ejercicio 5', corto: 'Galicia · 4.4',
-    enunciado: comu('Galicia', 'PAU 2027 · Pregunta 4 · Álgebra · 4.4 (1,5 puntos)') +
-      '<p>Sabiendo que</p>$$' + detTex(D0) + '=-1,$$' +
-      String.raw`<p>calcúlese, sin resolver y aplicando las propiedades de los determinantes:</p>
-      <p style="margin-left:1.6em">4.4.1)&nbsp; $\begin{vmatrix} x&y&0\\ 0&0&0\\ -1&-1&-1 \end{vmatrix}$</p>
-      <p style="margin-left:1.6em">4.4.2)&nbsp; $\begin{vmatrix} x&y&0\\ 2&1&-2z\\ -1&-1&2 \end{vmatrix}$</p>
-      <p style="margin-left:1.6em">4.4.3)&nbsp; $\begin{vmatrix} x&y&0\\ 2-x&1-y&z\\ x-1&y-1&-1 \end{vmatrix}$</p>`,
+    titulo: 'Ejercicio 5', corto: 'C. y León · 1',
+    enunciado: comu('Castilla y León', 'PAU junio 2026 · Apartado 1 (Bloques A+C) · Ejercicio 1 (3 puntos)') +
+      '<p>Un autobús que va al campus universitario ' + fr(1, 'transporta a $90$ viajeros') +
+      ' que se clasifican en tres tipos: los que pagan el ' + fr(2, 'billete ordinario, que cuesta $1{,}2$ euros') +
+      '; los viajeros que tienen un ' + fr(2, 'bono de descuento, cuyo billete cuesta $0{,}75$ euros') +
+      '; y los que pagan con un ' + fr(2, 'bono de descuento especial para estudiantes, que cuesta $0{,}65$ euros') + '. ' +
+      fr(2, 'La recaudación del autobús en dicho viaje fue de $70{,}5$ euros') +
+      '. Calcular el número de viajeros de cada tipo, sabiendo que ' +
+      fr(3, 'el número de los que pagan con el bono de estudiantes era el doble que el total de viajeros de los otros dos tipos juntos') + '.</p>',
     pasos: [
-      { titulo: '4.4.1) Fila de ceros',
-        html: String.raw`<p>La segunda fila es toda de ceros. Si un determinante tiene una fila (o columna) formada solo por ceros, vale $0$:</p>
-          $$\begin{vmatrix} x&y&0\\ 0&0&0\\ -1&-1&-1 \end{vmatrix}=0$$` },
-      { caja: 'Solución 4.4.1', html: '<p><b class="res">El determinante vale $0$.</b></p>' },
+      { titulo: 'Definimos las variables',
+        html: String.raw`<p>Llamamos $x$ al número de viajeros con billete ordinario, $y$ a los que tienen bono de descuento y $z$ a los que pagan con el bono de estudiantes.</p>` },
+      { nueva: true, titulo: 'Planteamos las ecuaciones',
+        html: '<p>Cada frase del enunciado nos da una ecuación (la recaudación es la suma de viajeros × precio):</p>' +
+              sis([ce(1, 'x+y+z=90'), ce(2, '1{,}2x+0{,}75y+0{,}65z=70{,}5'), ce(3, 'z=2\\,(x+y)')]) +
+              '<p>Multiplicamos la segunda ecuación por $100$ y dividimos entre $5$; en la tercera pasamos las incógnitas al primer miembro:</p>' +
+              sis([ce(1, 'x+y+z=90'), ce(2, '24x+15y+13z=1410'), ce(3, '2x+2y-z=0')]) },
+      { caja: 'Sistema de ecuaciones',
+        html: String.raw`$$\left\{\begin{array}{rcl} x+y+z&=&90\\ 24x+15y+13z&=&1410\\ 2x+2y-z&=&0 \end{array}\right.$$` +
+              ec(mat(A), mat([['x'],['y'],['z']]), f('='), mat([['90'],['1410'],['0']])) },
 
-      { nueva: true, titulo: '4.4.2) Una columna multiplicada por un número',
-        html: String.raw`<p>Comparamos la tercera columna con la del determinante dado:</p>
-          $$\begin{pmatrix} 0\\ -2z\\ 2 \end{pmatrix}=-2\cdot\begin{pmatrix} 0\\ z\\ -1 \end{pmatrix}$$
-          <p>Las otras dos columnas son iguales. Si una columna se multiplica por un número, el determinante queda multiplicado por ese número; es decir, sacamos el factor común $-2$ de la tercera columna:</p>
-          $$\begin{vmatrix} x&y&0\\ 2&1&-2z\\ -1&-1&2 \end{vmatrix}=-2\cdot\begin{vmatrix} x&y&0\\ 2&1&z\\ -1&-1&-1 \end{vmatrix}=-2\cdot(-1)=2$$` },
-      { caja: 'Solución 4.4.2', html: '<p><b class="res">El determinante vale $2$.</b></p>' },
-
-      { nueva: true, titulo: '4.4.3) Sumar a una fila combinaciones de otras',
-        html: String.raw`<p>Comparamos las filas con las del determinante dado, que llamamos $F_1$, $F_2$ y $F_3$:</p>
-          $$F_2-F_1=(2-x,\;1-y,\;z-0)\qquad F_3+F_1=(-1+x,\;-1+y,\;-1+0)=(x-1,\;y-1,\;-1)$$
-          <p>La primera fila no cambia y a la segunda y a la tercera se les suma un múltiplo de la primera.</p>` },
-      { nueva: true, titulo: 'Aplicamos la propiedad',
-        html: String.raw`<p>Si a una fila se le suma un múltiplo de otra fila, el determinante no cambia:</p>
-          $$\begin{vmatrix} x&y&0\\ 2&1&z\\ -1&-1&-1 \end{vmatrix}\xrightarrow{\;F_2-F_1,\;F_3+F_1\;}\begin{vmatrix} x&y&0\\ 2-x&1-y&z\\ x-1&y-1&-1 \end{vmatrix}$$
-          <p>Por tanto, vale lo mismo que el determinante dado.</p>` },
-      { caja: 'Solución 4.4.3', html: '<p><b class="res">El determinante vale $-1$.</b></p>' },
-
-      { nueva: true, caja: 'Resumen',
-        html: String.raw`<table class="res">
-          <tr><th>Apartado</th><th>Propiedad</th><th>Valor</th></tr>
-          <tr><td>4.4.1</td><td>fila de ceros</td><td>$0$</td></tr>
-          <tr><td>4.4.2</td><td>columna multiplicada por $-2$</td><td>$(-2)\cdot(-1)=2$</td></tr>
-          <tr><td>4.4.3</td><td>suma de múltiplos de otras filas</td><td>$-1$</td></tr>
-          </table>` }
-    ]
-  };
-})());
-/* ===================== EJERCICIO 6: CASTILLA-LA MANCHA, 3 b.2 ===================== */
-EJERCICIOS.push((() => {
-  const A  = [['a','a'],['0','b']];
-  const Z  = [['0','0'],['0','0']];
-  const it = (n, i, j, t, v) => '<span class="item">$\\displaystyle ' + n + '_{' + i + j + '}=' + t + '=' + v + '$</span>';
-  return {
-    titulo: 'Ejercicio 6', corto: 'C-La Mancha · 3 b.2',
-    enunciado: comu('Castilla-La Mancha', 'PAU 2026-2027 · Ejercicio 3, apartado b), b.2 (1 punto)') +
-      '<p>Hállense todas las matrices de la forma</p>' +
-      ec(f('A='), mat(A), f(','), f('a,\\,b\\in\\mathbb{R},')) +
-      '<p>distintas de</p>' + ec(mat(Z)) + '<p>tales que</p>' +
-      ec(f('A^2-A='), mat(Z)),
-    pasos: [
-      { titulo: 'Calculamos $A^2$',
-        html: '<p>Cada elemento $p_{ij}$ es la fila $i$ de $A$ por la columna $j$ de $A$:</p>' +
-              ec(f('A^2=A\\cdot A='), mat(A), mat(A)) +
-              juntoDe(2, [
-                it('p',1,1,'a\\cdot a+a\\cdot0','a^2'),
-                it('p',1,2,'a\\cdot a+a\\cdot b','a^2+ab'),
-                it('p',2,1,'0\\cdot a+b\\cdot0','0'),
-                it('p',2,2,'0\\cdot a+b\\cdot b','b^2')]) },
-      { caja: 'Resultado',
-        html: ec(f('A^2='), mat([['a^2','a^2+ab'],['0','b^2']])) },
-      { nueva: true, titulo: 'Imponemos $A^2-A=0$',
-        html: ec(f('A^2-A='), mat([['a^2-a','a^2+ab-a'],['0','b^2-b']]), f('='), mat(Z)) +
-              '<p>Dos matrices son iguales si lo son elemento a elemento. El elemento $0$ de la segunda fila ya se cumple; quedan tres ecuaciones:</p>' +
-              String.raw`$$\left\{\begin{array}{rcl} a^2-a&=&0\\ a^2+ab-a&=&0\\ b^2-b&=&0 \end{array}\right.\;\Rightarrow\;\left\{\begin{array}{rcl} a\,(a-1)&=&0\\ a\,(a+b-1)&=&0\\ b\,(b-1)&=&0 \end{array}\right.$$` },
-      { nueva: true, titulo: 'Posibles valores de $a$ y de $b$',
-        html: String.raw`<p>De la primera ecuación, $a=0$ o $a=1$. De la tercera, $b=0$ o $b=1$. Probamos las cuatro combinaciones en la segunda ecuación, $a\,(a+b-1)=0$:</p>
-          <table class="res">
-            <tr><th>$a$</th><th>$b$</th><th>$a\,(a+b-1)$</th></tr>
-            <tr><td>$0$</td><td>$0$</td><td>$0$ (se cumple, pero $A$ es la matriz nula)</td></tr>
-            <tr><td>$0$</td><td>$1$</td><td>$0$ (se cumple)</td></tr>
-            <tr><td>$1$</td><td>$0$</td><td>$1\cdot0=0$ (se cumple)</td></tr>
-            <tr><td>$1$</td><td>$1$</td><td>$1\cdot1=1\neq0$ (no se cumple)</td></tr>
-          </table>` },
+      { nueva: true, titulo: 'Sustituimos $z=2(x+y)$ en la primera ecuación',
+        html: String.raw`<p>En la primera ecuación aparece $x+y$; la tercera nos dice que $z$ es el doble de $x+y$:</p>
+          $$(x+y)+2\,(x+y)=90\;\Rightarrow\;3\,(x+y)=90\;\Rightarrow\;x+y=30$$
+          $$z=2\cdot30=60$$` },
+      { nueva: true, titulo: 'Sustituimos $z=60$ en la segunda ecuación',
+        html: String.raw`$$24x+15y+13\cdot60=1410\;\Rightarrow\;24x+15y=630\;\Rightarrow\;8x+5y=210$$
+          <p class="nota">En el último paso hemos dividido entre $3$.</p>` },
+      { nueva: true, titulo: 'Sistema de dos ecuaciones con dos incógnitas: reducción',
+        html: String.raw`$$\left\{\begin{array}{l}x+y=30\\ 8x+5y=210\end{array}\right.$$
+          <p>Multiplicamos la primera ecuación por $-5$ y sumamos (se elimina $y$):</p>
+          $$\left\{\begin{array}{l}-5x-5y=-150\\ 8x+5y=210\end{array}\right.\;\Rightarrow\;3x=60\;\Rightarrow\;x=20$$` },
+      { nueva: true, titulo: 'Volvemos atrás',
+        html: String.raw`$$y=30-x=30-20=10$$` },
       { caja: 'Solución',
-        html: '<p>Descartamos la matriz nula y la combinación que no cumple la segunda ecuación. Quedan dos matrices:</p>' +
-              ec(f('A=\\;'), mat([['0','0'],['0','1']]), f('\\qquad\\text{y}\\qquad A=\\;'), mat([['1','1'],['0','0']])) },
+        html: String.raw`$$x=20,\qquad y=10,\qquad z=60$$
+          <p><b class="res">$20$ viajeros pagan el billete ordinario, $10$ tienen bono de descuento y $60$ pagan con el bono de estudiantes.</b></p>` },
       { nueva: true, titulo: 'Comprobación',
-        html: ec(mat([['0','0'],['0','1']]), mat([['0','0'],['0','1']]), f('='), mat([['0','0'],['0','1']])) +
-              ec(mat([['1','1'],['0','0']]), mat([['1','1'],['0','0']]), f('='), mat([['1','1'],['0','0']])) +
-              '<p>En los dos casos $A^2=A$, luego $A^2-A$ es la matriz nula.</p>' }
+        html: String.raw`<p>$20+10+60=90$ viajeros ✓</p>
+          <p>$1{,}2\cdot20+0{,}75\cdot10+0{,}65\cdot60=24+7{,}5+39=70{,}5$ € ✓</p>
+          <p>$60=2\cdot(20+10)$ ✓</p>` }
     ]
   };
 })());
@@ -471,7 +409,8 @@ const OPCIONES_MATE = {
     {left: "$$", right: "$$", display: true},
     {left: "$",  right: "$",  display: false}
   ],
-  throwOnError: false
+  throwOnError: false,
+  strict: false
 };
 const $ = id => document.getElementById(id);
 function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
@@ -507,7 +446,7 @@ function extraer(e) {
   };
   add("titulo", null, "<h1>" + e.titulo + "</h1>");
   add("enun", null, e.enunciado, false, true);
-  e.pasos.forEach(p => add(p.caja ? "caja" : "paso", p.caja || p.titulo, p.html, p.caja && /^Si /.test(p.caja)));
+  e.pasos.forEach(p => add(p.caja ? "caja" : "paso", p.caja || p.titulo, p.html, p.salto || (p.caja && /^Si /.test(p.caja))));
   stage.innerHTML = "";
   let base = 0;
   secs.forEach(sc => {
@@ -697,7 +636,63 @@ function retroceder() {
   else if (actual > 0) cargar(actual - 1, true);
 }
 
+/* ---------------------------------------------------------------------
+   SUBRAYADOR de las frases del enunciado
+   - al pasar el ratón por una frase se colorea (cada frase, su color;
+     si la ecuación sale de varios trozos, se colorean todos a la vez)
+   - doble clic: queda fijada, como con un rotulador; otro doble clic la quita
+   - en pantallas táctiles: un toque la colorea y un doble toque la fija
+   --------------------------------------------------------------------- */
+const frDe = ev => (ev.target && ev.target.closest) ? ev.target.closest(".fr") : null;
+const grupoDe = fr => {
+  const cont = fr.closest(".enunciado");
+  return cont ? cont.querySelectorAll('.fr[data-g="' + fr.dataset.g + '"]') : [fr];
+};
+function alternarFija(fr) {
+  const poner = !fr.classList.contains("fija");
+  grupoDe(fr).forEach(n => n.classList.toggle("fija", poner));
+}
+let tipoPuntero = "mouse", ultimoToque = { el: null, t: 0 };
+$("libro").addEventListener("mouseover", ev => {
+  const fr = frDe(ev);
+  if (fr) grupoDe(fr).forEach(n => n.classList.add("hov"));
+});
+$("libro").addEventListener("mouseout", ev => {
+  const fr = frDe(ev);
+  if (!fr) return;
+  const a = ev.relatedTarget && ev.relatedTarget.closest ? ev.relatedTarget.closest(".fr") : null;
+  if (a && a.dataset.g === fr.dataset.g && a.closest(".enunciado") === fr.closest(".enunciado")) return;
+  grupoDe(fr).forEach(n => n.classList.remove("hov"));
+});
+$("libro").addEventListener("pointerdown", ev => { tipoPuntero = ev.pointerType || "mouse"; }, true);
+$("libro").addEventListener("dblclick", ev => {
+  const fr = frDe(ev);
+  if (!fr) return;
+  ev.preventDefault();
+  if (tipoPuntero === "mouse") alternarFija(fr);
+});
+$("libro").addEventListener("pointerup", ev => {
+  if (ev.pointerType === "mouse") return;
+  const fr = frDe(ev);
+  if (!fr) return;
+  const ahora = Date.now();
+  if (ultimoToque.el === fr && ahora - ultimoToque.t < 400) {
+    alternarFija(fr);
+    ultimoToque = { el: null, t: 0 };
+  } else {
+    document.querySelectorAll(".fr.hov").forEach(n => n.classList.remove("hov"));
+    grupoDe(fr).forEach(n => n.classList.add("hov"));
+    ultimoToque = { el: fr, t: ahora };
+  }
+});
+$("btnBorrar").onclick = ev => {
+  ev.stopPropagation();
+  document.querySelectorAll(".fr.fija, .fr.hov").forEach(n => n.classList.remove("fija", "hov"));
+};
+
+/* clic: tercio izquierdo = atrás; resto = adelante (sobre una frase del enunciado no avanza) */
 $("libro").addEventListener("click", ev => {
+  if (frDe(ev)) return;
   if (String(window.getSelection())) return;
   if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
 });
