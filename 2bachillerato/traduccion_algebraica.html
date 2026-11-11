@@ -73,10 +73,18 @@
   .peq{font-size:.85rem;color:var(--gris)}
 
   /* profesor */
-  .barras .fila{display:grid;grid-template-columns:minmax(150px,38%) 1fr 70px;gap:8px;align-items:center;margin:5px 0;font-size:.95rem}
+  .barras .fila{display:grid;grid-template-columns:minmax(150px,38%) 1fr 105px;gap:8px;align-items:center;margin:5px 0;font-size:.95rem}
   .barras .b{height:16px;background:#e8e8e8;border-radius:8px;overflow:hidden}
   .barras .b i{display:block;height:100%}
-  .barras .p{text-align:right;font-variant-numeric:tabular-nums}
+  .barras .p{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .barras.grande .fila{font-size:1.05rem}
+  .barras.grande .b{height:24px;border-radius:12px}
+  .histo{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:end;height:220px;border-bottom:2px solid #333;padding:0 6px}
+  .histo .col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}
+  .histo .col i{display:block;width:100%;border-radius:8px 8px 0 0;min-height:2px}
+  .histo .cnt{font-weight:bold;font-size:1.2rem;margin-bottom:4px}
+  .histo .eje{position:absolute;bottom:-28px;font-weight:bold;font-size:1.1rem}
+  .histo + p{margin-top:32px!important}
   table{border-collapse:collapse;width:100%;font-size:.92rem}
   th,td{border-bottom:1px solid #ddd;padding:6px 6px;text-align:left;vertical-align:top}
   th{background:#f5f5f5}
@@ -153,6 +161,7 @@
       <input type="password" id="pClave" placeholder="La clave que pusiste en el script">
       <button class="btn" id="btnVer">Ver resultados</button>
       <label class="peq" style="display:block;margin-top:8px"><input type="checkbox" id="pAuto" checked> Actualizar cada 15 segundos</label>
+      <label class="peq" style="display:block;margin-top:4px"><input type="checkbox" id="pAnon" checked> Modo para proyectar (sin nombres de alumnos)</label>
       <div class="error" id="pError"></div>
     </div>
     <div>
@@ -673,6 +682,7 @@ function profesor() {
   $('pSesion').oninput = pintarQR;
   $('btnVer').onclick = cargarDatos;
   $('pAuto').onchange = programar;
+  $('pAnon').onchange = () => { if ($('pClave').value && URL_SCRIPT) cargarDatos(); };
   if (!URL_SCRIPT) $('pError').textContent = 'Falta pegar la dirección del script de Google en URL_SCRIPT (al principio del código).';
 }
 const sesPanel = () => normSes($('pSesion').value || SESION_HOY);
@@ -699,20 +709,50 @@ async function cargarDatos() {
   const cats = Object.entries(d.cats || {}).map(([k, c]) => ({ k, ...c, p: c.ok / c.total })).sort((a, b) => a.p - b.p);
   const color = p => (p < .5 ? '#e57373' : p < .75 ? '#ffb74d' : '#66bb6a');
   let h = '<div class="cifras" style="margin-top:14px"><div><b>' + d.alumnos + '</b>alumnos</div><div><b>' + d.cuestionarios + '</b>cuestionarios</div><div><b>' + n2(+d.media.toFixed(2)) + '/' + tot + '</b>nota media</div></div>';
-  h += '<h2>Aciertos por tipo de expresión <span class="peq">(de peor a mejor)</span></h2><div class="barras">' +
-    cats.map(c => '<div class="fila"><span>' + c.nombre + '</span><div class="b"><i style="width:' + Math.round(c.p * 100) + '%;background:' + color(c.p) + '"></i></div><span class="p">' + Math.round(c.p * 100) + '&nbsp;% <span class="peq">' + c.ok + '/' + c.total + '</span></span></div>').join('') + '</div>';
-  const alumnos = (d.cuestionarios_detalle || []).slice().sort((a, b) => String(a.nombre).localeCompare(String(b.nombre)) || a.intento - b.intento);
-  h += '<h2>Alumnos</h2><table><tr><th>Nombre</th><th>Int.</th><th>Nota</th><th>Ha fallado</th></tr>' +
-    alumnos.map(a => '<tr><td>' + esc(a.nombre) + '</td><td>' + a.intento + '</td><td><b>' + a.ok + '/' + a.total + '</b></td><td class="peq">' + a.fallos.map(esc).join(' · ') + '</td></tr>').join('') + '</table>';
+  const anonimo = $('pAnon').checked;
+  const cuest = d.cuestionarios_detalle || [];
+
+  /* 1) número de aciertos: cuántos cuestionarios con 0, 1, …, 6 aciertos */
+  const hist = Array(tot + 1).fill(0); cuest.forEach(q => { if (q.ok >= 0 && q.ok <= tot) hist[q.ok]++; });
+  const maxH = Math.max(1, ...hist);
+  h += '<h2>Número de aciertos <span class="peq">(cuántos alumnos han acertado 0, 1, 2… preguntas)</span></h2><div class="histo">' +
+    hist.map((n, k) => '<div class="col"><span class="cnt">' + (n || '') + '</span><i style="height:' + Math.round(n / maxH * 100) + '%;background:' + color(k / tot) + '"></i><span class="eje">' + k + '</span></div>').join('') +
+    '</div><p class="peq" style="text-align:center;margin:2px 0 0">aciertos de ' + tot + '</p>';
+
+  /* 2) por familias de expresiones */
+  const fams = FAMILIAS.map(f => { let ok = 0, total = 0; f.tipos.forEach(t => { if (d.cats && d.cats[t]) { ok += d.cats[t].ok; total += d.cats[t].total; } });
+    return { nombre: f.nombre, ok, total, p: total ? ok / total : null }; }).filter(f => f.total);
+  const barra = c => '<div class="fila"><span>' + c.nombre + '</span><div class="b"><i style="width:' + Math.round(c.p * 100) + '%;background:' + color(c.p) + '"></i></div><span class="p">' + Math.round(c.p * 100) + '&nbsp;% <span class="peq">' + c.ok + '/' + c.total + '</span></span></div>';
+  h += '<h2>Aciertos por familias</h2><div class="barras grande">' + fams.map(barra).join('') + '</div>';
+
+  /* 3) por tipo de expresión */
+  h += '<h2>Aciertos por tipo de expresión <span class="peq">(de peor a mejor)</span></h2><div class="barras">' + cats.map(barra).join('') + '</div>';
+
+  /* lo que lleva nombres, solo si no estamos proyectando */
+  if (!anonimo) {
+    const alumnos = cuest.slice().sort((a, b) => String(a.nombre).localeCompare(String(b.nombre)) || a.intento - b.intento);
+    h += '<h2>Alumnos</h2><table><tr><th>Nombre</th><th>Int.</th><th>Nota</th><th>Ha fallado</th></tr>' +
+      alumnos.map(a => '<tr><td>' + esc(a.nombre) + '</td><td>' + a.intento + '</td><td><b>' + a.ok + '/' + a.total + '</b></td><td class="peq">' + a.fallos.map(esc).join(' · ') + '</td></tr>').join('') + '</table>';
+  }
   const mal = (d.respuestas || []).filter(r => !r.ok);
   if (mal.length) {
-    h += '<h2>Respuestas incorrectas <span class="peq">(para comentar en clase)</span></h2>';
+    h += '<h2>Respuestas incorrectas <span class="peq">(para comentar en clase' + (anonimo ? ', sin nombres' : '') + ')</span></h2>';
     cats.forEach(c => { const l = mal.filter(r => r.cat === c.k); if (!l.length) return;
       h += '<details><summary><b>' + c.nombre + '</b> (' + l.length + ')</summary><ul>' +
-        l.map(r => '<li>' + esc(r.enunciado) + '<br><span class="peq">' + esc(r.nombre) + ': <b>' + esc(r.respuesta) + '</b> · correcta: ' + esc(r.correcta) + '</span></li>').join('') + '</ul></details>'; });
+        l.map(r => '<li>' + esc(r.enunciado) + '<br><span class="peq">' + (anonimo ? 'Respuesta' : esc(r.nombre)) + ': <b>' + esc(r.respuesta) + '</b> · correcta: ' + esc(r.correcta) + '</span></li>').join('') + '</ul></details>'; });
   }
+  if (anonimo) h += '<p class="peq" style="margin-top:14px">Modo para proyectar: no se muestran nombres. Desmarca la casilla para ver la nota de cada alumno.</p>';
   $('pDatos').innerHTML = h;
 }
+/* familias de expresiones para la gráfica resumida */
+const FAMILIAS = [
+  { nombre: 'Doble, mitad, razón (multiplicar o dividir)', tipos: ['doble', 'mitad', 'razon', 'dobleSuma', 'menosDoble'] },
+  { nombre: 'Más que, menos que, excede, diferencia', tipos: ['mas', 'menos', 'menorMayor', 'excede', 'diferencia', 'combinacion'] },
+  { nombre: 'Sumas y totales', tipos: ['suma'] },
+  { nombre: 'Porcentajes', tipos: ['aumento', 'descuento', 'porcentajes'] },
+  { nombre: 'Precios, unidades, puntos y fracciones', tipos: ['precio', 'unidades', 'puntos', 'fraccion'] },
+  { nombre: 'Cambios: trasvases, edades, aumentar/disminuir', tipos: ['trasvase', 'edades', 'cambia'] }
+];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 window.addEventListener('load', () => { mate(document.querySelector('#vInicio .caja')); if (params.has('profesor')) profesor(); else inicio(); });
