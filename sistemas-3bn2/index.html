@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Traducción algebraica</title>
+<script>
+  var partes = location.pathname.replace(/index\.html$/, '').split('/').filter(Boolean);
+  var grupo = decodeURIComponent(partes[partes.length - 1] || '').replace(/^sistemas-/, '');
+  location.replace('../2bachillerato/traduccion_algebraica.html?sesion=' + encodeURIComponent(grupo));
+</script>
+</head>
+<body style="font-family:Georgia,serif;text-align:center;padding:40px 16px">
+<p>Abriendo el cuestionario… <a href="../2bachillerato/traduccion_algebraica.html">pulsa aquí si no se abre</a>.</p>
+</body>
+</html>

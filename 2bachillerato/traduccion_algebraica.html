@@ -147,7 +147,7 @@
   <p class="sub">Traducción algebraica · resultados en directo</p>
   <div class="lado">
     <div>
-      <label><b>Sesión</b> <span class="peq">(déjala como está y la dirección corta no necesita nada más)</span></label>
+      <label><b>Grupo</b> <span class="peq">(por ejemplo 3bn2; la fecha de hoy se añade sola)</span></label>
       <input type="text" id="pSesion">
       <label style="display:block;margin-top:10px"><b>Clave</b></label>
       <input type="password" id="pClave" placeholder="La clave que pusiste en el script">
@@ -508,11 +508,14 @@ function nuevoCuestionario() {
 }
 const params = new URLSearchParams(location.search);
 const hoy = new Date();
-const SESION_HOY = '2bach-' + hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
-const normSes = s => s.trim().toLowerCase().replace(/\s+/g, '-').slice(0, 60);   // «Prueba» = «prueba»
+const FECHA_HOY = hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
+const SESION_HOY = '2bach-' + FECHA_HOY;
+// «3BN2» → «3bn2-2026-11-11» (si no lleva fecha, se le añade la de hoy)
+const normSes = s => { s = s.trim().toLowerCase().replace(/\s+/g, '-').slice(0, 48); return /\d{4}-\d{2}-\d{2}$/.test(s) ? s : s + '-' + FECHA_HOY; };
 const SESION = normSes(params.get('sesion') || SESION_HOY);
-// dirección corta (carpeta ta/ del repositorio, que redirige aquí)
-const BASE_CORTA = (location.host + location.pathname).replace(/2bachillerato\/traduccion_algebraica\.html$/, 'ta');
+// direcciones cortas: carpeta ta/ (sesión del día) y carpeta GRUPO/, p. ej. 3bn2/ (sesión del grupo y del día)
+const BASE_REPO = (location.host + location.pathname).replace(/2bachillerato\/traduccion_algebraica\.html$/, '');
+const BASE_CORTA = BASE_REPO + 'ta';
 const CLAVE_EST = 'traduccion:' + SESION;
 let E = null;    // estado del alumno
 
@@ -676,7 +679,9 @@ const sesPanel = () => normSes($('pSesion').value || SESION_HOY);
 function enlaceAlumnos() { return location.origin + location.pathname + '?sesion=' + encodeURIComponent(sesPanel()); }
 function pintarQR() {
   const url = enlaceAlumnos(); $('pEnlace').textContent = url; $('qr').innerHTML = '';
-  $('pCorta').textContent = BASE_CORTA + (sesPanel() === SESION_HOY ? '' : '?sesion=' + sesPanel());
+  const s = sesPanel(), grupo = s.replace('-' + FECHA_HOY, '');
+  $('pCorta').textContent = s === SESION_HOY ? BASE_CORTA
+    : (s.endsWith('-' + FECHA_HOY) ? BASE_REPO + 'sistemas-' + grupo : BASE_CORTA + '?sesion=' + s);
   if (window.QRCode) new QRCode($('qr'), { text: url, width: 260, height: 260, correctLevel: QRCode.CorrectLevel.M });
   else setTimeout(pintarQR, 300);
 }
