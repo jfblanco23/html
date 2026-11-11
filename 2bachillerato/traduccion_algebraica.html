@@ -156,7 +156,7 @@
   <div class="lado">
     <div>
       <label><b>Grupo</b> <span class="peq">(por ejemplo 3bn2; la fecha de hoy se añade sola)</span></label>
-      <input type="text" id="pSesion">
+      <input type="text" id="pSesion" placeholder="3bn2" autocapitalize="off">
       <label style="display:block;margin-top:10px"><b>Clave</b></label>
       <input type="password" id="pClave" placeholder="La clave que pusiste en el script">
       <button class="btn" id="btnVer">Ver resultados</button>
@@ -676,10 +676,10 @@ $('btnOtro').onclick = () => { const n = E.nombre, it = E.intento; E = { nombre:
 let tAuto = null;
 function profesor() {
   ver('vProfesor');
-  $('pSesion').value = params.get('sesion') || SESION;
+  $('pSesion').value = params.get('sesion') || leer('traduccion:grupo') || '';   // último grupo usado en este ordenador
   const c = leer('traduccion:clave'); if (c) $('pClave').value = c;
   pintarQR();
-  $('pSesion').oninput = pintarQR;
+  $('pSesion').oninput = () => { guardar('traduccion:grupo', $('pSesion').value.trim()); pintarQR(); };
   $('btnVer').onclick = cargarDatos;
   $('pAuto').onchange = programar;
   $('pAnon').onchange = () => { if ($('pClave').value && URL_SCRIPT) cargarDatos(); };
@@ -687,11 +687,22 @@ function profesor() {
 }
 const sesPanel = () => normSes($('pSesion').value || SESION_HOY);
 function enlaceAlumnos() { return location.origin + location.pathname + '?sesion=' + encodeURIComponent(sesPanel()); }
+const carpetas = {};
+function existeCarpeta(nombre) {
+  if (!(nombre in carpetas)) carpetas[nombre] = fetch(location.origin + location.pathname.replace(/2bachillerato\/traduccion_algebraica\.html$/, '') + nombre + '/', { method: 'HEAD', cache: 'no-store' })
+    .then(r => r.ok).catch(() => false);
+  return carpetas[nombre];
+}
 function pintarQR() {
   const url = enlaceAlumnos(); $('pEnlace').textContent = url; $('qr').innerHTML = '';
   const s = sesPanel(), grupo = s.replace('-' + FECHA_HOY, '');
-  $('pCorta').textContent = s === SESION_HOY ? BASE_CORTA
-    : (s.endsWith('-' + FECHA_HOY) ? BASE_REPO + 'sistemas-' + grupo : BASE_CORTA + '?sesion=' + s);
+  if (s === SESION_HOY) $('pCorta').textContent = BASE_CORTA;
+  else if (!s.endsWith('-' + FECHA_HOY)) $('pCorta').textContent = BASE_CORTA + '?sesion=' + s;
+  else {
+    // si existe la carpeta sistemas-GRUPO se usa esa dirección; si no, la general con ?sesion=GRUPO
+    $('pCorta').textContent = BASE_CORTA + '?sesion=' + grupo;
+    existeCarpeta('sistemas-' + grupo).then(ok => { if (ok && sesPanel() === s) $('pCorta').textContent = BASE_REPO + 'sistemas-' + grupo; });
+  }
   if (window.QRCode) new QRCode($('qr'), { text: url, width: 260, height: 260, correctLevel: QRCode.CorrectLevel.M });
   else setTimeout(pintarQR, 300);
 }
@@ -723,10 +734,10 @@ async function cargarDatos() {
   const fams = FAMILIAS.map(f => { let ok = 0, total = 0; f.tipos.forEach(t => { if (d.cats && d.cats[t]) { ok += d.cats[t].ok; total += d.cats[t].total; } });
     return { nombre: f.nombre, ok, total, p: total ? ok / total : null }; }).filter(f => f.total);
   const barra = c => '<div class="fila"><span>' + c.nombre + '</span><div class="b"><i style="width:' + Math.round(c.p * 100) + '%;background:' + color(c.p) + '"></i></div><span class="p">' + Math.round(c.p * 100) + '&nbsp;% <span class="peq">' + c.ok + '/' + c.total + '</span></span></div>';
-  h += '<h2>Aciertos por familias</h2><div class="barras grande">' + fams.map(barra).join('') + '</div>';
+  h += '<h2>Aciertos por tipo de pregunta</h2><div class="barras grande">' + fams.map(barra).join('') + '</div>';
 
   /* 3) por tipo de expresión */
-  h += '<h2>Aciertos por tipo de expresión <span class="peq">(de peor a mejor)</span></h2><div class="barras">' + cats.map(barra).join('') + '</div>';
+  h += '<h2>Aciertos por expresión concreta <span class="peq">(de peor a mejor)</span></h2><div class="barras">' + cats.map(barra).join('') + '</div>';
 
   /* lo que lleva nombres, solo si no estamos proyectando */
   if (!anonimo) {
