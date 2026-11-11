@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Traducción algebraica</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#1414E6; --rojo:#E01E1E; --gris:#666; --ok:#1d8a2e; --mal:#c62828;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#fff;color:var(--texto);
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:18px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+  main{max-width:720px;margin:0 auto;padding:14px 16px 28px}
+  h1{font-size:1.6rem;margin:4px 0 2px}
+  h2{font-size:1.2rem;margin:18px 0 8px}
+  .sub{color:var(--gris);margin:0 0 14px;font-size:.95rem}
+  .oculto{display:none!important}
+
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:20px 16px 12px;margin:22px 0 14px}
+  .caja>.titulo{position:absolute;top:-13px;left:12px;background:var(--verde-titulo);color:#111;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.9rem}
+  .enunciado{color:var(--azul);font-size:1.15rem}
+
+  input[type=text],input[type=password]{font:inherit;width:100%;padding:10px 12px;border:1.5px solid #aaa;border-radius:10px}
+  .btn{font:inherit;font-weight:bold;padding:12px 18px;border-radius:12px;border:2px solid #2e9e2e;
+    background:#2e9e2e;color:#fff;cursor:pointer;width:100%;margin-top:12px;touch-action:manipulation}
+  .btn.sec{background:#fff;color:#2e9e2e}
+  .btn:disabled{opacity:.4}
+
+  /* barra de progreso */
+  .prog{display:flex;align-items:center;gap:10px;color:var(--gris);font-size:.9rem}
+  .prog .tira{flex:1;height:8px;background:#e8e8e8;border-radius:4px;overflow:hidden}
+  .prog .tira i{display:block;height:100%;background:#2e9e2e;transition:width .3s}
+
+  /* lo que escribe el alumno */
+  .pantalla{min-height:64px;border:2px solid #333;border-radius:12px;padding:8px 12px;margin:10px 0 4px;
+    display:flex;flex-direction:column;justify-content:center;background:#fff}
+  .pantalla .raw{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.25rem;min-height:1.5em;word-break:break-all}
+  .pantalla .raw:empty::before{content:"Escribe la ecuación…";color:#aaa;font-family:inherit;font-size:1rem}
+  .pantalla .vista{font-size:1.15rem;color:#333;min-height:1.4em}
+  .cursor{display:inline-block;width:2px;height:1.2em;background:#333;vertical-align:-3px;animation:parp 1s steps(1) infinite}
+  @keyframes parp{50%{opacity:0}}
+
+  /* teclado */
+  .teclado{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
+  .teclado button{font:inherit;font-size:1.25rem;padding:10px 0;border-radius:10px;border:1.5px solid #bbb;
+    background:#fafafa;color:#111;cursor:pointer;touch-action:manipulation;user-select:none}
+  .teclado button:active{background:#ddd}
+  .teclado .var{font-style:italic;font-weight:bold;background:#eef4ff;border-color:#9bb6ff;color:var(--azul)}
+  .teclado .op{background:#f2f2f2}
+  .teclado .del{background:#fff3e0;border-color:#ffb74d}
+
+  .fb{border-radius:10px;padding:10px 14px;margin-top:12px}
+  .fb.ok{background:#e8f5e9;border:1.5px solid var(--ok)}
+  .fb.mal{background:#ffebee;border:1.5px solid var(--mal)}
+  .fb b.t{display:block;font-size:1.1rem}
+  .fb.ok b.t{color:var(--ok)} .fb.mal b.t{color:var(--mal)}
+  .error{color:var(--mal);font-size:.95rem;min-height:1.3em}
+
+  .resumen li{margin:6px 0}
+  .marca{font-weight:bold}
+  .marca.ok{color:var(--ok)} .marca.mal{color:var(--mal)}
+  .nota-grande{font-size:2.4rem;font-weight:bold;text-align:center;margin:6px 0}
+  .mensaje{font-size:1.1rem}
+  .peq{font-size:.85rem;color:var(--gris)}
+
+  /* profesor */
+  .barras .fila{display:grid;grid-template-columns:minmax(150px,38%) 1fr 70px;gap:8px;align-items:center;margin:5px 0;font-size:.95rem}
+  .barras .b{height:16px;background:#e8e8e8;border-radius:8px;overflow:hidden}
+  .barras .b i{display:block;height:100%}
+  .barras .p{text-align:right;font-variant-numeric:tabular-nums}
+  table{border-collapse:collapse;width:100%;font-size:.92rem}
+  th,td{border-bottom:1px solid #ddd;padding:6px 6px;text-align:left;vertical-align:top}
+  th{background:#f5f5f5}
+  .cifras{display:flex;gap:10px;flex-wrap:wrap}
+  .cifras div{flex:1 1 120px;border:1.5px solid var(--verde-borde);background:var(--verde-fondo);border-radius:10px;padding:8px 12px;text-align:center}
+  .cifras b{display:block;font-size:1.6rem}
+  #qr{display:flex;justify-content:center;margin:10px 0}
+  #qr img,#qr canvas{max-width:100%;height:auto}
+  .enlace{word-break:break-all;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem;text-align:center}
+  details{margin:6px 0} summary{cursor:pointer}
+  @media (min-width:700px){ .lado{display:grid;grid-template-columns:1fr 1fr;gap:20px} }
+</style>
+</head>
+<body>
+<main>
+
+<!-- =================== INICIO =================== -->
+<section id="vInicio">
+  <h1>Traducción algebraica</h1>
+  <p class="sub">2.º Bachillerato · Del texto a la ecuación</p>
+  <div class="caja">
+    <span class="titulo">Instrucciones</span>
+    <p>Te van a salir <b>6 frases</b>. Escribe la ecuación que traduce cada una usando $x$, $y$, $z$.</p>
+    <p>Ejemplo: «$x$ es el doble que $y$» &nbsp;→&nbsp; $x=2y$</p>
+    <p class="peq">Vale cualquier forma equivalente: $x=2y$, $2y=x$ o $x-2y=0$.</p>
+  </div>
+  <label for="nombre"><b>Tu nombre y apellido</b></label>
+  <input type="text" id="nombre" maxlength="50" autocomplete="name" placeholder="Nombre Apellido">
+  <div class="error" id="errNombre"></div>
+  <button class="btn" id="btnEmpezar">Empezar</button>
+  <p class="peq" id="infoSesion"></p>
+</section>
+
+<!-- =================== PREGUNTA =================== -->
+<section id="vPregunta" class="oculto">
+  <div class="prog"><span id="numPreg"></span><div class="tira"><i id="relleno"></i></div></div>
+  <div class="caja enunciado"><span class="titulo" id="tipoPreg">Traduce</span><div id="enunciado"></div></div>
+  <div class="pantalla" id="pantalla">
+    <div class="raw" id="raw"></div>
+    <div class="vista" id="vista"></div>
+  </div>
+  <div class="error" id="errEc"></div>
+  <div class="teclado" id="teclado"></div>
+  <button class="btn" id="btnComprobar">Comprobar</button>
+  <div id="feedback"></div>
+  <button class="btn oculto" id="btnSiguiente">Siguiente</button>
+</section>
+
+<!-- =================== RESULTADO =================== -->
+<section id="vResultado" class="oculto">
+  <h1>Resultado</h1>
+  <p class="sub" id="resNombre"></p>
+  <div class="nota-grande" id="resNota"></div>
+  <div class="caja"><span class="titulo">Comparación con la clase</span>
+    <div id="resMensaje" class="mensaje">Enviando tus respuestas…</div>
+    <button class="btn sec" id="btnActualizar">Actualizar comparación</button>
+  </div>
+  <h2>Tus respuestas</h2>
+  <ol class="resumen" id="resLista"></ol>
+  <button class="btn" id="btnOtro">Hacer otro cuestionario</button>
+</section>
+
+<!-- =================== PROFESOR =================== -->
+<section id="vProfesor" class="oculto">
+  <h1>Panel del profesor</h1>
+  <p class="sub">Traducción algebraica · resultados en directo</p>
+  <div class="lado">
+    <div>
+      <label><b>Sesión</b> (por ejemplo, el grupo y la fecha)</label>
+      <input type="text" id="pSesion">
+      <label style="display:block;margin-top:10px"><b>Clave</b></label>
+      <input type="password" id="pClave" placeholder="La clave que pusiste en el script">
+      <button class="btn" id="btnVer">Ver resultados</button>
+      <label class="peq" style="display:block;margin-top:8px"><input type="checkbox" id="pAuto" checked> Actualizar cada 15 segundos</label>
+      <div class="error" id="pError"></div>
+    </div>
+    <div>
+      <div id="qr"></div>
+      <div class="enlace" id="pEnlace"></div>
+    </div>
+  </div>
+  <div id="pDatos"></div>
+</section>
+
+</main>
+
+<script>
+/* =====================================================================
+   CONFIGURACIÓN
+   Pega aquí la dirección de tu aplicación web de Google Apps Script
+   (la que termina en /exec). Si se deja vacía, el cuestionario funciona
+   pero no guarda resultados ni compara con la clase.
+   ===================================================================== */
+const URL_SCRIPT = '';
+const N_PREGUNTAS = 6;
+
+/* =====================================================================
+   PEQUEÑAS AYUDAS
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const R = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const v = s => '$' + String(s).replace(/(\d),(\d)/g, '$1{,}$2') + '$';   // variable o fórmula en el texto (coma decimal sin espacio)
+const ey = B => (B === 'y' ? ' e ' : ' y ');        // «x e y», «x y z»
+const num = a => String(+(+a).toFixed(6));          // número para la ecuación (punto decimal)
+const n2 = a => num(a).replace('.', ',');           // número para el texto (coma decimal)
+const cf = (a, V) => (+a === 1 ? V : num(a) + V);    // coeficiente · variable
+const par = () => { const [a, b] = shuffle(['x', 'y', 'z']); return [a, b]; };
+const parOrd = () => par().sort();
+const tri = () => shuffle(['x', 'y', 'z']);
+const W = { 2: 'doble', 3: 'triple', 4: 'cuádruple' };
+const FR = { 2: 'la mitad', 3: 'la tercera parte', 4: 'la cuarta parte', 5: 'la quinta parte', 6: 'la sexta parte' };
+const pct = p => p + '&nbsp;%';
+const guardar = (k, val) => { try { localStorage.setItem(k, JSON.stringify(val)); } catch (e) {} };
+const leer = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
+const borrar = k => { try { localStorage.removeItem(k); } catch (e) {} };
+
+/* =====================================================================
+   TIPOS DE EXPRESIONES
+   Cada tipo genera una pregunta: texto (con $x$, $y$, $z$), solución
+   (sol, la que se muestra), chk (forma lineal para comprobar, si sol no
+   lo es) y trampas: errores típicos con su explicación.
+   ===================================================================== */
+const TIPOS = {
+  doble: { nombre: 'El doble / triple de',
+    consejo: 'Compruébalo con números: si el pequeño vale 5, el doble vale 10. El 2 (o el 3) multiplica a la cantidad pequeña.',
+    gen() { const [A, B] = par(), k = pick([2, 3, 4]);
+      return { texto: pick([`${v(A)} es el ${W[k]} de ${v(B)}.`, `Hay el ${W[k]} de ${v(A)} que de ${v(B)}.`, `${v(A)} vale el ${W[k]} que ${v(B)}.`]),
+        sol: `${A}=${k}${B}`,
+        trampas: [[`${B}=${k}${A}`, `Lo has puesto al revés. Si ${v(A)} es el ${W[k]}, ${v(A)} es el grande: ${v(A + '=' + k + B)}. Compruébalo: si ${v(B + '=5')}, entonces ${v(A + '=' + 5 * k)}.`]] }; } },
+
+  mitad: { nombre: 'La mitad / tercera parte de',
+    consejo: 'Si A es la mitad de B, A es el pequeño: A = B/2 (o, lo que es lo mismo, B = 2A).',
+    gen() { const [A, B] = par(), k = pick([2, 3, 4]);
+      return { texto: `${v(A)} es ${FR[k]} de ${v(B)}.`, sol: `${A}=${B}/${k}`,
+        trampas: [[`${A}=${k}${B}`, `Al revés: ${v(A)} es ${FR[k]} de ${v(B)}, así que ${v(A)} es más pequeño: ${v(A + '=\\dfrac{' + B + '}{' + k + '}')}, o bien ${v(B + '=' + k + A)}.`]] }; } },
+
+  mas: { nombre: 'n más que',
+    consejo: 'El que tiene más es el grande: al pequeño hay que sumarle n para igualarlos. Si A tiene 5 más que B: A = B + 5.',
+    gen() { const [A, B] = par(), n = R(2, 25);
+      return { texto: pick([`${v(A)} tiene ${n} unidades más que ${v(B)}.`, `${v(A)} es mayor en ${n} unidades que ${v(B)}.`, `Hay ${n} más de ${v(A)} que de ${v(B)}.`]),
+        sol: `${A}=${B}+${n}`,
+        trampas: [[`${B}=${A}+${n}`, `Al revés: el que tiene más es ${v(A)}, así que hay que sumarle ${n} a ${v(B)}: ${v(A + '=' + B + '+' + n)}. Pruébalo: si ${v(B + '=10')}, ${v(A)} vale ${10 + n}.`]] }; } },
+
+  menos: { nombre: 'n menos que',
+    consejo: 'Si A tiene 5 menos que B, A es el pequeño: A = B − 5.',
+    gen() { const [A, B] = par(), n = R(2, 25);
+      return { texto: pick([`${v(A)} tiene ${n} unidades menos que ${v(B)}.`, `${v(A)} es menor en ${n} unidades que ${v(B)}.`, `Hay ${n} menos de ${v(A)} que de ${v(B)}.`]),
+        sol: `${A}=${B}-${n}`,
+        trampas: [[`${B}=${A}-${n}`, `Al revés: ${v(A)} es el que tiene menos, así que ${v(A + '=' + B + '-' + n)}. Pruébalo: si ${v(B + '=30')}, ${v(A)} vale ${30 - n}.`]] }; } },
+
+  menorMayor: { nombre: 'n unidades mayor / menor que',
+    consejo: '«A es 11 unidades menor que B» → A = B − 11. «A es 11 unidades mayor que B» → A = B + 11.',
+    gen() { const [A, B] = par(), n = R(2, 30), may = Math.random() < .5, s = may ? '+' : '-';
+      return { texto: `${v(A)} es ${n} unidades ${may ? 'mayor' : 'menor'} que ${v(B)}.`, sol: `${A}=${B}${s}${n}`,
+        trampas: [[`${B}=${A}${s}${n}`, `Al revés: ${v(A + '=' + B + s + n)}. Pruébalo con ${v(B + '=50')}: ${v(A)} vale ${may ? 50 + n : 50 - n}.`]] }; } },
+
+  excede: { nombre: 'Excede / supera en',
+    consejo: '«Excede» y «supera» significan «tiene más»: si A excede a B en 3, A es el grande: A = B + 3 (o A − B = 3).',
+    gen() { const [A, B] = par(), n = R(2, 40);
+      return { texto: pick([`${v(A)} excede a ${v(B)} en ${n}.`, `${v(A)} supera en ${n} a ${v(B)}.`, `${v(A)} supera a ${v(B)} en ${n} unidades.`]),
+        sol: `${A}=${B}+${n}`,
+        trampas: [[`${B}=${A}+${n}`, `Al revés: «excede» significa «tiene más», así que ${v(A)} es el grande: ${v(A + '=' + B + '+' + n)}, o ${v(A + '-' + B + '=' + n)}.`]] }; } },
+
+  diferencia: { nombre: 'La diferencia entre … es',
+    consejo: 'En «la diferencia entre A y B» se resta en el orden en que se nombran: A − B.',
+    gen() { const [A, B] = par(), n = R(3, 40);
+      return { texto: `La diferencia entre ${v(A)}${ey(B)}${v(B)} es ${n}.`, sol: `${A}-${B}=${n}`,
+        trampas: [[`${B}-${A}=${n}`, `El orden importa: «la diferencia entre ${v(A)}${ey(B)}${v(B)}» es ${v(A + '-' + B)}.`]] }; } },
+
+  suma: { nombre: 'Suman / en total / juntos',
+    consejo: '«Suman», «en total», «entre todos», «juntos» y «conjuntamente» se traducen con una suma.',
+    gen() { const n = R(20, 200), [A, B] = parOrd();
+      return pick([
+        { texto: `${v('x')}, ${v('y')} y ${v('z')} suman ${n}.`, sol: `x+y+z=${n}`, trampas: [] },
+        { texto: `Entre ${v('x')}, ${v('y')} y ${v('z')} hay un total de ${n}.`, sol: `x+y+z=${n}`, trampas: [] },
+        { texto: `${v(A)}${ey(B)}${v(B)} juntos suman ${n}.`, sol: `${A}+${B}=${n}`, trampas: [] },
+        { texto: `${v(A)}${ey(B)}${v(B)} tienen conjuntamente ${n} unidades.`, sol: `${A}+${B}=${n}`, trampas: [] }]); } },
+
+  precio: { nombre: 'Precio × cantidad = total',
+    consejo: 'Cada cantidad se multiplica por lo que vale una unidad, y todo eso se suma: 2x + 3y + … = total.',
+    gen() { const [a, b, c] = shuffle([1, 2, 3, 4, 5, 6, 1.5, 2.5, 0.5, 1.2, 0.75]).slice(0, 3);
+      const T = +(a * R(1, 12) + b * R(1, 12) + c * R(1, 12)).toFixed(2);
+      if (Math.random() < .3) { const T2 = +(a * R(1, 12) + b * R(1, 12)).toFixed(2);
+        return { texto: `Cada unidad de ${v('x')} cuesta ${n2(a)}&nbsp;€ y cada unidad de ${v('y')} cuesta ${n2(b)}&nbsp;€. En total se pagan ${n2(T2)}&nbsp;€.`,
+          sol: `${cf(a, 'x')}+${cf(b, 'y')}=${num(T2)}`, trampas: [[`x+y=${num(T2)}`, 'Cada cantidad hay que multiplicarla por su precio.']] }; }
+      return { texto: pick([`Cada unidad de ${v('x')} cuesta ${n2(a)}&nbsp;€, cada unidad de ${v('y')} cuesta ${n2(b)}&nbsp;€ y cada unidad de ${v('z')} cuesta ${n2(c)}&nbsp;€. En total se pagan ${n2(T)}&nbsp;€.`,
+                               `Si cada ${v('x')} vale ${n2(a)}, cada ${v('y')} vale ${n2(b)} y cada ${v('z')} vale ${n2(c)}, en total valen ${n2(T)}.`]),
+        sol: `${cf(a, 'x')}+${cf(b, 'y')}+${cf(c, 'z')}=${num(T)}`, trampas: [[`x+y+z=${num(T)}`, 'Cada cantidad hay que multiplicarla por lo que vale una unidad.']] }; } },
+
+  unidades: { nombre: 'Cambio de unidades (céntimos y euros)',
+    consejo: 'No mezcles unidades: pásalo todo a céntimos o todo a euros antes de escribir la ecuación.',
+    gen() { const [c1, c2] = shuffle([10, 20, 50]).slice(0, 2);
+      const cent = c1 * R(1, 10) + c2 * R(1, 10) + 100 * R(1, 5), T = cent / 100;
+      return { texto: `Cada ${v('x')} vale ${c1} céntimos, cada ${v('y')} vale ${c2} céntimos y cada ${v('z')} vale 1 euro. En total suman ${n2(T)} euros.`,
+        sol: `${c1}x+${c2}y+100z=${cent}`,
+        trampas: [[`${c1}x+${c2}y+z=${num(T)}`, `Mezclas céntimos y euros. Todo en céntimos: ${v(c1 + 'x+' + c2 + 'y+100z=' + cent)}; o todo en euros: ${v(n2(c1 / 100) + 'x+' + n2(c2 / 100) + 'y+z=' + n2(T))}.`],
+                  [`${c1}x+${c2}y+100z=${num(T)}`, `El total también hay que pasarlo a céntimos: ${n2(T)} euros = ${cent} céntimos.`],
+                  [`${c1}x+${c2}y+z=${cent}`, `1 euro son 100 céntimos: el coeficiente de ${v('z')} es 100.`]] }; } },
+
+  puntos: { nombre: 'Puntos que suman y restan',
+    consejo: 'Lo que suma va con +, lo que resta va con −, y lo que no puntúa no aparece en la ecuación.',
+    gen() { const [A, B, C] = tri();
+      if (Math.random() < .4) { const a = R(8, 25), b = R(2, 10), T = 3 * a + b;
+        return { texto: `Cada ${v(A)} vale 3 puntos, cada ${v(B)} vale 1 punto y cada ${v(C)} vale 0 puntos. En total hay ${T} puntos.`,
+          sol: `3${A}+${B}=${T}`, trampas: [[`3${A}+${B}+${C}=${T}`, `Lo que vale 0 puntos no suma nada: ${v(C)} no aparece.`]] }; }
+      const p = pick([3, 2, 1, 0.75, 0.5]), q = pick([1, 0.25, 0.5, 2]); if (p === q) return this.gen();
+      const T = +(p * R(10, 20) - q * R(0, 6)).toFixed(2);
+      const pt = x => n2(x) + (x === 1 ? ' punto' : ' puntos');
+      return { texto: `Cada ${v(A)} suma ${pt(p)}, cada ${v(B)} resta ${pt(q)} y cada ${v(C)} no puntúa. En total se obtienen ${n2(T)} puntos.`,
+        sol: `${cf(p, A)}-${cf(q, B)}=${num(T)}`, trampas: [[`${cf(p, A)}+${cf(q, B)}=${num(T)}`, 'Lo que «resta» puntos va con signo menos.']] }; } },
+
+  fraccion: { nombre: 'Fracción de una suma',
+    consejo: 'Si la fracción es de toda la suma, la suma va entre paréntesis: (x + y + z)/4.',
+    gen() { const n = R(3, 30);
+      if (Math.random() < .55) { const k = pick([2, 3, 4, 5]), cap = FR[k][0].toUpperCase() + FR[k].slice(1);
+        return { texto: `${cap} de la suma de ${v('x')}, ${v('y')} y ${v('z')} es ${n}.`, sol: `(x+y+z)/${k}=${n}`,
+          trampas: [[`x+y+z/${k}=${n}`, `La fracción afecta a toda la suma: hacen falta paréntesis, ${v('\\dfrac{x+y+z}{' + k + '}=' + n)}.`]] }; }
+      const [A, B] = par(), [p, q] = shuffle([2, 3, 4, 5, 6]).slice(0, 2);
+      return { texto: `${FR[p][0].toUpperCase() + FR[p].slice(1)} de ${v(A)} menos ${FR[q]} de ${v(B)} es ${n}.`, sol: `${A}/${p}-${B}/${q}=${n}`,
+        trampas: [[`${p}${A}-${q}${B}=${n}`, `${FR[p][0].toUpperCase() + FR[p].slice(1)} de ${v(A)} es ${v('\\dfrac{' + A + '}{' + p + '}')}: se divide, no se multiplica.`]] }; } },
+
+  aumento: { nombre: 'Un p % más que',
+    consejo: 'Un 12 % más es el 100 % + 12 % = 112 %: se multiplica por 1,12.',
+    gen() { const [A, B] = par(), p = pick([5, 10, 12, 15, 20, 25, 30, 40]), f = (100 + p) / 100;
+      return { texto: pick([`${v(A)} es un ${pct(p)} mayor que ${v(B)}.`, `${v(A)} supera en un ${pct(p)} a ${v(B)}.`, `${v(A)} se obtiene aumentando ${v(B)} un ${pct(p)}.`]),
+        sol: `${A}=${num(f)}${B}`,
+        trampas: [[`${A}=${B}+${p}`, `Un ${pct(p)} más no es sumar ${p}: es multiplicar por ${n2(f)}, es decir, ${v(A + '=' + n2(f) + B)}.`],
+                  [`${A}=${num(p / 100)}${B}`, `Eso es solo el ${pct(p)} de ${v(B)}; falta sumarle ${v(B)}: ${v(A + '=' + B + '+' + n2(p / 100) + B + '=' + n2(f) + B)}.`],
+                  [`${B}=${num(f)}${A}`, `Al revés: el que es un ${pct(p)} mayor es ${v(A)}, así que ${v(A + '=' + n2(f) + B)}.`]] }; } },
+
+  descuento: { nombre: 'Un p % menos / descuento',
+    consejo: 'Un 10 % menos es quedarse con el 90 %: se multiplica por 0,9.',
+    gen() { const p = pick([5, 10, 15, 20, 25, 30]), f = (100 - p) / 100;
+      if (Math.random() < .5) { const [A, B] = par();
+        return { texto: pick([`${v(A)} es un ${pct(p)} menor que ${v(B)}.`, `${v(A)} se obtiene rebajando ${v(B)} un ${pct(p)}.`]), sol: `${A}=${num(f)}${B}`,
+          trampas: [[`${A}=${B}-${p}`, `Un ${pct(p)} menos no es restar ${p}: es multiplicar por ${n2(f)}: ${v(A + '=' + n2(f) + B)}.`],
+                    [`${B}=${num(f)}${A}`, `Al revés: el pequeño es ${v(A)}: ${v(A + '=' + n2(f) + B)}.`]] }; }
+      const S = R(6, 30) * 20, T = +(f * S).toFixed(2);   // S ≠ 100 (con 100, restar p y quitar el p % coinciden)
+      return { texto: `Si a la suma de ${v('x')}, ${v('y')} y ${v('z')} se le aplica un descuento del ${pct(p)}, queda ${n2(T)}.`,
+        sol: `${num(f)}(x+y+z)=${num(T)}`,
+        trampas: [[`x+y+z-${p}=${num(T)}`, `Un descuento del ${pct(p)} no es restar ${p}: queda el ${pct(100 - p)}, ${v(n2(f) + '(x+y+z)=' + n2(T))}.`],
+                  [`${num(f)}x+y+z=${num(T)}`, 'El descuento se aplica a toda la suma: hacen falta paréntesis.']] }; } },
+
+  porcentajes: { nombre: 'Porcentajes de cada parte',
+    consejo: 'El 5 % de x es 0,05·x. Cada parte se multiplica por su porcentaje dividido entre 100.',
+    gen() { const [a, b, c] = shuffle([2, 3, 4, 5, 6, 8, 10]).slice(0, 3);
+      const T = (a * R(1, 20) * 100 + b * R(1, 20) * 100 + c * R(1, 20) * 100) / 100;
+      return { texto: `El ${pct(a)} de ${v('x')} más el ${pct(b)} de ${v('y')} más el ${pct(c)} de ${v('z')} es ${n2(T)}.`,
+        sol: `${num(a / 100)}x+${num(b / 100)}y+${num(c / 100)}z=${num(T)}`,
+        trampas: [[`${a}x+${b}y+${c}z=${num(T)}`, `El ${pct(a)} de ${v('x')} es ${v(n2(a / 100) + 'x')}. Si multiplicas toda la ecuación por 100, el total también: ${v(a + 'x+' + b + 'y+' + c + 'z=' + n2(T * 100))}.`]] }; } },
+
+  razon: { nombre: 'Por cada … hay …',
+    consejo: 'Si por cada 6 de A hay 2 de B: A/B = 6/2. Comprueba con A = 6 y B = 2: tu ecuación debe cumplirse.',
+    gen() { const [A, B] = par(), [a, b] = pick([[6, 2], [3, 2], [5, 3], [4, 1], [2, 5], [3, 4], [5, 2], [1, 3]]);
+      return { texto: pick([`Por cada ${a} de ${v(A)} hay ${b} de ${v(B)}.`, `${v(A)}${ey(B)}${v(B)} están en la proporción ${a} a ${b}.`]),
+        sol: `${A}/${B}=${a}/${b}`, chk: `${cf(b, A)}=${cf(a, B)}`,
+        trampas: [[`${cf(a, A)}=${cf(b, B)}`, `Al revés. ${v('\\dfrac{' + A + '}{' + B + '}=\\dfrac{' + a + '}{' + b + '}')}, y multiplicando en cruz: ${v(cf(b, A) + '=' + cf(a, B))}. Compruébalo con ${v(A + '=' + a)}, ${v(B + '=' + b)}.`]] }; } },
+
+  dobleSuma: { nombre: 'El doble de una suma',
+    consejo: 'Si es el doble de la suma, la suma va entre paréntesis: C = 2(A + B).',
+    gen() { const [C, A, B] = tri(), [X, Y] = [A, B].sort(), k = pick([2, 3]);
+      return { texto: pick([`${v(C)} es el ${W[k]} de la suma de ${v(X)}${ey(Y)}${v(Y)}.`, `${v(C)} es el ${W[k]} que ${v(X)}${ey(Y)}${v(Y)} juntos.`]),
+        sol: `${C}=${k}(${X}+${Y})`,
+        trampas: [[`${C}=${k}${X}+${Y}`, `El ${W[k]} afecta a toda la suma: hacen falta paréntesis, ${v(C + '=' + k + '(' + X + '+' + Y + ')')}.`]] }; } },
+
+  menosDoble: { nombre: 'n menos / más que el doble de',
+    consejo: 'Primero se hace el doble y después se suma o se resta: «6 menos que el doble de B» → 2B − 6.',
+    gen() { const [A, B] = par(), k = pick([2, 3]), n = R(2, 15), menos = Math.random() < .6, s = menos ? '-' : '+';
+      return { texto: `${v(A)} es ${menos ? 'menor' : 'mayor'} en ${n} unidades que el ${W[k]} de ${v(B)}.`, sol: `${A}=${k}${B}${s}${n}`,
+        trampas: [[`${A}=${k}(${B}${s}${n})`, `Primero el ${W[k]} de ${v(B)} y después se ${menos ? 'resta' : 'suma'} ${n}: ${v(A + '=' + k + B + s + n)}.`],
+                  [`${B}=${k}${A}${s}${n}`, `Al revés: el ${W[k]} es de ${v(B)}: ${v(A + '=' + k + B + s + n)}.`]] }; } },
+
+  combinacion: { nombre: 'Combinación que excede a',
+    consejo: '«Lo grande excede en n a lo pequeño» → grande = pequeño + n. Escribe primero cada lado y después pon el igual.',
+    gen() { const [A, B, C] = tri(), n = R(2, 20);
+      if (Math.random() < .5) { const k = pick([2, 3]);
+        return { texto: `El ${W[k]} de ${v(A)} más ${v(B)} excede en ${n} a ${v(C)}.`, sol: `${k}${A}+${B}=${C}+${n}`,
+          trampas: [[`${k}${A}+${B}+${n}=${C}`, `Al revés: ${v(k + A + '+' + B)} es lo grande, así que ${v(k + A + '+' + B + '=' + C + '+' + n)}.`]] }; }
+      const [X, Y] = [B, C].sort();
+      return { texto: `${v(A)} supera en ${n} a la suma de ${v(X)}${ey(Y)}${v(Y)}.`, sol: `${A}=${X}+${Y}+${n}`,
+        trampas: [[`${A}+${n}=${X}+${Y}`, `Al revés: ${v(A)} es el grande, ${v(A + '=' + X + '+' + Y + '+' + n)}.`]] }; } },
+
+  trasvase: { nombre: 'Si se pasan n de … a …',
+    consejo: 'Lo que sale de uno entra en el otro: uno pierde n (− n) y el otro gana n (+ n).',
+    gen() { const [A, B] = par(), n = R(2, 15);
+      if (Math.random() < .55) return { texto: `Si se pasan ${n} unidades de ${v(A)} a ${v(B)}, los dos quedan iguales.`, sol: `${A}-${n}=${B}+${n}`,
+        trampas: [[`${A}-${n}=${B}`, `Lo que sale de ${v(A)} entra en ${v(B)}: ${v(A + '-' + n + '=' + B + '+' + n)}.`],
+                  [`${A}+${n}=${B}-${n}`, `Al revés: ${v(A)} pierde ${n} y ${v(B)} gana ${n}.`]] };
+      const k = pick([2, 3]);
+      return { texto: `Si ${v(A)} le da ${n} unidades a ${v(B)}, entonces ${v(B)} tiene el ${W[k]} que ${v(A)}.`, sol: `${B}+${n}=${k}(${A}-${n})`,
+        trampas: [[`${B}+${n}=${k}${A}-${n}`, `El ${W[k]} es de lo que le queda a ${v(A)}, que es ${v(A + '-' + n)}: hacen falta paréntesis.`],
+                  [`${B}=${k}${A}`, `Primero hay que hacer el cambio: ${v(B)} pasa a ${v(B + '+' + n)} y ${v(A)} pasa a ${v(A + '-' + n)}.`]] }; } },
+
+  edades: { nombre: 'Edades: dentro de / hace n años',
+    consejo: 'Dentro de n años, los dos tienen n años más: (A + n) y (B + n). Hace n años, (A − n) y (B − n).',
+    gen() { const [A, B] = par(), k = pick([2, 3]), n = R(2, 15), fut = Math.random() < .55, s = fut ? '+' : '-';
+      return { texto: `${v(A)}${ey(B)}${v(B)} son edades. ${fut ? 'Dentro de' : 'Hace'} ${n} años, ${v(A)} ${fut ? 'tendrá' : 'tenía'} el ${W[k]} de años que ${v(B)}.`,
+        sol: `${A}${s}${n}=${k}(${B}${s}${n})`,
+        trampas: [[`${A}${s}${n}=${k}${B}${s}${n}`, `Los dos ${fut ? 'cumplen' : 'tenían'} ${n} años ${fut ? 'más' : 'menos'}: el ${W[k]} afecta a ${v('(' + B + s + n + ')')}, con paréntesis.`],
+                  [`${A}${s}${n}=${k}${B}`, `${v(B)} también ${fut ? 'cumple' : 'tenía'} ${n} años ${fut ? 'más' : 'menos'}: ${v(A + s + n + '=' + k + '(' + B + s + n + ')')}.`],
+                  [`${A}=${k}${B}`, `Eso es la relación de hoy. ${fut ? 'Dentro de' : 'Hace'} ${n} años: ${v(A + s + n + '=' + k + '(' + B + s + n + ')')}.`]] }; } },
+
+  cambia: { nombre: 'Si aumenta / disminuye …',
+    consejo: 'Escribe cómo queda cada cantidad después del cambio (A − 50, B + 30…) y después compara.',
+    gen() { const [A, B] = par(), n = R(5, 60), m = R(5, 60);
+      if (Math.random() < .5) return { texto: `Si ${v(A)} disminuye en ${n}${ey(B)}${v(B)} aumenta en ${m}, se hacen iguales.`, sol: `${A}-${n}=${B}+${m}`,
+        trampas: [[`${A}+${n}=${B}-${m}`, `Al revés: ${v(A)} disminuye (− ${n}) y ${v(B)} aumenta (+ ${m}).`]] };
+      const k = pick([2, 3]);
+      return { texto: `Si ${v(A)} aumenta en ${n}, se convierte en el ${W[k]} de ${v(B)}.`, sol: `${A}+${n}=${k}${B}`,
+        trampas: [[`${A}=${k}${B}+${n}`, `El que aumenta es ${v(A)}: ${v(A + '+' + n + '=' + k + B)}.`],
+                  [`${B}+${n}=${k}${A}`, `Al revés: ${v(A + '+' + n + '=' + k + B)}.`]] }; } }
+};
+const CLAVES_TIPOS = Object.keys(TIPOS);
+
+/* =====================================================================
+   ANALIZADOR DE ECUACIONES
+   Admite: números (coma o punto), x y z, + − · * × / : ( ) ^ %
+   y multiplicación implícita (2x, 3(x+y), x(y+1)).
+   ===================================================================== */
+function tokens(s) {
+  const t = []; let i = 0;
+  s = s.replace(/[−–]/g, '-').replace(/[·×]/g, '*').replace(/:/g, '/');
+  while (i < s.length) {
+    const c = s[i];
+    if (/\s/.test(c)) { i++; continue; }
+    if (/[0-9.,]/.test(c)) { let j = i; while (j < s.length && /[0-9.,]/.test(s[j])) j++;
+      const txt = s.slice(i, j).replace(',', '.'); if ((txt.match(/\./g) || []).length > 1 || txt === '.') throw 'número mal escrito';
+      t.push({ k: 'n', v: parseFloat(txt), txt }); i = j; continue; }
+    if (/[xyzXYZ]/.test(c)) { t.push({ k: 'v', v: c.toLowerCase() }); i++; continue; }
+    if ('+-*/^()=%'.includes(c)) { t.push({ k: c }); i++; continue; }
+    throw 'símbolo no válido: ' + c;
+  }
+  return t;
+}
+function analizar(s) {
+  const t = tokens(s); let p = 0;
+  const ve = () => t[p], come = k => { if (t[p] && t[p].k === k) return t[p++]; throw 'falta «' + k + '»'; };
+  function expr() { let a = term(); while (ve() && (ve().k === '+' || ve().k === '-')) { const o = t[p++].k; a = { o, a, b: term() }; } return a; }
+  function term() { let a = unario();
+    while (ve()) {
+      if (ve().k === '*' || ve().k === '/') { const o = t[p++].k; a = { o, a, b: unario() }; }
+      else if (ve().k === 'v' || ve().k === '(' || ve().k === 'n') { a = { o: '*', imp: true, a, b: potencia() }; }
+      else break;
+    } return a; }
+  function unario() { if (ve() && (ve().k === '-' || ve().k === '+')) { const o = t[p++].k; const a = unario(); return o === '-' ? { o: 'neg', a } : a; } return potencia(); }
+  function potencia() { const a = atomo(); if (ve() && ve().k === '^') { p++; return { o: '^', a, b: unario() }; } return a; }
+  function atomo() { const x = ve(); if (!x) throw 'expresión incompleta';
+    if (x.k === 'n') { p++; let nd = { o: 'n', v: x.v, txt: x.txt }; if (ve() && ve().k === '%') { p++; nd = { o: '%', v: x.v / 100, txt: x.txt }; } return nd; }
+    if (x.k === 'v') { p++; return { o: 'v', v: x.v }; }
+    if (x.k === '(') { p++; const e = expr(); come(')'); return { o: 'par', a: e }; }
+    throw 'expresión mal escrita'; }
+  if (!t.some(x => x.k === '=')) throw 'falta el signo =';
+  if (t.filter(x => x.k === '=').length > 1) throw 'hay más de un signo =';
+  const L = expr(); come('='); const D = expr(); if (p < t.length) throw 'sobra algo al final';
+  return { L, D };
+}
+function evalua(n, e) {
+  switch (n.o) {
+    case 'n': case '%': return n.v;
+    case 'v': return e[n.v];
+    case 'par': return evalua(n.a, e);
+    case 'neg': return -evalua(n.a, e);
+    case '+': return evalua(n.a, e) + evalua(n.b, e);
+    case '-': return evalua(n.a, e) - evalua(n.b, e);
+    case '*': return evalua(n.a, e) * evalua(n.b, e);
+    case '/': return evalua(n.a, e) / evalua(n.b, e);
+    case '^': return Math.pow(evalua(n.a, e), evalua(n.b, e));
+  }
+}
+const sinPar = n => (n.o === 'par' ? n.a : n);
+function tex(n) {
+  switch (n.o) {
+    case 'n': return n.txt.replace('.', '{,}');
+    case '%': return n.txt.replace('.', '{,}') + '\\,\\%';
+    case 'v': return n.v;
+    case 'par': return '\\left(' + tex(n.a) + '\\right)';
+    case 'neg': return '-' + tex(n.a);
+    case '+': return tex(n.a) + '+' + tex(n.b);
+    case '-': return tex(n.a) + '-' + tex(n.b);
+    case '*': return n.imp ? tex(n.a) + tex(n.b) : tex(n.a) + '\\cdot ' + tex(n.b);
+    case '/': return '\\dfrac{' + tex(sinPar(n.a)) + '}{' + tex(sinPar(n.b)) + '}';
+    case '^': return '{' + tex(n.a) + '}^{' + tex(sinPar(n.b)) + '}';
+  }
+}
+const texEc = s => { const q = analizar(s); return tex(q.L) + '=' + tex(q.D); };
+
+/* ¿Son equivalentes dos ecuaciones? «ref» es lineal en x, y, z.
+   1) En 30 puntos que cumplen «ref», la del alumno también se cumple.
+   2) La del alumno no se cumple en cualquier punto (no es 0 = 0). */
+function equivalentes(alumno, ref) {
+  const A = analizar(alumno), G = analizar(ref);
+  const g = e => evalua(G.L, e) - evalua(G.D, e);
+  const c0 = g({ x: 0, y: 0, z: 0 });
+  const co = ['x', 'y', 'z'].map(k => g({ x: 0, y: 0, z: 0, [k]: 1 }) - c0);
+  let j = 0; co.forEach((c, i) => { if (Math.abs(c) > Math.abs(co[j])) j = i; });
+  const vars = ['x', 'y', 'z'];
+  const cumple = e => { const l = evalua(A.L, e), d = evalua(A.D, e);
+    if (!isFinite(l) || !isFinite(d)) return null; return Math.abs(l - d) <= 1e-7 * (1 + Math.abs(l) + Math.abs(d)); };
+  let validos = 0;
+  for (let i = 0; i < 30; i++) {
+    const e = { x: Math.random() * 40 - 20, y: Math.random() * 40 - 20, z: Math.random() * 40 - 20 };
+    let s = c0; vars.forEach((k, i2) => { if (i2 !== j) s += co[i2] * e[k]; });
+    e[vars[j]] = -s / co[j];
+    const r = cumple(e); if (r === null) continue; if (!r) return false; validos++;
+  }
+  if (validos < 15) return false;
+  let ceros = 0;
+  for (let i = 0; i < 30; i++) { const r = cumple({ x: Math.random() * 40 - 20, y: Math.random() * 40 - 20, z: Math.random() * 40 - 20 }); if (r) ceros++; }
+  return ceros <= 3;
+}
+
+/* corrige una respuesta: {ok, mensaje} */
+function corregir(preg, resp) {
+  let A; try { A = analizar(resp); } catch (e) { return { error: 'No se entiende la ecuación: ' + e + '.' }; }
+  if (equivalentes(resp, preg.chk || preg.sol)) return { ok: true };
+  for (const [tr, msg] of preg.trampas || []) { try { if (equivalentes(resp, tr)) return { ok: false, msg }; } catch (e) {} }
+  return { ok: false, msg: TIPOS[preg.tipo].consejo };
+}
+
+/* ===================================================================== */
+const quitaHtml = s => s.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/\$/g, '');
+function nuevoCuestionario() {
+  return shuffle(CLAVES_TIPOS).slice(0, N_PREGUNTAS).map(tipo => ({ tipo, ...TIPOS[tipo].gen() }));
+}
+const params = new URLSearchParams(location.search);
+const hoy = new Date();
+const SESION = (params.get('sesion') || ('2bach-' + hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0'))).slice(0, 60);
+const CLAVE_EST = 'traduccion:' + SESION;
+let E = null;    // estado del alumno
+
+function mate(el) { if (window.renderMathInElement) renderMathInElement(el, { delimiters: [{ left: '$', right: '$', display: false }], throwOnError: false }); }
+function ver(id) { ['vInicio', 'vPregunta', 'vResultado', 'vProfesor'].forEach(x => $(x).classList.toggle('oculto', x !== id)); window.scrollTo(0, 0); }
+
+/* ---------- inicio ---------- */
+function inicio() {
+  $('infoSesion').textContent = 'Sesión: ' + SESION;
+  const prev = leer(CLAVE_EST);
+  if (prev && prev.nombre) $('nombre').value = prev.nombre;
+  if (prev && prev.preguntas && !prev.terminado) { E = prev; mostrarPregunta(); return; }
+  if (prev && prev.terminado) { E = prev; mostrarResultado(); return; }
+  ver('vInicio');
+}
+$('btnEmpezar').onclick = () => {
+  const nom = $('nombre').value.trim().replace(/\s+/g, ' ');
+  if (nom.length < 3) { $('errNombre').textContent = 'Escribe tu nombre y apellido.'; return; }
+  const prev = leer(CLAVE_EST);
+  E = { nombre: nom, intento: (prev && prev.intento ? prev.intento + 1 : 1), preguntas: nuevoCuestionario(), i: 0, respuestas: [], escrito: '', terminado: false, enviado: false };
+  guardar(CLAVE_EST, E); mostrarPregunta();
+};
+
+/* ---------- teclado ---------- */
+const TECLAS = [['x', 'var'], ['y', 'var'], ['z', 'var'], ['(', 'op'], [')', 'op'], ['⌫', 'del'],
+                ['7'], ['8'], ['9'], ['+', 'op'], ['−', 'op'], ['=', 'op'],
+                ['4'], ['5'], ['6'], ['·', 'op'], ['/', 'op'], ['%', 'op'],
+                ['1'], ['2'], ['3'], ['0'], [',', 'op'], ['C', 'del']];
+TECLAS.forEach(([k, c]) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = k; if (c) b.className = c;
+  b.onclick = () => tecla(k); $('teclado').appendChild(b); });
+function tecla(k) {
+  if (!E || E.corregida) return;
+  if (k === '⌫') E.escrito = E.escrito.slice(0, -1);
+  else if (k === 'C') E.escrito = '';
+  else if (E.escrito.length < 60) E.escrito += k;
+  pintarEscrito();
+}
+document.addEventListener('keydown', ev => {
+  if ($('vPregunta').classList.contains('oculto') || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+  const m = { '*': '·', '-': '−', '.': ',', 'Backspace': '⌫', 'Escape': 'C', 'X': 'x', 'Y': 'y', 'Z': 'z' };
+  let k = m[ev.key] || ev.key;
+  if (ev.key === 'Enter') { ev.preventDefault(); (E.corregida ? $('btnSiguiente') : $('btnComprobar')).click(); return; }
+  if (TECLAS.some(t => t[0] === k)) { ev.preventDefault(); tecla(k); }
+});
+function pintarEscrito() {
+  $('raw').innerHTML = ''; $('raw').textContent = E.escrito;
+  if (!E.corregida) $('raw').insertAdjacentHTML('beforeend', '<span class="cursor"></span>');
+  $('errEc').textContent = '';
+  let t = ''; try { t = texEc(E.escrito); } catch (e) { t = ''; }
+  if (t && window.katex) katex.render(t, $('vista'), { throwOnError: false }); else $('vista').innerHTML = '&nbsp;';
+  guardar(CLAVE_EST, E);
+}
+
+/* ---------- preguntas ---------- */
+function mostrarPregunta() {
+  ver('vPregunta');
+  const q = E.preguntas[E.i];
+  E.corregida = false;
+  $('numPreg').textContent = 'Pregunta ' + (E.i + 1) + ' de ' + E.preguntas.length;
+  $('relleno').style.width = (E.i / E.preguntas.length * 100) + '%';
+  $('tipoPreg').textContent = 'Traduce a una ecuación';
+  $('enunciado').innerHTML = q.texto; mate($('enunciado'));
+  $('feedback').innerHTML = ''; $('btnSiguiente').classList.add('oculto');
+  $('btnComprobar').classList.remove('oculto'); $('teclado').classList.remove('oculto');
+  pintarEscrito();
+}
+$('btnComprobar').onclick = () => {
+  const q = E.preguntas[E.i], r = corregir(q, E.escrito);
+  if (r.error) { $('errEc').textContent = r.error; return; }
+  E.corregida = true;
+  E.respuestas.push({ tipo: q.tipo, nombreTipo: TIPOS[q.tipo].nombre, enunciado: quitaHtml(q.texto), texEnunciado: q.texto, respuesta: E.escrito, correcta: q.sol, ok: r.ok });
+  let solTex = ''; try { solTex = texEc(q.sol); } catch (e) {}
+  $('feedback').innerHTML = r.ok
+    ? '<div class="fb ok"><b class="t">✓ ¡Correcto!</b>' + (q.sol.replace(/\s/g, '') !== E.escrito.replace(/\s/g, '') ? 'También se puede escribir: ' + v(solTex) : '') + '</div>'
+    : '<div class="fb mal"><b class="t">✗ No es correcto</b>Una respuesta correcta es: ' + v(solTex) + '<p style="margin:.5em 0 0">' + r.msg + '</p></div>';
+  mate($('feedback'));
+  $('btnComprobar').classList.add('oculto'); $('teclado').classList.add('oculto');
+  $('btnSiguiente').classList.remove('oculto');
+  $('btnSiguiente').textContent = E.i + 1 < E.preguntas.length ? 'Siguiente' : 'Ver mi resultado';
+  pintarEscrito();
+};
+$('btnSiguiente').onclick = () => {
+  E.i++; E.escrito = '';
+  if (E.i < E.preguntas.length) { guardar(CLAVE_EST, E); mostrarPregunta(); }
+  else { E.terminado = true; guardar(CLAVE_EST, E); mostrarResultado(); }
+};
+
+/* ---------- resultado ---------- */
+function mostrarResultado() {
+  ver('vResultado');
+  const ok = E.respuestas.filter(r => r.ok).length;
+  $('resNombre').textContent = E.nombre + ' · intento ' + E.intento;
+  $('resNota').textContent = ok + ' / ' + E.respuestas.length;
+  $('resLista').innerHTML = E.respuestas.map(r => {
+    let ct = '', at = ''; try { ct = texEc(r.correcta); } catch (e) {} try { at = texEc(r.respuesta); } catch (e) { at = '\\text{' + r.respuesta.replace(/[{}\\]/g, '') + '}'; }
+    return '<li><span class="marca ' + (r.ok ? 'ok">✓' : 'mal">✗') + '</span> ' + r.texEnunciado +
+      '<br><span class="peq">Tu respuesta: ' + v(at) + (r.ok ? '' : ' · Correcta: ' + v(ct)) + '</span></li>'; }).join('');
+  mate($('resLista'));
+  enviar();
+}
+async function enviar() {
+  if (!URL_SCRIPT) { $('resMensaje').innerHTML = mensajeSinClase(); $('btnActualizar').classList.add('oculto'); return; }
+  if (!E.enviado) {
+    $('resMensaje').textContent = 'Enviando tus respuestas…';
+    try {
+      const datos = { sesion: SESION, nombre: E.nombre, intento: E.intento,
+        respuestas: E.respuestas.map(r => ({ cat: r.tipo, catNombre: r.nombreTipo, enunciado: r.enunciado, respuesta: r.respuesta, correcta: r.correcta, ok: r.ok })) };
+      const res = await fetch(URL_SCRIPT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(datos) });
+      const j = await res.json(); if (!j.ok) throw new Error(j.error || 'error');
+      E.enviado = true; guardar(CLAVE_EST, E);
+    } catch (e) {
+      $('resMensaje').innerHTML = 'No se han podido enviar tus respuestas (¿hay conexión?). Pulsa «Actualizar comparación» para reintentarlo.'; return;
+    }
+  }
+  comparar();
+}
+$('btnActualizar').onclick = () => enviar();
+async function comparar() {
+  $('resMensaje').textContent = 'Consultando la media de la clase…';
+  let m;
+  try { const res = await fetch(URL_SCRIPT + '?accion=media&sesion=' + encodeURIComponent(SESION)); m = await res.json(); }
+  catch (e) { $('resMensaje').textContent = 'No se ha podido consultar la media. Prueba otra vez en un momento.'; return; }
+  const ok = E.respuestas.filter(r => r.ok).length, tot = E.respuestas.length;
+  const media = m.media || 0;
+  const pctCat = c => (m.cats && m.cats[c] && m.cats[c].total ? m.cats[c].ok / m.cats[c].total : null);
+  const falladas = E.respuestas.filter(r => !r.ok);
+  const li = r => { const p = pctCat(r.tipo);
+    return '<li><b>' + r.nombreTipo + '</b>' + (p !== null ? ' <span class="peq">(la clase acierta el ' + Math.round(p * 100) + '&nbsp;%' + (p < 0.5 ? ': le cuesta a casi todos' : '') + ')</span>' : '') + '</li>'; };
+  let h = '<p>Tu nota: <b>' + ok + '/' + tot + '</b> · Media de la clase: <b>' + n2(+media.toFixed(1)) + '/' + tot + '</b> <span class="peq">(' + m.cuestionarios + ' cuestionarios de ' + m.alumnos + ' alumnos)</span></p>';
+  if (ok === tot) h += '<p>🎉 <b>¡Enhorabuena!</b> Has traducido bien todas las frases.</p>';
+  else {
+    h += ok >= media ? '<p>👍 <b>¡Bien!</b> Estás por encima de la media de la clase.</p>' : '<p>💪 Estás por debajo de la media de la clase. ¡Vamos a por ello!</p>';
+    h += '<p><b>Necesitas mejorar</b> estas expresiones:</p><ul>' + falladas.map(li).join('') + '</ul>';
+  }
+  if (m.cuestionarios < 3) h += '<p class="peq">Todavía han terminado pocos compañeros: pulsa «Actualizar comparación» dentro de un rato.</p>';
+  $('resMensaje').innerHTML = h;
+}
+function mensajeSinClase() {
+  const ok = E.respuestas.filter(r => r.ok).length, tot = E.respuestas.length;
+  if (ok === tot) return '<p>🎉 <b>¡Enhorabuena!</b> Has traducido bien todas las frases.</p>';
+  return '<p><b>Necesitas repasar:</b></p><ul>' + E.respuestas.filter(r => !r.ok).map(r => '<li>' + r.nombreTipo + '</li>').join('') + '</ul>' +
+         '<p class="peq">(Los resultados no se guardan: falta configurar la hoja de Google.)</p>';
+}
+$('btnOtro').onclick = () => { const n = E.nombre, it = E.intento; E = { nombre: n, intento: it + 1, preguntas: nuevoCuestionario(), i: 0, respuestas: [], escrito: '', terminado: false, enviado: false }; guardar(CLAVE_EST, E); mostrarPregunta(); };
+
+/* =====================================================================
+   PANEL DEL PROFESOR  (abrir con ?profesor)
+   ===================================================================== */
+let tAuto = null;
+function profesor() {
+  ver('vProfesor');
+  $('pSesion').value = params.get('sesion') || SESION;
+  const c = leer('traduccion:clave'); if (c) $('pClave').value = c;
+  pintarQR();
+  $('pSesion').oninput = pintarQR;
+  $('btnVer').onclick = cargarDatos;
+  $('pAuto').onchange = programar;
+  if (!URL_SCRIPT) $('pError').textContent = 'Falta pegar la dirección del script de Google en URL_SCRIPT (al principio del código).';
+}
+function enlaceAlumnos() { return location.origin + location.pathname + '?sesion=' + encodeURIComponent($('pSesion').value.trim()); }
+function pintarQR() {
+  const url = enlaceAlumnos(); $('pEnlace').textContent = url; $('qr').innerHTML = '';
+  if (window.QRCode) new QRCode($('qr'), { text: url, width: 260, height: 260, correctLevel: QRCode.CorrectLevel.M });
+  else setTimeout(pintarQR, 300);
+}
+function programar() { clearInterval(tAuto); if ($('pAuto').checked) tAuto = setInterval(() => { if ($('pClave').value) cargarDatos(); }, 15000); }
+async function cargarDatos() {
+  if (!URL_SCRIPT) return;
+  guardar('traduccion:clave', $('pClave').value);
+  $('pError').textContent = '';
+  let d;
+  try { const res = await fetch(URL_SCRIPT + '?accion=datos&sesion=' + encodeURIComponent($('pSesion').value.trim()) + '&clave=' + encodeURIComponent($('pClave').value)); d = await res.json(); }
+  catch (e) { $('pError').textContent = 'No se ha podido conectar con la hoja de Google.'; return; }
+  if (d.error) { $('pError').textContent = d.error; return; }
+  programar();
+  const tot = N_PREGUNTAS;
+  const cats = Object.entries(d.cats || {}).map(([k, c]) => ({ k, ...c, p: c.ok / c.total })).sort((a, b) => a.p - b.p);
+  const color = p => (p < .5 ? '#e57373' : p < .75 ? '#ffb74d' : '#66bb6a');
+  let h = '<div class="cifras" style="margin-top:14px"><div><b>' + d.alumnos + '</b>alumnos</div><div><b>' + d.cuestionarios + '</b>cuestionarios</div><div><b>' + n2(+d.media.toFixed(2)) + '/' + tot + '</b>nota media</div></div>';
+  h += '<h2>Aciertos por tipo de expresión <span class="peq">(de peor a mejor)</span></h2><div class="barras">' +
+    cats.map(c => '<div class="fila"><span>' + c.nombre + '</span><div class="b"><i style="width:' + Math.round(c.p * 100) + '%;background:' + color(c.p) + '"></i></div><span class="p">' + Math.round(c.p * 100) + '&nbsp;% <span class="peq">' + c.ok + '/' + c.total + '</span></span></div>').join('') + '</div>';
+  const alumnos = (d.cuestionarios_detalle || []).slice().sort((a, b) => String(a.nombre).localeCompare(String(b.nombre)) || a.intento - b.intento);
+  h += '<h2>Alumnos</h2><table><tr><th>Nombre</th><th>Int.</th><th>Nota</th><th>Ha fallado</th></tr>' +
+    alumnos.map(a => '<tr><td>' + esc(a.nombre) + '</td><td>' + a.intento + '</td><td><b>' + a.ok + '/' + a.total + '</b></td><td class="peq">' + a.fallos.map(esc).join(' · ') + '</td></tr>').join('') + '</table>';
+  const mal = (d.respuestas || []).filter(r => !r.ok);
+  if (mal.length) {
+    h += '<h2>Respuestas incorrectas <span class="peq">(para comentar en clase)</span></h2>';
+    cats.forEach(c => { const l = mal.filter(r => r.cat === c.k); if (!l.length) return;
+      h += '<details><summary><b>' + c.nombre + '</b> (' + l.length + ')</summary><ul>' +
+        l.map(r => '<li>' + esc(r.enunciado) + '<br><span class="peq">' + esc(r.nombre) + ': <b>' + esc(r.respuesta) + '</b> · correcta: ' + esc(r.correcta) + '</span></li>').join('') + '</ul></details>'; });
+  }
+  $('pDatos').innerHTML = h;
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+window.addEventListener('load', () => { mate(document.querySelector('#vInicio .caja')); if (params.has('profesor')) profesor(); else inicio(); });
+</script>
+</body>
+</html>
