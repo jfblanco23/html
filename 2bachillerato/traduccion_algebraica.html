@@ -85,6 +85,8 @@
   .cifras b{display:block;font-size:1.6rem}
   #qr{display:flex;justify-content:center;margin:10px 0}
   #qr img,#qr canvas{max-width:100%;height:auto}
+  .corta{text-align:center;margin:4px 0 8px;font-size:1.1rem}
+  .corta b{display:inline-block;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.7rem;color:var(--azul);word-break:break-all}
   .enlace{word-break:break-all;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem;text-align:center}
   details{margin:6px 0} summary{cursor:pointer}
   @media (min-width:700px){ .lado{display:grid;grid-template-columns:1fr 1fr;gap:20px} }
@@ -145,7 +147,7 @@
   <p class="sub">Traducción algebraica · resultados en directo</p>
   <div class="lado">
     <div>
-      <label><b>Sesión</b> (por ejemplo, el grupo y la fecha)</label>
+      <label><b>Sesión</b> <span class="peq">(déjala como está y la dirección corta no necesita nada más)</span></label>
       <input type="text" id="pSesion">
       <label style="display:block;margin-top:10px"><b>Clave</b></label>
       <input type="password" id="pClave" placeholder="La clave que pusiste en el script">
@@ -155,7 +157,8 @@
     </div>
     <div>
       <div id="qr"></div>
-      <div class="enlace" id="pEnlace"></div>
+      <div class="corta">Entrad en<br><b id="pCorta"></b></div>
+      <div class="enlace peq" id="pEnlace"></div>
     </div>
   </div>
   <div id="pDatos"></div>
@@ -505,7 +508,11 @@ function nuevoCuestionario() {
 }
 const params = new URLSearchParams(location.search);
 const hoy = new Date();
-const SESION = (params.get('sesion') || ('2bach-' + hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0'))).slice(0, 60);
+const SESION_HOY = '2bach-' + hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
+const normSes = s => s.trim().toLowerCase().replace(/\s+/g, '-').slice(0, 60);   // «Prueba» = «prueba»
+const SESION = normSes(params.get('sesion') || SESION_HOY);
+// dirección corta (carpeta ta/ del repositorio, que redirige aquí)
+const BASE_CORTA = (location.host + location.pathname).replace(/2bachillerato\/traduccion_algebraica\.html$/, 'ta');
 const CLAVE_EST = 'traduccion:' + SESION;
 let E = null;    // estado del alumno
 
@@ -665,9 +672,11 @@ function profesor() {
   $('pAuto').onchange = programar;
   if (!URL_SCRIPT) $('pError').textContent = 'Falta pegar la dirección del script de Google en URL_SCRIPT (al principio del código).';
 }
-function enlaceAlumnos() { return location.origin + location.pathname + '?sesion=' + encodeURIComponent($('pSesion').value.trim()); }
+const sesPanel = () => normSes($('pSesion').value || SESION_HOY);
+function enlaceAlumnos() { return location.origin + location.pathname + '?sesion=' + encodeURIComponent(sesPanel()); }
 function pintarQR() {
   const url = enlaceAlumnos(); $('pEnlace').textContent = url; $('qr').innerHTML = '';
+  $('pCorta').textContent = BASE_CORTA + (sesPanel() === SESION_HOY ? '' : '?sesion=' + sesPanel());
   if (window.QRCode) new QRCode($('qr'), { text: url, width: 260, height: 260, correctLevel: QRCode.CorrectLevel.M });
   else setTimeout(pintarQR, 300);
 }
@@ -677,7 +686,7 @@ async function cargarDatos() {
   guardar('traduccion:clave', $('pClave').value);
   $('pError').textContent = '';
   let d;
-  try { const res = await fetch(URL_SCRIPT + '?accion=datos&sesion=' + encodeURIComponent($('pSesion').value.trim()) + '&clave=' + encodeURIComponent($('pClave').value)); d = await res.json(); }
+  try { const res = await fetch(URL_SCRIPT + '?accion=datos&sesion=' + encodeURIComponent(sesPanel()) + '&clave=' + encodeURIComponent($('pClave').value)); d = await res.json(); }
   catch (e) { $('pError').textContent = 'No se ha podido conectar con la hoja de Google.'; return; }
   if (d.error) { $('pError').textContent = d.error; return; }
   programar();
