@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ecuaciones trigonométricas paso a paso</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --texto:#111; --verde-fondo:#E5FFE5; --verde-borde:#80FF80; --verde-titulo:#5CD65C;
+    --azul:#1414E6; --rojo:#E01E1E; --gris:#666;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;color:var(--texto);cursor:pointer;
+    font-family:"Latin Modern Roman","CMU Serif","Computer Modern Serif","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:20px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+
+  html,body{overflow:hidden}
+  body{background:#fff}
+
+  /* barra superior */
+  .barra-sup{position:fixed;top:0;left:0;right:0;height:46px;z-index:5;background:#fff;border-bottom:1px solid #ddd;
+    padding:0 14px;display:flex;gap:14px;align-items:center;font-size:.85rem;color:var(--gris)}
+  .barra-sup .tit{font-weight:bold;color:#333;white-space:nowrap}
+  .pestanas{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestanas button{font:inherit;font-size:.85rem;padding:3px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    background:#fff;border:1.5px solid #333;color:#333}
+  .pestanas button[aria-selected="true"]{background:#333;color:#fff}
+
+  /* barra inferior: botones grandes (pizarra digital) y progreso */
+  .progreso{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:5;background:#fff;border-top:1px solid #ddd;
+    display:flex;align-items:center;gap:14px;padding:0 14px;font-size:.85rem;color:var(--gris)}
+  .progreso .tira{flex:1;height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;cursor:pointer}
+  .progreso .tira i{display:block;height:100%;background:#2e9e2e;transition:width .35s ease}
+  .progreso .nav{font:inherit;font-size:1.5rem;line-height:1;width:64px;height:38px;border-radius:10px;cursor:pointer;
+    background:#fff;border:2px solid #2e9e2e;color:#2e9e2e}
+  .progreso .nav:active{background:#2e9e2e;color:#fff}
+  .progreso .nav:disabled{opacity:.3;cursor:default}
+  #contador{min-width:12em;text-align:right;white-space:nowrap}
+
+  /* el libro: dos páginas, separadas solo por una línea fina */
+  #libro{position:fixed;left:0;right:0;top:46px;bottom:52px;overflow:hidden;background:#fff;transition:opacity .25s ease}
+  #libro.fuera{opacity:0}
+  #pista{position:absolute;left:0;top:0;height:100%;will-change:transform}
+  #pista.anim{transition:transform .9s cubic-bezier(.65,.05,.25,1)}
+  .hoja{position:absolute;top:0;padding:6px 8px}
+  .pag{position:relative;background:#fff;transform-origin:0 0;padding:30px 40px 0}
+  .pag .cuerpo{display:flow-root;overflow:hidden}
+  .pag .num{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#bbb;font-size:.8rem}
+  #lomo{position:absolute;left:50%;top:14px;bottom:14px;width:0;border-left:1px solid #c9c9c9;pointer-events:none;z-index:2}
+  .hoja.gira .pag{animation:gira .9s ease both}
+  @keyframes gira{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#pista.anim{transition:none}.hoja.gira .pag{animation:none}}
+
+  /* lo que se va escribiendo */
+  .cont{opacity:0;transition:opacity .35s ease}
+  .cont.on{opacity:1}
+  .u{opacity:0;clip-path:inset(-40px 100% -40px -40px);transition:opacity .25s ease,clip-path .85s ease}
+  span.u{display:block}
+  .u.on{opacity:1;clip-path:inset(-40px -40px -40px -40px)}
+  .u.rapido,.cont.rapido{transition:none}
+  .cont.sigue{margin-top:0;padding-top:14px;border-top-left-radius:0;border-top-right-radius:0}
+  h1{margin:0 0 6px;font-size:2.1rem;line-height:1.2}
+  h4{margin:16px 0 6px;font-size:1.18rem}
+
+  /* cajas verdes del modelo */
+  .caja{position:relative;background:var(--verde-fondo);border:1.5px solid var(--verde-borde);
+    border-radius:8px;padding:20px 20px 10px;margin:26px 0 14px}
+  .caja>.titulo{position:absolute;top:-13px;left:12px;background:var(--verde-titulo);color:#fff;
+    font-weight:bold;padding:1px 12px;border-radius:5px;font-size:.92rem}
+  .caja.enunciado{color:var(--azul);margin-top:6px;padding-top:12px}
+  .caja p{margin:.3em 0 .5em}
+  .paso{margin:6px 0 10px}
+
+  .nota{color:var(--gris);font-size:.9em}
+  .rojo{color:var(--rojo)} .azul{color:var(--azul)} .verde{color:#2e9e2e}
+
+  /* circunferencia goniométrica interactiva */
+  .circ{display:flex;gap:16px;align-items:flex-start;margin:6px 0 10px;cursor:default}
+  .circ svg{flex:none;touch-action:none;overflow:visible;cursor:crosshair}
+  .circ text{font-family:inherit;fill:#666}
+  .circ .eje{stroke:#aaa;stroke-width:1}
+  .circ .circunf{fill:none;stroke:#333;stroke-width:1.6}
+  .circ .marca{stroke:#999;stroke-width:1}
+  .circ .lab-sen{fill:var(--rojo)} .circ .lab-cos{fill:var(--azul)}
+  .circ .rec-sen{stroke:var(--rojo);stroke-width:1.4;stroke-dasharray:6 4;opacity:.75}
+  .circ .rec-cos{stroke:var(--azul);stroke-width:1.4;stroke-dasharray:6 4;opacity:.75}
+  .circ .sol circle{fill:#fff;stroke:#2e9e2e;stroke-width:2.5;transition:fill .2s}
+  .circ .sol .radio-sol{stroke:#2e9e2e;stroke-width:1;stroke-dasharray:3 3;opacity:.5}
+  .circ .sol .lab-sol{fill:#2e9e2e;font-weight:bold}
+  .circ .sol.on circle{fill:#2e9e2e;filter:drop-shadow(0 0 4px #2e9e2e) drop-shadow(0 0 10px #2e9e2e)}
+  .circ .sol.on .radio-sol{opacity:1;stroke-width:2;stroke-dasharray:none}
+  .circ .espiral{fill:none;stroke:#888;stroke-width:1.4}
+  .circ .radio{stroke:#333;stroke-width:1.5}
+  .circ .seg-cos{stroke:var(--azul);stroke-width:4;stroke-linecap:round}
+  .circ .seg-sen{stroke:var(--rojo);stroke-width:4;stroke-linecap:round}
+  .circ .gem-sen{stroke:var(--rojo);stroke-width:1.2;stroke-dasharray:4 3}
+  .circ .gem-cos{stroke:var(--azul);stroke-width:1.2;stroke-dasharray:4 3}
+  .circ .pt-sen{fill:#fff;stroke:var(--rojo);stroke-width:2.5}
+  .circ .pt-cos{fill:#fff;stroke:var(--azul);stroke-width:2.5}
+  .circ .pt{fill:#333}
+  .circ .pt.brilla-r{fill:var(--rojo);filter:drop-shadow(0 0 4px #E01E1E) drop-shadow(0 0 10px #E01E1E)}
+  .circ .pt.brilla-a{fill:var(--azul);filter:drop-shadow(0 0 4px #1414E6) drop-shadow(0 0 10px #1414E6)}
+  .circ-panel{flex:1;min-width:0;font-size:.82rem;line-height:1.4;color:#111}
+  .cp-ang{font-size:1.25rem;font-weight:bold;margin-bottom:2px}
+  .cp-l{margin-top:6px}
+  .fam{padding:1px 8px;border-radius:5px;margin:3px 0;transition:background .2s}
+  .fam .rad{color:#666}
+  .fam.on{background:#2e9e2e;color:#fff} .fam.on .rad{color:#E5FFE5}
+  .aviso{margin-top:8px;padding:5px 8px;border-left:3px solid currentColor;background:rgba(255,255,255,.7)}
+  .circ-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+  .circ-vueltas{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+  .circ-chips button,.circ-vueltas button{font:inherit;font-size:.8rem;padding:2px 10px;border-radius:999px;cursor:pointer;
+    background:#fff;border:1.5px solid #333;color:#333}
+  .circ-chips button.sel{background:#333;color:#fff}
+  .circ-vueltas button{border-color:#2e9e2e;color:#2e9e2e}
+  .circ-vueltas button:active{background:#2e9e2e;color:#fff}
+  .katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden}
+</style>
+</head>
+<body>
+<div class="barra-sup">
+  <span class="tit">Ecuaciones trigonométricas</span>
+  <nav class="pestanas" id="pestanas" aria-label="Contenido"></nav>
+</div>
+<div id="libro"><div id="pista"></div><div id="lomo"></div></div>
+<div id="stage" style="position:absolute;left:-99999px;top:0;width:720px;visibility:hidden"></div>
+<div class="progreso">
+  <button class="nav" id="btnAtras" title="Retroceder (←)">‹</button>
+  <button class="nav" id="btnAdelante" title="Avanzar (→)">›</button>
+  <div class="tira" id="tira"><i id="relleno"></i></div>
+  <span id="contador"></span>
+</div>
+
+<script>
+/* ---------------------------------------------------------------------
+   Utilidades de LaTeX
+   --------------------------------------------------------------------- */
+const dsp = x => '$$' + x + '$$';
+const inl = x => '$' + x + '$';
+const p = t => '<p>' + t + '</p>';
+const nota = t => '<p class="nota">' + t + '</p>';
+const az = x => '\\color{#1414E6}{' + x + '}';         // lo que se transforma, en azul
+const paso = (titulo, ...partes) => ({ titulo, html: partes.join('') });
+
+/* las tres fórmulas que se usan */
+const F = {
+  fund: inl(az('\\sen^2x+\\cos^2x=1')),
+  sen2: inl(az('\\sen2x=2\\sen x\\cos x')),
+  cos2: inl(az('\\cos2x=\\cos^2x-\\sen^2x'))
+};
+
+/* =====================================================================
+   CONTENIDO
+   ===================================================================== */
+const FORMULAS = [
+  { t: 'Teorema fundamental de la trigonometría',
+    html: dsp('\\sen^2x+\\cos^2x=1') +
+          p('Despejando, podemos cambiar senos por cosenos y al revés:') +
+          dsp('\\sen^2x=1-\\cos^2x\\qquad\\qquad\\cos^2x=1-\\sen^2x') },
+  { t: 'Seno del ángulo doble',
+    html: dsp('\\sen2x=2\\sen x\\cos x') +
+          p('Pasa del ángulo ' + inl('2x') + ' al ángulo ' + inl('x') + '.') },
+  { t: 'Coseno del ángulo doble',
+    html: dsp('\\cos2x=\\cos^2x-\\sen^2x') +
+          p('Con el teorema fundamental se puede escribir solo con senos o solo con cosenos:') +
+          dsp('\\cos2x=1-2\\sen^2x\\qquad\\qquad\\cos2x=2\\cos^2x-1') }
+];
+
+const VUELTAS = [
+  { t: 'Una vuelta completa: 360° = 2π rad',
+    html: dsp('\\sen(x+360^\\circ k)=\\sen x\\qquad\\cos(x+360^\\circ k)=\\cos x\\qquad k\\in\\mathbb{Z}') +
+          p('Si ' + inl('x') + ' es solución, también lo son ' + inl('x+360^\\circ') + ', ' + inl('x+720^\\circ') + ', ' +
+            inl('x-360^\\circ') + '… Por eso a cada solución se le suma ' + inl('360^\\circ k') +
+            ', que en radianes es ' + inl('2k\\pi') + '.') },
+  { t: 'Ecuación sen x = a',
+    html: p('En una vuelta hay dos ángulos con el mismo seno: ' + inl('\\alpha') + ' y su suplementario ' + inl('180^\\circ-\\alpha') + '.') +
+          dsp('\\sen x=\\tfrac12\\;\\Rightarrow\\;x=30^\\circ,\\quad x=180^\\circ-30^\\circ=150^\\circ') },
+  { t: 'Ecuación cos x = a',
+    html: p('En una vuelta hay dos ángulos con el mismo coseno: ' + inl('\\alpha') + ' y ' + inl('360^\\circ-\\alpha') + '.') +
+          dsp('\\cos x=\\tfrac12\\;\\Rightarrow\\;x=60^\\circ,\\quad x=360^\\circ-60^\\circ=300^\\circ') },
+  { t: 'Cuando basta media vuelta: 180° = π rad',
+    html: p('Si las dos soluciones de una vuelta se diferencian exactamente en ' + inl('180^\\circ') +
+            ', se van alternando cada media vuelta y se agrupan sumando ' + inl('180^\\circ k') + ' (' + inl('k\\pi') + '):') +
+          dsp('\\sen x=0:\\;0^\\circ,180^\\circ,360^\\circ,\\dots\\;\\Rightarrow\\;x=180^\\circ k\\quad(k\\pi)') +
+          dsp('\\cos x=0:\\;90^\\circ,270^\\circ,\\dots\\;\\Rightarrow\\;x=90^\\circ+180^\\circ k\\quad\\left(\\tfrac{\\pi}{2}+k\\pi\\right)') },
+  { t: 'Una sola solución por vuelta',
+    html: p('Con ' + inl('\\pm1') + ' los dos ángulos coinciden y solo hay uno en cada vuelta:') +
+          dsp('\\sen x=1\\to90^\\circ\\qquad\\sen x=-1\\to270^\\circ\\qquad\\cos x=1\\to0^\\circ\\qquad\\cos x=-1\\to180^\\circ') +
+          p('Aquí hay que sumar ' + inl('360^\\circ k') + '. Sumar ' + inl('180^\\circ k') + ' sería un error: por ejemplo, ' +
+            inl('90^\\circ+180^\\circ=270^\\circ') + ' y ' + inl('\\sen270^\\circ=-1\\neq1') + '.') },
+  { t: 'Sin solución',
+    html: p('Como ' + inl('-1\\le\\sen x\\le1') + ' y ' + inl('-1\\le\\cos x\\le1') + ', si ' + inl('|a|>1') +
+            ' las ecuaciones ' + inl('\\sen x=a') + ' y ' + inl('\\cos x=a') + ' no tienen solución.') }
+];
+
+/* ej(nº, ecuación, pasos, explicación de las vueltas, [[solución en grados, en radianes], ...]) */
+/* ecuaciones elementales de cada ejercicio, para su circunferencia */
+const CIRC = ['cos:0;sen:0.5', 'sen:0;cos:0.5', 'sen:0.5;sen:-1', 'cos:0.5;cos:-1',
+              'sen:1;sen:-0.5', 'cos:1;cos:0.5', 'sen:-0.5;sen:-1', 'cos:-0.5;cos:-2'];
+
+const ej = (n, eq, pasos, vueltas, sols) => ({
+  tab: 'Ej. ' + n, titulo: 'Ejercicio ' + n,
+  enunciado: p('Resuelve la siguiente ecuación trigonométrica, dando todas sus soluciones en grados:') + dsp(eq),
+  pasos: pasos.concat([
+    { caja: '¿Cuántas vueltas?',
+      html: '<div class="circ" data-eq="' + CIRC[n - 1] + '" data-tam="280"></div>' + vueltas.map(p).join('') },
+    { caja: 'Soluciones', html: p('Por tanto, las soluciones son:') +
+        sols.map(([g, r]) => dsp('\\color{#E01E1E}{x=' + g + '}\\qquad\\color{#666}{\\left(x=' + r + '\\right)}')).join('') +
+        p('con ' + inl('k\\in\\mathbb{Z}') + '. Entre paréntesis, las mismas soluciones en radianes.') }
+  ])
+});
+
+/* pasos que se repiten */
+const cambio = (r, eq) => p('Hacemos el cambio ' + inl('t=' + r) + ':') + dsp(eq);
+
+const EJERCICIOS = [
+  { tab: 'Fórmulas', titulo: 'Las tres fórmulas',
+    enunciado: p('Haz clic para ir descubriendo las fórmulas. En los ejercicios solo usaremos estas tres.'),
+    pasos: FORMULAS.map((q, i) => ({ caja: (i + 1) + ' · ' + q.t, html: q.html })) },
+
+  { tab: 'Circunferencia', titulo: 'La circunferencia goniométrica',
+    enunciado: p('Mueve el ratón por la circunferencia. El segmento <b class="rojo">rojo</b> es el seno y el ' +
+                 '<b class="azul">azul</b>, el coseno. El punto rojo hueco tiene el mismo seno y el azul hueco, el mismo coseno: ' +
+                 'cuando coinciden con el punto, se iluminan. Arriba puedes elegir una ecuación y abajo, dar vueltas.'),
+    pasos: [{ caja: 'Explora', html: '<div class="circ" data-libre="1" data-tam="340"></div>' }] },
+
+  { tab: 'Vueltas', titulo: 'Todas las soluciones: ¿cuántas vueltas?',
+    enunciado: p('Las razones trigonométricas se repiten en cada vuelta. Por eso una ecuación trigonométrica tiene ' +
+                 'infinitas soluciones y hay que escribirlas todas: primero las buscamos en ' + inl('[0^\\circ,360^\\circ)') +
+                 ' y después añadimos las vueltas.'),
+    pasos: VUELTAS.map((q, i) => ({ caja: (i + 1) + ' · ' + q.t, html: q.html })) },
+
+  ej(1, '\\sen2x=\\cos x', [
+    paso('Aplicamos el seno del ángulo doble',
+      p(F.sen2),
+      dsp(az('\\sen2x') + '=\\cos x'),
+      dsp(az('2\\sen x\\cos x') + '=\\cos x')),
+    paso('Pasamos todo a un miembro y sacamos factor común',
+      dsp('2\\sen x\\cos x-\\cos x=0'),
+      dsp('\\cos x\\,(2\\sen x-1)=0'),
+      nota('No dividimos entre ' + inl('\\cos x') + ': perderíamos las soluciones con ' + inl('\\cos x=0') + '.')),
+    paso('Igualamos cada factor a cero',
+      dsp('\\cos x=0\\qquad\\text{o}\\qquad\\sen x=\\tfrac12')),
+    paso('Resolvemos en una vuelta, ' + inl('[0^\\circ,360^\\circ)'),
+      p(inl('\\cos x=0') + ': ' + inl('x=90^\\circ') + ' y ' + inl('x=270^\\circ') + '.'),
+      p(inl('\\sen x=\\frac12') + ': ' + inl('x=30^\\circ') + ' y ' + inl('x=180^\\circ-30^\\circ=150^\\circ') + '.'))
+  ], ['90° y 270° se diferencian en ' + inl('180^\\circ') + ': las soluciones de ' + inl('\\cos x=0') +
+      ' se repiten cada media vuelta, así que sumamos ' + inl('180^\\circ k') + ' (' + inl('k\\pi') + ').',
+      '30° y 150° no se diferencian en 180°: cada una se repite solo cada vuelta completa, ' +
+      inl('360^\\circ k') + ' (' + inl('2k\\pi') + ').'],
+  [['90^\\circ+180^\\circ k', '\\frac{\\pi}{2}+k\\pi'],
+   ['30^\\circ+360^\\circ k', '\\frac{\\pi}{6}+2k\\pi'],
+   ['150^\\circ+360^\\circ k', '\\frac{5\\pi}{6}+2k\\pi']]),
+
+  ej(2, '\\sen2x=\\sen x', [
+    paso('Aplicamos el seno del ángulo doble',
+      p(F.sen2),
+      dsp(az('\\sen2x') + '=\\sen x'),
+      dsp(az('2\\sen x\\cos x') + '=\\sen x')),
+    paso('Pasamos todo a un miembro y sacamos factor común',
+      dsp('2\\sen x\\cos x-\\sen x=0'),
+      dsp('\\sen x\\,(2\\cos x-1)=0'),
+      nota('No dividimos entre ' + inl('\\sen x') + ': perderíamos las soluciones con ' + inl('\\sen x=0') + '.')),
+    paso('Igualamos cada factor a cero',
+      dsp('\\sen x=0\\qquad\\text{o}\\qquad\\cos x=\\tfrac12')),
+    paso('Resolvemos en una vuelta, ' + inl('[0^\\circ,360^\\circ)'),
+      p(inl('\\sen x=0') + ': ' + inl('x=0^\\circ') + ' y ' + inl('x=180^\\circ') + '.'),
+      p(inl('\\cos x=\\frac12') + ': ' + inl('x=60^\\circ') + ' y ' + inl('x=360^\\circ-60^\\circ=300^\\circ') + '.'))
+  ], ['0° y 180° se diferencian en ' + inl('180^\\circ') + ': el seno vale 0 cada media vuelta (0°, 180°, 360°, …), ' +
+      'así que las agrupamos en ' + inl('180^\\circ k') + ' (' + inl('k\\pi') + ').',
+      '60° y 300° se diferencian en 240°: cada una se repite cada vuelta completa, ' +
+      inl('360^\\circ k') + ' (' + inl('2k\\pi') + ').'],
+  [['180^\\circ k', 'k\\pi'],
+   ['60^\\circ+360^\\circ k', '\\frac{\\pi}{3}+2k\\pi'],
+   ['300^\\circ+360^\\circ k', '\\frac{5\\pi}{3}+2k\\pi']]),
+
+  ej(3, '\\cos2x=\\sen x', [
+    paso('Escribimos el coseno del ángulo doble solo con senos',
+      p(F.cos2 + ' y, por el teorema fundamental, ' + inl(az('\\cos^2x=1-\\sen^2x')) + ':'),
+      dsp(az('\\cos2x') + '=\\sen x'),
+      dsp(az('(1-\\sen^2x)-\\sen^2x') + '=\\sen x'),
+      dsp('1-2\\sen^2x=\\sen x')),
+    paso('Queda una ecuación de segundo grado en ' + inl('\\sen x'),
+      dsp('2\\sen^2x+\\sen x-1=0'),
+      cambio('\\sen x', '2t^2+t-1=0')),
+    paso('Resolvemos la ecuación de segundo grado',
+      dsp('t=\\frac{-1\\pm\\sqrt{1+8}}{4}=\\frac{-1\\pm3}{4}'),
+      dsp('t=\\tfrac12\\qquad\\text{o}\\qquad t=-1')),
+    paso('Deshacemos el cambio y resolvemos en una vuelta',
+      p(inl('\\sen x=\\frac12') + ': ' + inl('x=30^\\circ') + ' y ' + inl('x=150^\\circ') + '.'),
+      p(inl('\\sen x=-1') + ': solo ' + inl('x=270^\\circ') + '.'))
+  ], [inl('\\sen x=-1') + ' se cumple una sola vez en cada vuelta (en 270°), así que sumamos ' + inl('360^\\circ k') +
+      '. Con ' + inl('180^\\circ k') + ' llegaríamos a 90°, donde el seno vale 1.',
+      '30° y 150° tampoco se diferencian en 180°: cada una con ' + inl('360^\\circ k') + ' (' + inl('2k\\pi') + ').'],
+  [['30^\\circ+360^\\circ k', '\\frac{\\pi}{6}+2k\\pi'],
+   ['150^\\circ+360^\\circ k', '\\frac{5\\pi}{6}+2k\\pi'],
+   ['270^\\circ+360^\\circ k', '\\frac{3\\pi}{2}+2k\\pi']]),
+
+  ej(4, '\\cos2x+\\cos x=0', [
+    paso('Escribimos el coseno del ángulo doble solo con cosenos',
+      p(F.cos2 + ' y, por el teorema fundamental, ' + inl(az('\\sen^2x=1-\\cos^2x')) + ':'),
+      dsp(az('\\cos2x') + '+\\cos x=0'),
+      dsp(az('\\cos^2x-(1-\\cos^2x)') + '+\\cos x=0'),
+      dsp('2\\cos^2x-1+\\cos x=0')),
+    paso('Queda una ecuación de segundo grado en ' + inl('\\cos x'),
+      dsp('2\\cos^2x+\\cos x-1=0'),
+      cambio('\\cos x', '2t^2+t-1=0')),
+    paso('Resolvemos la ecuación de segundo grado',
+      dsp('t=\\frac{-1\\pm\\sqrt{1+8}}{4}=\\frac{-1\\pm3}{4}'),
+      dsp('t=\\tfrac12\\qquad\\text{o}\\qquad t=-1')),
+    paso('Deshacemos el cambio y resolvemos en una vuelta',
+      p(inl('\\cos x=\\frac12') + ': ' + inl('x=60^\\circ') + ' y ' + inl('x=360^\\circ-60^\\circ=300^\\circ') + '.'),
+      p(inl('\\cos x=-1') + ': solo ' + inl('x=180^\\circ') + '.'))
+  ], [inl('\\cos x=-1') + ' se cumple una sola vez en cada vuelta (en 180°): sumamos ' + inl('360^\\circ k') + ' (' + inl('2k\\pi') + ').',
+      '60° y 300° se diferencian en 240°, no en 180°: cada una con ' + inl('360^\\circ k') + '.'],
+  [['60^\\circ+360^\\circ k', '\\frac{\\pi}{3}+2k\\pi'],
+   ['300^\\circ+360^\\circ k', '\\frac{5\\pi}{3}+2k\\pi'],
+   ['180^\\circ+360^\\circ k', '\\pi+2k\\pi']]),
+
+  ej(5, '2\\cos^2x+\\sen x=1', [
+    paso('Aplicamos el teorema fundamental',
+      p(F.fund + ', de donde ' + inl(az('\\cos^2x=1-\\sen^2x')) + ':'),
+      dsp('2' + az('\\cos^2x') + '+\\sen x=1'),
+      dsp('2' + az('(1-\\sen^2x)') + '+\\sen x=1')),
+    paso('Queda una ecuación de segundo grado en ' + inl('\\sen x'),
+      dsp('2-2\\sen^2x+\\sen x-1=0'),
+      dsp('2\\sen^2x-\\sen x-1=0'),
+      cambio('\\sen x', '2t^2-t-1=0')),
+    paso('Resolvemos la ecuación de segundo grado',
+      dsp('t=\\frac{1\\pm\\sqrt{1+8}}{4}=\\frac{1\\pm3}{4}'),
+      dsp('t=1\\qquad\\text{o}\\qquad t=-\\tfrac12')),
+    paso('Deshacemos el cambio y resolvemos en una vuelta',
+      p(inl('\\sen x=1') + ': solo ' + inl('x=90^\\circ') + '.'),
+      p(inl('\\sen x=-\\frac12') + ': el seno es negativo en el 3.º y 4.º cuadrante; el ángulo de referencia es 30°: ' +
+        inl('x=180^\\circ+30^\\circ=210^\\circ') + ' y ' + inl('x=360^\\circ-30^\\circ=330^\\circ') + '.'))
+  ], [inl('\\sen x=1') + ' solo se cumple en 90° en cada vuelta: sumamos ' + inl('360^\\circ k') + ' (' + inl('2k\\pi') + ').',
+      '210° y 330° se diferencian en 120°, no en 180°: cada una con ' + inl('360^\\circ k') + '.'],
+  [['90^\\circ+360^\\circ k', '\\frac{\\pi}{2}+2k\\pi'],
+   ['210^\\circ+360^\\circ k', '\\frac{7\\pi}{6}+2k\\pi'],
+   ['330^\\circ+360^\\circ k', '\\frac{11\\pi}{6}+2k\\pi']]),
+
+  ej(6, '2\\sen^2x+3\\cos x=3', [
+    paso('Aplicamos el teorema fundamental',
+      p(F.fund + ', de donde ' + inl(az('\\sen^2x=1-\\cos^2x')) + ':'),
+      dsp('2' + az('\\sen^2x') + '+3\\cos x=3'),
+      dsp('2' + az('(1-\\cos^2x)') + '+3\\cos x=3')),
+    paso('Queda una ecuación de segundo grado en ' + inl('\\cos x'),
+      dsp('2-2\\cos^2x+3\\cos x-3=0'),
+      dsp('2\\cos^2x-3\\cos x+1=0'),
+      cambio('\\cos x', '2t^2-3t+1=0')),
+    paso('Resolvemos la ecuación de segundo grado',
+      dsp('t=\\frac{3\\pm\\sqrt{9-8}}{4}=\\frac{3\\pm1}{4}'),
+      dsp('t=1\\qquad\\text{o}\\qquad t=\\tfrac12')),
+    paso('Deshacemos el cambio y resolvemos en una vuelta',
+      p(inl('\\cos x=1') + ': solo ' + inl('x=0^\\circ') + '.'),
+      p(inl('\\cos x=\\frac12') + ': ' + inl('x=60^\\circ') + ' y ' + inl('x=360^\\circ-60^\\circ=300^\\circ') + '.'))
+  ], [inl('\\cos x=1') + ' solo se cumple en 0° en cada vuelta: ' + inl('x=0^\\circ+360^\\circ k') +
+      ', es decir, ' + inl('360^\\circ k') + ' (' + inl('2k\\pi') + '). Con ' + inl('180^\\circ k') +
+      ' llegaríamos a 180°, donde el coseno vale −1.',
+      '60° y 300°: cada una con ' + inl('360^\\circ k') + '.'],
+  [['360^\\circ k', '2k\\pi'],
+   ['60^\\circ+360^\\circ k', '\\frac{\\pi}{3}+2k\\pi'],
+   ['300^\\circ+360^\\circ k', '\\frac{5\\pi}{3}+2k\\pi']]),
+
+  ej(7, '\\cos2x=3\\sen x+2', [
+    paso('Escribimos el coseno del ángulo doble solo con senos',
+      p(F.cos2 + ' y, por el teorema fundamental, ' + inl(az('\\cos^2x=1-\\sen^2x')) + ':'),
+      dsp(az('\\cos2x') + '=3\\sen x+2'),
+      dsp(az('(1-\\sen^2x)-\\sen^2x') + '=3\\sen x+2'),
+      dsp('1-2\\sen^2x=3\\sen x+2')),
+    paso('Queda una ecuación de segundo grado en ' + inl('\\sen x'),
+      dsp('0=2\\sen^2x+3\\sen x+1'),
+      cambio('\\sen x', '2t^2+3t+1=0')),
+    paso('Resolvemos la ecuación de segundo grado',
+      dsp('t=\\frac{-3\\pm\\sqrt{9-8}}{4}=\\frac{-3\\pm1}{4}'),
+      dsp('t=-\\tfrac12\\qquad\\text{o}\\qquad t=-1')),
+    paso('Deshacemos el cambio y resolvemos en una vuelta',
+      p(inl('\\sen x=-\\frac12') + ': 3.º y 4.º cuadrante, ángulo de referencia 30°: ' +
+        inl('x=210^\\circ') + ' y ' + inl('x=330^\\circ') + '.'),
+      p(inl('\\sen x=-1') + ': solo ' + inl('x=270^\\circ') + '.'))
+  ], ['Las tres soluciones de la vuelta son 210°, 270° y 330°. Ningún par se diferencia en 180°, ' +
+      'así que cada una se repite solo cada vuelta completa: ' + inl('360^\\circ k') + ' (' + inl('2k\\pi') + ').'],
+  [['210^\\circ+360^\\circ k', '\\frac{7\\pi}{6}+2k\\pi'],
+   ['330^\\circ+360^\\circ k', '\\frac{11\\pi}{6}+2k\\pi'],
+   ['270^\\circ+360^\\circ k', '\\frac{3\\pi}{2}+2k\\pi']]),
+
+  ej(8, '\\cos2x+5\\cos x+3=0', [
+    paso('Escribimos el coseno del ángulo doble solo con cosenos',
+      p(F.cos2 + ' y, por el teorema fundamental, ' + inl(az('\\sen^2x=1-\\cos^2x')) + ':'),
+      dsp(az('\\cos2x') + '+5\\cos x+3=0'),
+      dsp(az('\\cos^2x-(1-\\cos^2x)') + '+5\\cos x+3=0'),
+      dsp('2\\cos^2x-1+5\\cos x+3=0')),
+    paso('Queda una ecuación de segundo grado en ' + inl('\\cos x'),
+      dsp('2\\cos^2x+5\\cos x+2=0'),
+      cambio('\\cos x', '2t^2+5t+2=0')),
+    paso('Resolvemos la ecuación de segundo grado',
+      dsp('t=\\frac{-5\\pm\\sqrt{25-16}}{4}=\\frac{-5\\pm3}{4}'),
+      dsp('t=-\\tfrac12\\qquad\\text{o}\\qquad t=-2')),
+    paso('Deshacemos el cambio y resolvemos en una vuelta',
+      p(inl('\\cos x=-2') + ' no tiene solución, porque ' + inl('-1\\le\\cos x\\le1') + '.'),
+      p(inl('\\cos x=-\\frac12') + ': el coseno es negativo en el 2.º y 3.º cuadrante; el ángulo de referencia es 60°: ' +
+        inl('x=180^\\circ-60^\\circ=120^\\circ') + ' y ' + inl('x=180^\\circ+60^\\circ=240^\\circ') + '.'))
+  ], ['120° y 240° se diferencian en 120°, no en 180°: cada una se repite cada vuelta completa, ' +
+      inl('360^\\circ k') + ' (' + inl('2k\\pi') + ').'],
+  [['120^\\circ+360^\\circ k', '\\frac{2\\pi}{3}+2k\\pi'],
+   ['240^\\circ+360^\\circ k', '\\frac{4\\pi}{3}+2k\\pi']])
+];
+
+/* ===================================================================== */
+const OPCIONES_MATE = {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "$",  right: "$",  display: false}
+  ],
+  macros: { "\\sen": "\\operatorname{sen}" },
+  throwOnError: false
+};
+const $ = id => document.getElementById(id);
+function mate(el) { if (window.renderMathInElement) renderMathInElement(el, OPCIONES_MATE); }
+
+/* ---------------------------------------------------------------------
+   CIRCUNFERENCIA GONIOMÉTRICA INTERACTIVA
+   <div class="circ" data-eq="sen:0.5;cos:0" data-tam="280">  (ecuaciones)
+   <div class="circ" data-libre="1" data-tam="340">             (exploración)
+   --------------------------------------------------------------------- */
+const NS = "http://www.w3.org/2000/svg";
+const mod = (a, m) => ((a % m) + m) % m;
+function nodo(tag, at, padre) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in at) e.setAttribute(k, at[k]);
+  if (padre) padre.appendChild(e);
+  return e;
+}
+const VAL = [[0, '0'], [0.5, '½'], [Math.SQRT2 / 2, '√2/2'], [Math.sqrt(3) / 2, '√3/2'], [1, '1']];
+function fmt(v) {
+  if (Number.isInteger(v)) return v < 0 ? '−' + (-v) : String(v);
+  const a = Math.abs(v);
+  for (const [x, t] of VAL) if (Math.abs(a - x) < 1e-6) return (v < 0 && x ? '−' : '') + t;
+  return (v < 0 ? '−' : '') + a.toFixed(2).replace('.', ',');
+}
+const mcd = (a, b) => b ? mcd(b, a % b) : a;
+function piFrac(g) {
+  if (!g) return '0';
+  const m = mcd(g, 180), n = g / m, d = 180 / m;
+  return (n === 1 ? '' : n) + 'π' + (d === 1 ? '' : '/' + d);
+}
+function famTexto(f) {
+  const kp = f.paso === 360 ? '2kπ' : 'kπ';
+  return {
+    g: 'x = ' + (f.base === 0 ? f.paso + '°k' : f.base + '° + ' + f.paso + '°k'),
+    r: 'x = ' + (f.base === 0 ? kp : piFrac(f.base) + ' + ' + kp)
+  };
+}
+function resolver(e) {
+  if (Math.abs(e.a) > 1) return [];
+  const al = Math.round((e.f === 'sen' ? Math.asin(e.a) : Math.acos(e.a)) * 180 / Math.PI);
+  const c = [mod(al, 360), mod(e.f === 'sen' ? 180 - al : 360 - al, 360)];
+  return [...new Set(c)].sort((a, b) => a - b);
+}
+function familias(e, angs) {
+  if (angs.length === 2 && angs[1] - angs[0] === 180) return [{ base: angs[0], paso: 180, angs, eq: e }];
+  return angs.map(a => ({ base: a, paso: 360, angs: [a], eq: e }));
+}
+function porQue(f) {
+  const e = f.eq, fn = e.f + ' x = ' + fmt(e.a);
+  if (f.paso === 180)
+    return f.angs[0] + '° y ' + f.angs[1] + '° están a 180°: el punto se repite cada media vuelta → sumamos 180°k (kπ).';
+  if (e.angs.length === 1)
+    return fn + ' solo se cumple en un punto de la circunferencia → hay que dar la vuelta entera: 360°k (2kπ).';
+  const otro = e.angs.find(x => x !== f.base);
+  return 'El otro punto con ' + fn + ' es ' + otro + '°, que no está a 180° de este → cada uno se repite cada vuelta: 360°k (2kπ).';
+}
+const parseEq = t => (t || '').split(';').filter(Boolean).map(q => { const [f, a] = q.split(':'); return { f, a: +a }; });
+
+function iniciarCirculo(div) {
+  if (div._ok) return;
+  div._ok = true;
+  const S = +div.dataset.tam || 300, R = S * 0.36, C = S / 2, libre = !!div.dataset.libre;
+  const X = u => C + R * u, Y = v => C - R * v;
+  let eqs = parseEq(div.dataset.eq), fams = [], sols = [], ptsSol = {};
+  let th = 30, k = 0, anim = false;
+
+  const svg = nodo('svg', { viewBox: '0 0 ' + S + ' ' + S, width: S, height: S });
+  svg.style.fontSize = (S / 19) + 'px';
+  const gF = nodo('g', {}, svg), gS = nodo('g', {}, svg), gD = nodo('g', {}, svg);
+
+  const panel = document.createElement('div');
+  panel.className = 'circ-panel';
+  panel.style.minHeight = S + 'px';
+  if (libre) {
+    const chips = document.createElement('div');
+    chips.className = 'circ-chips';
+    [['Libre', ''], ['sen x = ½', 'sen:0.5'], ['sen x = −½', 'sen:-0.5'], ['cos x = ½', 'cos:0.5'],
+     ['cos x = −½', 'cos:-0.5'], ['sen x = 0', 'sen:0'], ['cos x = 0', 'cos:0'], ['sen x = 1', 'sen:1'],
+     ['sen x = −1', 'sen:-1'], ['cos x = 1', 'cos:1'], ['cos x = −1', 'cos:-1']].forEach(([t, v], i) => {
+      const b = document.createElement('button');
+      b.textContent = t;
+      if (!i) b.classList.add('sel');
+      b.onclick = ev => {
+        ev.stopPropagation();
+        chips.querySelectorAll('button').forEach(x => x.classList.remove('sel'));
+        b.classList.add('sel');
+        eqs = parseEq(v); preparar();
+        if (sols.length) th = sols[0];
+        pintar();
+      };
+      chips.appendChild(b);
+    });
+    panel.appendChild(chips);
+  }
+  const info = document.createElement('div');
+  panel.appendChild(info);
+  const vb = document.createElement('div');
+  vb.className = 'circ-vueltas';
+  vb.innerHTML = '<button data-d="-1">↺ −1 vuelta</button><button data-d="1">+1 vuelta ↻</button>';
+  vb.querySelectorAll('button').forEach(b => b.onclick = ev => { ev.stopPropagation(); girar(+b.dataset.d); });
+  panel.appendChild(vb);
+  div.append(svg, panel);
+  div.addEventListener('click', ev => ev.stopPropagation());
+
+  function txt(x, y, t, cls, an, g) {
+    const e = nodo('text', { x, y, class: cls, 'text-anchor': an }, g);
+    e.textContent = t;
+    return e;
+  }
+  function etiqueta(a, t, cls, g) {
+    const r = a * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
+    txt(X(1.12 * c), Y(1.12 * s) + (s > .3 ? -2 : s < -.3 ? 13 : 5), t, cls,
+        c > .3 ? 'start' : c < -.3 ? 'end' : 'middle', g);
+  }
+
+  function preparar() {
+    fams = []; sols = []; ptsSol = {};
+    eqs.forEach(e => { e.angs = resolver(e); fams.push(...familias(e, e.angs)); sols.push(...e.angs); });
+    sols = [...new Set(sols)];
+    gF.innerHTML = ''; gS.innerHTML = '';
+    const L = 1.3;
+    nodo('line', { x1: X(-L), y1: C, x2: X(L), y2: C, class: 'eje' }, gF);
+    nodo('line', { x1: C, y1: Y(-L), x2: C, y2: Y(L), class: 'eje' }, gF);
+    nodo('circle', { cx: C, cy: C, r: R, class: 'circunf' }, gF);
+    for (let a = 0; a < 360; a += 30) {
+      const r = a * Math.PI / 180;
+      nodo('line', { x1: X(.95 * Math.cos(r)), y1: Y(.95 * Math.sin(r)),
+                     x2: X(1.05 * Math.cos(r)), y2: Y(1.05 * Math.sin(r)), class: 'marca' }, gF);
+    }
+    [0, 90, 180, 270].forEach(a => { if (!sols.includes(a)) etiqueta(a, a + '°', '', gF); });
+    eqs.forEach(e => {
+      if (Math.abs(e.a) > 1) return;
+      if (e.f === 'sen') {
+        nodo('line', { x1: X(-L), y1: Y(e.a), x2: X(L), y2: Y(e.a), class: 'rec-sen' }, gF);
+        txt(X(L), Y(e.a) - 5, 'sen x = ' + fmt(e.a), 'lab-sen', 'end', gF);
+      } else {
+        nodo('line', { x1: X(e.a), y1: Y(-L), x2: X(e.a), y2: Y(L), class: 'rec-cos' }, gF);
+        txt(X(e.a) + 5, Y(L) + 12, 'cos x = ' + fmt(e.a), 'lab-cos', 'start', gF);
+      }
+    });
+    sols.forEach(a => {
+      const r = a * Math.PI / 180, g = nodo('g', { class: 'sol' }, gS);
+      nodo('line', { x1: C, y1: C, x2: X(Math.cos(r)), y2: Y(Math.sin(r)), class: 'radio-sol' }, g);
+      nodo('circle', { cx: X(Math.cos(r)), cy: Y(Math.sin(r)), r: 6.5 }, g);
+      etiqueta(a, a + '°', 'lab-sol', g);
+      ptsSol[a] = g;
+    });
+  }
+
+  function textoAng(tot) {
+    const v = Math.floor(tot / 360), a = Math.round(mod(tot, 360));
+    if (!v) return a + '°';
+    return a + '° ' + (v > 0 ? '+ ' : '− ') + (Math.abs(v) > 1 ? Math.abs(v) + '·' : '') + '360° = ' + Math.round(tot) + '°';
+  }
+
+  function pintar(tot) {
+    if (tot === undefined) tot = th + 360 * k;
+    const a = mod(tot, 360), r = a * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
+    gD.innerHTML = '';
+    /* ángulo recorrido: una espiral, una espira por cada vuelta */
+    const pts = [], n = Math.max(2, Math.ceil(Math.abs(tot) / 3));
+    for (let i = 0; i <= n; i++) {
+      const t = tot * i / n, rr = .17 + .06 * Math.abs(t) / 360, q = t * Math.PI / 180;
+      pts.push(X(rr * Math.cos(q)).toFixed(1) + ',' + Y(rr * Math.sin(q)).toFixed(1));
+    }
+    nodo('polyline', { points: pts.join(' '), class: 'espiral' }, gD);
+    nodo('line', { x1: C, y1: C, x2: X(c), y2: Y(s), class: 'radio' }, gD);
+    nodo('line', { x1: C, y1: C, x2: X(c), y2: C, class: 'seg-cos' }, gD);
+    nodo('line', { x1: X(c), y1: C, x2: X(c), y2: Y(s), class: 'seg-sen' }, gD);
+
+    const explorar = !eqs.length;
+    const aS = Math.round(mod(180 - a, 360)), aC = Math.round(mod(360 - a, 360));
+    const coinS = explorar && Math.abs(Math.abs(s) - 1) < 1e-9;
+    const coinC = explorar && Math.abs(Math.abs(c) - 1) < 1e-9;
+    if (explorar) {
+      if (!coinS) {
+        const q = aS * Math.PI / 180;
+        nodo('line', { x1: X(c), y1: Y(s), x2: X(Math.cos(q)), y2: Y(Math.sin(q)), class: 'gem-sen' }, gD);
+        nodo('circle', { cx: X(Math.cos(q)), cy: Y(Math.sin(q)), r: 6, class: 'pt-sen' }, gD);
+      }
+      if (!coinC) {
+        const q = aC * Math.PI / 180;
+        nodo('line', { x1: X(c), y1: Y(s), x2: X(Math.cos(q)), y2: Y(Math.sin(q)), class: 'gem-cos' }, gD);
+        nodo('circle', { cx: X(Math.cos(q)), cy: Y(Math.sin(q)), r: 6, class: 'pt-cos' }, gD);
+      }
+    }
+    const P = nodo('circle', { cx: X(c), cy: Y(s), r: 6, class: 'pt' }, gD);
+    if (coinS) P.classList.add('brilla-r');
+    if (coinC) P.classList.add('brilla-a');
+
+    /* familia de soluciones bajo el ratón */
+    let activa = null;
+    const ai = Math.round(a);
+    if (Math.abs(a - ai) < 1e-6 && ptsSol[ai]) activa = fams.find(f => f.angs.includes(ai));
+    for (const g in ptsSol) ptsSol[g].classList.toggle('on', !!activa && activa.angs.includes(+g));
+
+    let h = '<div class="cp-ang">x = ' + textoAng(tot) + '</div>' +
+            '<div><span class="rojo">sen x = ' + fmt(s) + '</span> &nbsp; <span class="azul">cos x = ' + fmt(c) + '</span></div>';
+    if (explorar) {
+      h += '<div class="cp-l">Mismo seno: <b class="rojo">' + aS + '°</b> <span class="nota">(180° − x)</span></div>' +
+           '<div class="cp-l">Mismo coseno: <b class="azul">' + aC + '°</b> <span class="nota">(360° − x)</span></div>';
+      if (coinS) h += '<div class="aviso rojo">¡Coinciden! El punto con el mismo seno es él mismo: sen x = ' + fmt(s) +
+                      ' tiene una sola solución por vuelta → 360°k (2kπ).</div>';
+      if (coinC) h += '<div class="aviso azul">¡Coinciden! El punto con el mismo coseno es él mismo: cos x = ' + fmt(c) +
+                      ' tiene una sola solución por vuelta → 360°k (2kπ).</div>';
+      if (Math.abs(s) < 1e-9) h += '<div class="aviso rojo">sen x = 0 en ' + Math.min(ai, aS) + '° y ' + Math.max(ai, aS) +
+                      '°: están a 180°, se repiten cada media vuelta → 180°k (kπ).</div>';
+      if (Math.abs(c) < 1e-9) h += '<div class="aviso azul">cos x = 0 en 90° y 270°: están a 180°, se repiten cada media vuelta → 90° + 180°k (π/2 + kπ).</div>';
+    } else {
+      eqs.filter(e => !e.angs.length).forEach(e => {
+        h += '<div class="aviso">' + e.f + ' x = ' + fmt(e.a) + ': la recta no corta a la circunferencia → sin solución.</div>';
+      });
+      h += '<div class="cp-l">Soluciones:</div>';
+      fams.forEach(f => {
+        const t = famTexto(f);
+        h += '<div class="fam' + (f === activa ? ' on' : '') + '">' + t.g + ' <span class="rad">(' + t.r + ')</span></div>';
+      });
+      h += activa ? '<div class="aviso verde">' + porQue(activa) + '</div>'
+                  : '<div class="nota cp-l">Pasa el ratón por los puntos verdes.</div>';
+    }
+    if (Math.floor(tot / 360)) h += '<div class="nota cp-l">Dar vueltas enteras lleva al mismo punto: mismo seno y mismo coseno.</div>';
+    info.innerHTML = h;
+  }
+
+  function angRaton(ev) {
+    const pt = svg.createSVGPoint();
+    pt.x = ev.clientX; pt.y = ev.clientY;
+    const q = pt.matrixTransform(svg.getScreenCTM().inverse());
+    return mod(Math.atan2(C - q.y, q.x - C) * 180 / Math.PI, 360);
+  }
+  const dist = (a, b) => Math.abs(mod(a - b + 180, 360) - 180);
+  svg.addEventListener('pointermove', ev => {
+    if (anim) return;
+    let a = angRaton(ev), elegido = null;
+    sols.forEach(x => { if (dist(a, x) < 7 && (elegido === null || dist(a, x) < dist(a, elegido))) elegido = x; });
+    if (elegido === null)
+      for (let m = 0; m < 360; m += 15)
+        if ((m % 30 === 0 || m % 45 === 0) && dist(a, m) < 3.5) elegido = m;
+    th = elegido !== null ? elegido : mod(Math.round(a), 360);
+    pintar();
+  });
+
+  function girar(d) {
+    if (anim) return;
+    anim = true;
+    const t0 = th + 360 * k, t1 = t0 + 360 * d, ini = performance.now(), dur = 1300;
+    const paso = now => {
+      let u = Math.min(1, (now - ini) / dur);
+      u = u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+      pintar(t0 + (t1 - t0) * u);
+      if (u < 1) requestAnimationFrame(paso);
+      else { anim = false; k += d; pintar(); }
+    };
+    requestAnimationFrame(paso);
+  }
+
+  preparar();
+  th = sols.length ? sols[0] : 30;
+  pintar();
+}
+
+/* ---------------------------------------------------------------------
+   MOTOR DEL LIBRO
+   - Cada ejercicio se trocea en "secciones" (un paso, una caja...). Cada
+     clic escribe la siguiente sección.
+   - Las secciones se reparten en páginas de tamaño fijo (como un libro).
+   - Se ven dos páginas. Cuando se llena la de la derecha, pasa a ser la
+     de la izquierda y aparece una página nueva a la derecha.
+   --------------------------------------------------------------------- */
+const LW = 800;                     // ancho lógico de una página (px)
+let actual = 0;                     // ejercicio activo
+let s = 0;                          // pasos escritos
+let G = {};                         // geometría
+let libro = null;                   // {unidades, paginas}
+let Lprev = 0;
+
+function geometria() {
+  const W = $("libro").clientWidth, H = $("libro").clientHeight;
+  const Sw = W / 2, k = (Sw - 20) / LW;
+  G = { W, H, Sw, k, LH: (H - 20) / k };
+}
+
+/* trocea un ejercicio en secciones y unidades */
+function extraer(e) {
+  if (e._sec) return e._sec;
+  const stage = $("stage"), secs = [];
+  const add = (tipo, cab, html, mismo) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    stage.appendChild(d);
+    mate(d);
+    d.querySelectorAll(".circ").forEach(iniciarCirculo);
+    const unidades = [];
+    d.childNodes.forEach(n => {
+      if (n.nodeType === 1) unidades.push(n);
+      else if (n.nodeType === 3 && n.textContent.trim()) {
+        const sp = document.createElement("span"); sp.textContent = n.textContent; unidades.push(sp);
+      }
+    });
+    let cabHTML = null;
+    if (cab) { const c = document.createElement("div"); c.innerHTML = cab; mate(c); cabHTML = c.innerHTML; }
+    secs.push({ tipo, cabHTML, unidades, mismo: !!mismo });
+  };
+  add("titulo", null, "<h1>" + e.titulo + "</h1>");
+  add("enun", null, e.enunciado, true);             // título y enunciado salen juntos con un clic
+  e.pasos.forEach(q => add(q.caja ? "caja" : "paso", q.caja || q.titulo, q.html));
+  stage.innerHTML = "";
+  /* un clic = un paso: todo lo de una sección sale a la vez */
+  let base = 0;
+  secs.forEach(sc => {
+    const t = sc.mismo ? base : base + 1;
+    sc.unidades = sc.unidades.map(n => ({ n, t, subs: [] }));
+    base = t;
+  });
+  e._T = base;
+  e._sec = secs;
+  return secs;
+}
+
+function crearCont(sc, sigue) {
+  const c = document.createElement("div");
+  c.className = "cont";
+  if (sc.tipo === "caja") {
+    c.classList.add("caja");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", '<span class="titulo">' + sc.cabHTML + "</span>");
+  } else if (sc.tipo === "paso") {
+    c.classList.add("paso");
+    if (!sigue) c.insertAdjacentHTML("afterbegin", "<h4>" + sc.cabHTML + "</h4>");
+  } else if (sc.tipo === "enun") {
+    c.classList.add("caja", "enunciado");
+  }
+  if (sigue) c.classList.add("sigue");
+  return c;
+}
+
+/* una fórmula más ancha que la página se reduce hasta caber */
+function ajustar(u) {
+  u.querySelectorAll(".katex-display").forEach(d => {
+    const k = d.firstElementChild;
+    if (!k) return;
+    k.style.zoom = "";
+    if (d.scrollWidth > d.clientWidth + 2) k.style.zoom = String(Math.max(.55, d.clientWidth / d.scrollWidth * .98));
+  });
+}
+
+/* reparte las unidades en páginas del tamaño actual */
+function paginar(secs, T) {
+  secs.T = T;
+  const pista = $("pista");
+  pista.innerHTML = "";
+  const paginas = [], unidades = [];
+  const nueva = () => {
+    const hoja = document.createElement("div");
+    hoja.className = "hoja";
+    hoja.style.cssText = "left:" + (paginas.length * G.Sw) + "px;width:" + G.Sw + "px;height:" + G.H + "px";
+    const pag = document.createElement("div");
+    pag.className = "pag";
+    pag.style.cssText = "width:" + LW + "px;height:" + G.LH + "px;transform:scale(" + G.k + ")";
+    const cu = document.createElement("div");
+    cu.className = "cuerpo";
+    cu.style.height = (G.LH - 34 - 56) + "px";
+    const num = document.createElement("div");
+    num.className = "num"; num.textContent = paginas.length + 1;
+    pag.append(cu, num); hoja.appendChild(pag); pista.appendChild(hoja);
+    const o = { hoja, cu };
+    paginas.push(o);
+    return o;
+  };
+  let pg = nueva();
+  const desborda = () => pg.cu.scrollHeight > pg.cu.clientHeight + 1;
+  secs.forEach(sc => {
+    let cont = crearCont(sc, false), puestas = 0;
+    pg.cu.appendChild(cont);
+    /* un bloque (lo que sale con un clic) nunca se parte entre dos páginas */
+    const bloques = [];
+    sc.unidades.forEach(un => {
+      const ult = bloques[bloques.length - 1];
+      if (ult && ult[0].t === un.t) ult.push(un); else bloques.push([un]);
+    });
+    bloques.forEach(bl => {
+      bl.forEach(un => {
+        un.n.classList.add("u"); un.n.classList.remove("on");
+        cont.appendChild(un.n);
+      });
+      bl.forEach(un => ajustar(un.n));
+      if (desborda()) {
+        bl.forEach(un => cont.removeChild(un.n));
+        if (!puestas) pg.cu.removeChild(cont);
+        if (pg.cu.children.length) pg = nueva();     // página nueva solo si la actual ya tiene algo
+        cont = crearCont(sc, puestas > 0);
+        pg.cu.appendChild(cont);
+        bl.forEach(un => cont.appendChild(un.n));
+        bl.forEach(un => ajustar(un.n));
+      }
+      puestas += bl.length;
+      const pi = paginas.indexOf(pg);
+      bl.forEach(un => unidades.push({ u: un.n, cont, pag: pi, t: un.t, on: false }));
+    });
+  });
+  libro = { unidades, paginas, T: secs.T };
+}
+
+/* pone al día lo que se ve según s */
+function aplicar(anim) {
+  const U = libro.unidades;
+  s = Math.max(0, Math.min(s, libro.T));
+  const conts = new Map();
+  U.forEach(o => {
+    const on = o.t <= s;
+    if (on !== o.on) {
+      o.on = on;
+      if (on) { o.u.classList.remove("rapido"); o.u.classList.add("on"); }
+      else { o.u.classList.add("rapido"); o.u.classList.remove("on"); }
+    }
+    if (on) conts.set(o.cont, true); else if (!conts.has(o.cont)) conts.set(o.cont, false);
+  });
+  conts.forEach((v, c) => {
+    if (v) { c.classList.remove("rapido"); c.classList.add("on"); }
+    else { c.classList.add("rapido"); c.classList.remove("on"); }
+  });
+  let pgs = 0;
+  U.forEach(o => { if (o.t <= s) pgs = Math.max(pgs, o.pag); });
+  const L = Math.max(pgs - 1, 0);
+  const pista = $("pista");
+  pista.classList.toggle("anim", !!anim);
+  pista.style.transform = "translateX(" + (-L * G.Sw) + "px)";
+  if (anim && L > Lprev) {
+    const h = libro.paginas[pgs].hoja;
+    h.classList.remove("gira"); void h.offsetWidth; h.classList.add("gira");
+    setTimeout(() => h.classList.remove("gira"), 1000);
+  }
+  Lprev = L;
+  const n = libro.T;
+  $("contador").textContent = EJERCICIOS[actual].titulo + " · " + s + " / " + n;
+  $("relleno").style.width = (n ? s / n * 100 : 0) + "%";
+  $("btnAtras").disabled = (actual === 0 && s <= 1);
+  $("btnAdelante").disabled = (actual === EJERCICIOS.length - 1 && s === n);
+}
+
+function pintarPestanas() {
+  const nav = $("pestanas");
+  nav.innerHTML = "";
+  EJERCICIOS.forEach((e, i) => {
+    const b = document.createElement("button");
+    b.textContent = e.tab;
+    b.setAttribute("aria-selected", i === actual);
+    b.onclick = ev => { ev.stopPropagation(); cargar(i, false); };
+    nav.appendChild(b);
+  });
+  const sel = nav.querySelector('[aria-selected="true"]');
+  if (sel) sel.scrollIntoView({ inline: "center", block: "nearest" });
+}
+
+function construir() {
+  geometria();
+  const e = EJERCICIOS[actual];
+  const secs = extraer(e);
+  paginar(secs, e._T);
+}
+
+async function cargar(i, alFinal) {
+  const lib = $("libro");
+  lib.classList.add("fuera");
+  await new Promise(r => setTimeout(r, 200));
+  actual = i;
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  construir();
+  s = alFinal ? libro.T : 1;          // al abrir un ejercicio ya se ve el enunciado
+  Lprev = 0;
+  pintarPestanas();
+  aplicar(false);
+  lib.classList.remove("fuera");
+}
+
+function avanzar() {
+  if (s < libro.T) { s++; aplicar(true); }
+  else if (actual < EJERCICIOS.length - 1) cargar(actual + 1, false);
+}
+function retroceder() {
+  if (s > 1) { s--; aplicar(true); }
+  else if (actual > 0) cargar(actual - 1, true);
+}
+
+/* clic: tercio izquierdo = atrás; resto = adelante */
+$("libro").addEventListener("click", ev => {
+  if (ev.target.closest("button")) return;
+  if (String(window.getSelection())) return;
+  if (ev.clientX < window.innerWidth / 3) retroceder(); else avanzar();
+});
+$("btnAtras").onclick = ev => { ev.stopPropagation(); retroceder(); };
+$("btnAdelante").onclick = ev => { ev.stopPropagation(); avanzar(); };
+$("tira").onclick = ev => {
+  ev.stopPropagation();
+  const r = $("tira").getBoundingClientRect();
+  s = Math.max(1, Math.round((ev.clientX - r.left) / r.width * libro.T));
+  aplicar(true);
+};
+document.addEventListener("keydown", ev => {
+  if (ev.target.closest && ev.target.closest("button") && [" ", "Enter"].includes(ev.key)) return;
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(ev.key)) { ev.preventDefault(); avanzar(); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(ev.key)) { ev.preventDefault(); retroceder(); }
+  else if (ev.key === "Home") { s = 1; aplicar(true); }
+  else if (ev.key === "End") { s = libro.T; aplicar(true); }
+});
+let tRes = null;
+window.addEventListener("resize", () => {
+  clearTimeout(tRes);
+  tRes = setTimeout(() => { if (libro) { construir(); Lprev = 0; aplicar(false); } }, 150);
+});
+
+window.addEventListener("load", () => cargar(0, false));
+</script>
+</body>
+</html>
